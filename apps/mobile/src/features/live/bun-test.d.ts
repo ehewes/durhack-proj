@@ -1,14 +1,9 @@
-// The mobile tsconfig does not load Bun's types. This ambient module lets the
-// feature test typecheck without changing that config.
+// Mobile does not depend on Bun. src/lib/map/bun-test.d.ts declares the bun:test
+// module, including `expect(): Matchers`. A second `expect` signature is an
+// overload, and the first match wins, so methods added only on that second
+// signature (toBeNull) never typecheck. Augment the shared Matchers instead.
 declare module "bun:test" {
-  export function describe(name: string, fn: () => void): void;
-  export function test(name: string, fn: () => void | Promise<void>): void;
-  export function expect(actual: unknown): {
-    toBe(expected: unknown): void;
-    toEqual(expected: unknown): void;
+  export interface Matchers {
     toBeNull(): void;
-    toBeDefined(): void;
-    toContain(expected: string): void;
-    toHaveLength(expected: number): void;
-  };
+  }
 }
