@@ -1,0 +1,6 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+# Conductor keeps scripts per person, so also set your repo's Setup script to: ./hq setup
+[scripts]
+setup = "./hq setup"
+run_mode = "concurrent"

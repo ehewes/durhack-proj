@@ -1,0 +1,2 @@
+.env*
+.entire/settings.local.json

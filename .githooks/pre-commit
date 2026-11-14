@@ -1,0 +1,14 @@
+#!/bin/sh
+# Blocks commits on the default branch: agents and humans work on feature branches,
+# and main only changes through merged PRs.
+# Emergency override for the main owner only: HQ_ALLOW_MAIN=1 git commit ...
+[ "${HQ_ALLOW_MAIN:-0}" = "1" ] && exit 0
+branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null)" || exit 0  # detached HEAD, e.g. mid-rebase
+default="${HQ_DEFAULT_BRANCH:-main}"
+if [ "$branch" = "$default" ]; then
+  echo "hq: commits on '$default' are blocked. Work on a branch:" >&2
+  echo "  ./hq claim <issue> --agent <you>     (creates one for you), or" >&2
+  echo "  git switch -c <you>/<issue>-<slug>" >&2
+  exit 1
+fi
+exit 0

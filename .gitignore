@@ -1,0 +1,15 @@
+# Secrets: never commit. Conductor copies them into workspaces via .worktreeinclude
+.env
+.env.*
+!.env.example
+
+# Agent scratch space and per-person settings
+.context/
+.claude/settings.local.json
+
+# OS and tooling
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+node_modules/
