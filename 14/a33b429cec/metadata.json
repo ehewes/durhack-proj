@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "14a33b429cec",
+  "strategy": "manual-commit",
+  "branch": "ehewes/ml-venue-recordings",
+  "checkpoints_count": 8,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/14/a33b429cec/0/metadata.json",
+      "transcript": "/14/a33b429cec/0/full.jsonl",
+      "compact_transcript": "/14/a33b429cec/0/transcript.jsonl",
+      "content_hash": "/14/a33b429cec/0/content_hash.txt",
+      "prompt": "/14/a33b429cec/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 56,
+    "cache_creation_tokens": 34422,
+    "cache_read_tokens": 11318855,
+    "output_tokens": 27451,
+    "api_call_count": 19
+  },
+  "redaction": {
+    "replacements": 25,
+    "layers": {
+      "betterleaks": 7,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 2,
+      "credentialed_uri": 1,
+      "entropy": 2,
+      "key_context": 16,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
