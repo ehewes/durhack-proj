@@ -1,0 +1,46 @@
+{
+  "Variables": [
+    {
+      "Units": "db",
+      "Name": "Max Sound",
+      "Upper_Limit": null,
+      "Lower_Limit": "0.001",
+      "Theme": "Noise"
+    },
+    {
+      "Units": "ugm -3",
+      "Name": "NO2",
+      "Upper_Limit": "1000.0",
+      "Lower_Limit": "0.001",
+      "Theme": "Air Quality"
+    },
+    {
+      "Units": "ugm -3",
+      "Name": "NO2 Concentration",
+      "Upper_Limit": null,
+      "Lower_Limit": null,
+      "Theme": "Air Quality"
+    },
+    {
+      "Units": "ugm -3",
+      "Name": "PM2.5",
+      "Upper_Limit": null,
+      "Lower_Limit": "0.001",
+      "Theme": "Air Quality"
+    },
+    {
+      "Units": "ugm -3",
+      "Name": "Pm2.5 Concentration",
+      "Upper_Limit": null,
+      "Lower_Limit": null,
+      "Theme": "Air Quality"
+    },
+    {
+      "Units": "db",
+      "Name": "Sound",
+      "Upper_Limit": null,
+      "Lower_Limit": "0.001",
+      "Theme": "Noise"
+    }
+  ]
+}

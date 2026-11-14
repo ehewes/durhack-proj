@@ -1,0 +1,31 @@
+{
+  "Sensors": [
+    {
+      "Sensor_Name": "PER_NEWCASTLE_ELDONGARDEN_MULTI_PERCY_STREET",
+      "Location_WKT": "POINT(-1.6154009 54.9760528)",
+      "Sensor_Centroid_Longitude": -1.6154009,
+      "Ground_Height_Above_Sea_Level": 48.2299995422363,
+      "Sensor_Centroid_Latitude": 54.9760528,
+      "Sensor_Height_Above_Ground": 2.0,
+      "Broker_Name": "Newcastle Council RSS feed",
+      "Raw_ID": "14"
+    },
+    {
+      "Sensor_Name": "PER_NEWCASTLE_ELDONSQUARE_MULTI_ELDON_SQUARE_MULTI",
+      "Location_WKT": "POINT(-1.6154009 54.9760528)",
+      "Sensor_Centroid_Longitude": -1.6154009,
+      "Ground_Height_Above_Sea_Level": 48.2299995422363,
+      "Sensor_Centroid_Latitude": 54.9760528,
+      "Sensor_Height_Above_Ground": 2.0,
+      "Broker_Name": "Newcastle Council RSS feed",
+      "Raw_ID": "21"
+    }
+  ],
+  "Pagination": {
+    "Total": 928,
+    "Limit": 2,
+    "Offset": 0,
+    "Next": "http://uoweb3.ncl.ac.uk/sensors/json?limit=2&offset=2&bbox_p1_x=-1.660010&bbox_p1_y=54.946940&bbox_p2_x=-1.566102&bbox_p2_y=55.000838",
+    "Previous": null
+  }
+}

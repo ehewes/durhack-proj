@@ -1,0 +1,13 @@
+{
+  "Readings": [],
+  "Sensors": {},
+  "Start": "2026-11-13T14:55:49.765183",
+  "End": "2026-11-14T14:55:49.765183",
+  "Pagination": {
+    "Total": 0,
+    "Limit": 2,
+    "Offset": 0,
+    "Next": null,
+    "Previous": null
+  }
+}
