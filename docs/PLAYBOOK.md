@@ -168,3 +168,4 @@ Outside Conductor, copy `.env` into the new worktree yourself.
 | Entire shows "Unknown author" | Set `git config user.email` to your GitHub email |
 | Duplicate sessions from Cursor | Turn off third-party hooks in Cursor |
 | No skills in Claude Code on Windows | `.claude/skills` arrived as a plain file: set `core.symlinks true` and re-clone |
+| `git push` fails with `remote rejected ... (failed)` | Run it again. Entire pushes its checkpoint branch at the same moment and GitHub sometimes rejects the first attempt. `./hq pr` retries once by itself |
