@@ -382,13 +382,16 @@ export type CameraTracker = {
  * echoing a reported camera back as props is a no-op.
  */
 export function cameraTracker(initial: MapCamera): CameraTracker {
+  // Where the map last settled, where it is or is heading, and what the caller last asked for.
   let shown: MapCamera | null = null;
+  let target = initial;
   let requested = initial;
   return {
     idle(center, zoom) {
       if (!isPosition(center) || !Number.isFinite(zoom)) return null;
       const next: MapCamera = { center: [center[0], center[1]], zoom };
       const opened = shown === null;
+      target = next;
       if (shown && sameCamera(shown, next)) return null;
       shown = next;
       return opened ? null : next;
@@ -396,7 +399,11 @@ export function cameraTracker(initial: MapCamera): CameraTracker {
     request(next) {
       if (sameCamera(requested, next)) return null;
       requested = next;
-      return shown && sameCamera(shown, next) ? null : next;
+      // Compare with where the map is heading, so asking for A, B, then A again before the map
+      // settles still sends it back to A.
+      if (sameCamera(target, next)) return null;
+      target = next;
+      return next;
     },
   };
 }
