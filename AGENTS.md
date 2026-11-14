@@ -19,7 +19,7 @@ One issue = one agent = one worktree/branch = one PR. Humans assign issues. Neve
 3. Build inside the issue's Scope, in small commits.
 4. `./hq check` must pass.
 5. Open the PR: `./hq pr N --body-file .context/pr-N.md`.
-6. Trail: `entire trail create --title "<issue title> (#N)" --type feature`, then `entire trail ci-pr`.
+6. Trail: Entire opens a trail for your PR by itself. Check it with `entire trail show`, then run `entire trail ci-pr` (safe to re-run). Only if `trail show` finds none: `entire trail create --title "<issue title> (#N)" --type feature`.
 7. Unless the issue is `size:S`: `entire review`, fix the findings,
    `gh pr edit <PR> --add-label review:pass`, then `entire trail ready`.
 8. Stop and report. Only when a human says "ship it": `./hq ship <PR>`.

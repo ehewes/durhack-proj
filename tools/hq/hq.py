@@ -1284,8 +1284,10 @@ def cmd_pr(args):
         print("%s #%d is now status:review" % (OK, n))
     print(url)
     print("NEXT STEPS")
-    print('  entire trail create --title "%s" --type feature' % title.replace('"', '\\"'))
-    print("  entire trail ci-pr")
+    print("  entire trail show      (Entire opens a trail for the PR by itself)")
+    print("  entire trail ci-pr     (links it to the PR; safe to re-run)")
+    print('  only if trail show finds none: entire trail create --title "%s" --type feature'
+          % title.replace('"', '\\"'))
     if "size:S" not in names:
         print("  entire review")
     print("  gh pr edit %s --add-label review:pass" % prn)

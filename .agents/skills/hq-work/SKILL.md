@@ -23,7 +23,7 @@ description: 'Use when a human assigns you a GitHub issue ("work on #N" or "/hq-
 7. Write `.context/pr-N.md` (template below; `mkdir -p .context` if needed), then
    `./hq pr N --body-file .context/pr-N.md`. It pushes, opens the PR with `Closes #N` and sets
    `status:review`. Get the number: `gh pr view --json number,url`.
-8. Trail: `entire trail create --title "<issue title> (#N)" --type feature`, then `entire trail ci-pr`.
+8. Trail: Entire opens a trail for your PR by itself. Check it with `entire trail show`, then run `entire trail ci-pr` (safe to re-run). Only if `trail show` finds none: `entire trail create --title "<issue title> (#N)" --type feature`.
 9. Review, unless the issue is `size:S`: `entire review`. Fix real findings, commit, `git push`,
    re-run `./hq check`. Then `gh pr edit <PR> --add-label review:pass` and `entire trail ready`.
 10. Report the PR link, check result and risks, then stop. Merge only on "ship it" (`/hq-ship`).
