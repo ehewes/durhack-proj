@@ -90,6 +90,8 @@ export type CityRepo = {
   lnight30(now?: Date): Promise<SensorLnightReport[]>;
   /** Writes level fields onto existing sensors. An empty list is a no-op. */
   writeSensorLevels(levels: SensorLevelWrite[]): Promise<void>;
+  /** Every sensor stored for the map, ordered by id. */
+  listSensors(): Promise<SensorDocument[]>;
 };
 
 type ReadingValue = Date | string | number;
@@ -301,6 +303,9 @@ export function createCityRepo(
     async writeSensorLevels(levels) {
       if (levels.length === 0) return;
       await sensors.bulkWrite(levels.map(levelWrite));
+    },
+    async listSensors() {
+      return sensors.find({}, { sort: { _id: 1 } }).toArray();
     },
   };
 }

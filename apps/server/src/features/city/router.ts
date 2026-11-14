@@ -1,6 +1,14 @@
-import { notImplemented, publicProcedure, router } from "../../trpc/init";
+import { citySensors, type SensorLevel } from "@kip/shared/city";
+import { publicProcedure, router } from "../../trpc/init";
+import { createCityRepo } from "./repo";
+import { listCitySensors } from "./service";
 
-// Stubs from docs/ARCHITECTURE.md (tRPC routers). The `city` feature fills them in.
-export const cityRouter = router({
-  sensors: publicProcedure.query(() => notImplemented()),
-});
+/** Thin: validate the shared schema, then read Mongo. */
+export function createCityRouter(load?: () => Promise<SensorLevel[]>) {
+  const read = load ?? (() => listCitySensors(createCityRepo()));
+  return router({
+    sensors: publicProcedure.query(async () => citySensors.parse(await read())),
+  });
+}
+
+export const cityRouter = createCityRouter();

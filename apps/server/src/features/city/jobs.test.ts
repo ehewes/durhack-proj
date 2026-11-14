@@ -99,6 +99,7 @@ function mockRepo() {
     },
     lnight30: async () => [],
     writeSensorLevels: async () => {},
+    listSensors: async () => [],
   };
   return { repo, readings, sensors };
 }
