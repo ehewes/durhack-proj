@@ -1,2 +1,1 @@
-// `works` has no screen of its own: its components render inside other features' screens.
-export {};
+export { WorksScreen } from "./screens/WorksScreen";

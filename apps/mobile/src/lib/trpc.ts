@@ -3,10 +3,8 @@ import { QueryClient } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCContext } from "@trpc/tanstack-react-query";
 import superjson from "superjson";
+import { apiUrl } from "./api-url";
 import { getUserId } from "./user-id";
-
-/** Empty on the web build served by the API, so calls stay same-origin. */
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? "";
 
 export const { TRPCProvider, useTRPC, useTRPCClient } = createTRPCContext<AppRouter>();
 
@@ -18,7 +16,7 @@ export function createClient() {
   return createTRPCClient<AppRouter>({
     links: [
       httpBatchLink({
-        url: `${API_URL}/trpc`,
+        url: `${apiUrl()}/trpc`,
         transformer: superjson,
         headers: async () => ({ "x-kip-user": await getUserId() }),
       }),
