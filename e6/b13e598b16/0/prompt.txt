@@ -1,0 +1,162 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/nick/conductor/workspaces/durhack-proj/tripoli directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/main. Use this for actions like diffing (`git diff origin/main...`) or creating PRs (`gh pr create --base main`).
+You're on a new branch with a placeholder name.
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+Conductor shows the PR for whichever branch is checked out. After you open a PR from a different branch, or a PR stack, check out that PR's branch (for a stack, the top-most branch) so Conductor shows it.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+Save screenshots under `.context/` and embed them inline in the final response using Markdown image syntax, for example `![Screenshot](</Users/nick/conductor/workspaces/durhack-proj/tripoli/.context/screenshot.png>)`.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+choose 5 pending issues and work on them in parallel (make sure they don't conflict with each other)
+
+---
+
+<task-notification>
+<task-id>a3b3aa33b66c27a4e</task-id>
+<tool-use-id>toolu_01LnYg9j13hc2ydJJDkLR4Ra</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-nick-conductor-workspaces-durhack-proj-tripoli/cca87822-d8b6-4e74-ac0c-a20bf9880340/tasks/a3b3aa33b66c27a4e.output</output-file>
+<status>completed</status>
+<summary>Agent "Work issue #30" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>PR #100 is open for #30: https://github.com/ehewes/durhack-proj/pull/100. The Entire trail is not linked to the PR.
+
+**What changed**
+- `packages/shared/src/live/samples.ts` defines the Zod schemas and types:
+  - `LiveSample` has `t` and `db`.
+  - `LiveSpike` has `t`, `peakDb` and `baselineDb`.
+  - `LiveEvent` has the spike, a `label` from `NOISE_LABELS`, `outsideRecommendedHours` and a nullable `briefingAudioUrl`.
+- I also added `livePushInput` and `liveStreamItem`, for the `live.push` and `live.stream` procedures in `docs/ARCHITECTURE.md`. They go slightly beyond the issue's list.
+- `packages/shared/src/live/index.ts` re-exports them.
+- `fixtures/live-stream.json` holds a few samples plus one construction event.
+- `live.test.ts` checks the fixture against the schemas.
+
+**Evidence**
+- `bun test packages/shared/src/live`: 5 pass.
+- `./hq check`: lint, typecheck and test all pass (3/3).
+- The branch was already up to date with `origin/main`, so there was nothing to rebase.
+
+**Trail problem**
+- `entire trail show` and `entire trail ci-pr` found no trail for the branch, so I ran `entire trail create`.
+- That created trail #18 (`01M7DB02FPKYBQHCW8SWW8GAXR`), but linking the branch failed with a 409 "Change already belongs to another Trail".
+- `entire trail ci-pr` still reports no discoverable project trail. The tool's own advice was not to rerun `trail create`, and I haven't. Someone needs to sort out the link by hand, and I did not run `entire trail ready`.
+
+The issue is size:S, so I skipped `entire review` and did not add the `review:pass` label. I did not run `./hq ship`.</result>
+<usage><subagent_tokens>46129</subagent_tokens><tool_uses>17</tool_uses><duration_ms>86243</duration_ms></usage>
+<worktree><worktreePath>/Users/nick/conductor/repos/durhack-proj/.claude/worktrees/agent-a3b3aa33b66c27a4e</worktreePath><worktreeBranch>worktree-agent-a3b3aa33b66c27a4e</worktreeBranch></worktree>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>abe7eb5fa5a510ee1</task-id>
+<tool-use-id>toolu_01C12qWpTZxZcCMcBuMzpwfg</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-nick-conductor-workspaces-durhack-proj-tripoli/cca87822-d8b6-4e74-ac0c-a20bf9880340/tasks/abe7eb5fa5a510ee1.output</output-file>
+<status>completed</status>
+<summary>Agent "Work issue #29" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>PR #29 is open at https://github.com/ehewes/durhack-proj/pull/99, but the Entire trail link did not complete.
+
+**Built**
+- `packages/shared/src/city/sensors.ts` has the `sensorLevel` schema with every field the issue lists, plus a `citySensors` array schema.
+- `lnight30` and `pctHighlySleepDisturbed` are nullable, and the schema requires them to be null exactly when `notEnoughData` is true. Consumers need to handle null.
+- `packages/shared/src/city/fixtures/city-sensors.json` holds 10 Newcastle sensors. They include one out-of-range clamped sensor and one with too little data (12 nights).
+- `packages/shared/src/city/index.ts` exports the schemas.
+- `packages/shared/src/city/sensors.test.ts` has 5 tests that validate the fixture, check each %HSD against `roadTrafficDisturbance`, and check the 30-night rule and the rejection cases.
+
+**Evidence**
+- `bun test packages/shared/src/city`: 5 pass, 0 fail.
+- `./hq check`: 3/3 passed (lint, typecheck, test).
+- The branch was already up to date with `origin/main`, so the rebase changed nothing.
+
+**Trail problem**
+- `entire trail show` and `entire trail ci-pr` both reported that the branch has no discoverable project trail.
+- `entire trail create` made trail `01M7DB03YBFQZF8RZ24DCMW0QJ` but failed to link the branch (409, "Change already belongs to another Trail").
+- I did not re-run create, as the tool advised. A human may need to run the `entire trail link` command it printed.
+
+**Not done**
+- The issue is `size:S`, so I skipped `entire review`, the `review:pass` label and `entire trail ready`.
+- I did not run `./hq ship`.
+- I did not run the `entire search`, `entire graph` and `entire brain` context steps, since the lane was an empty stub with no existing code to check.
+
+I stayed inside `packages/shared/src/city/`. I only added files there and did not touch the Do-not-touch list.</result>
+<usage><subagent_tokens>46321</subagent_tokens><tool_uses>16</tool_uses><duration_ms>90737</duration_ms></usage>
+<worktree><worktreePath>/Users/nick/conductor/repos/durhack-proj/.claude/worktrees/agent-abe7eb5fa5a510ee1</worktreePath><worktreeBranch>worktree-agent-abe7eb5fa5a510ee1</worktreeBranch></worktree>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a8c8416c7e81d1aa1</task-id>
+<tool-use-id>toolu_01AWnoLnLjWfw5MPyqsLfk9b</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-nick-conductor-workspaces-durhack-proj-tripoli/cca87822-d8b6-4e74-ac0c-a20bf9880340/tasks/a8c8416c7e81d1aa1.output</output-file>
+<status>completed</status>
+<summary>Agent "Work issue #25" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>PR #101 is open for issue #25: https://github.com/ehewes/durhack-proj/pull/101. The Entire trail is not linked, and the Swift side has not been compiled.
+
+**Trail:** `entire trail show` and `entire trail ci-pr` found no trail for the branch. `entire trail create` then made trail `01M7DB0MKA6E9AP4BV9N0YQWCV` but failed to link it. The error was "Change already belongs to another Trail (409)". The tool said not to rerun `create`, and I did not run its suggested `entire trail link` retry. The trail is unlinked and needs a human to sort out.
+
+**What I built**, all under `apps/mobile/modules/kip-audio/` (the issue's only Scope path):
+- **JS API:** `index.ts` exports `start({ spikeThresholdDb })`, `stop`, `isRecording`, `onSample`, `onSpike` and `deleteClip`.
+- **Contract constants:** it also exports `CLIP_FORMAT` (16 kHz mono 16-bit WAV) and `CLIP_SECONDS`.
+- **Spike event type:** a spike has either a `clipUri` or `speechDropped: true`, never both.
+- **Platform split:** the native binding and the web stub are separate files, `src/KipAudioModule.ts` and `src/KipAudioModule.web.ts`.
+- **Web stub:** it emits one sample per second, every payload marked `simulated: true`, with a simulated spike every 20 seconds. Spikes are reported as `speechDropped` so no consumer gets a fake clip URI.
+- **iOS side:** a Swift module skeleton, a podspec and `expo-module.config.json`. Real metering is left for a later issue.
+
+**Evidence:**
+- `./hq check` passed 3/3 (lint, typecheck, test), re-run after rebasing on `origin/main`.
+- `cd apps/mobile &amp;&amp; bunx expo export --platform web` succeeded.
+- I did not run an iOS build, so the Swift skeleton may need small fixes on its first build.
+- The issue is `size:S`, so I skipped `entire review` and did not add `review:pass`.
+- I did not run `./hq ship`.</result>
+<usage><subagent_tokens>52436</subagent_tokens><tool_uses>18</tool_uses><duration_ms>108930</duration_ms></usage>
+<worktree><worktreePath>/Users/nick/conductor/repos/durhack-proj/.claude/worktrees/agent-a8c8416c7e81d1aa1</worktreePath><worktreeBranch>worktree-agent-a8c8416c7e81d1aa1</worktreeBranch></worktree>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a6f04aa5a748d5721</task-id>
+<tool-use-id>toolu_01RbB9GfBgJYs122uppHGiGX</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-nick-conductor-workspaces-durhack-proj-tripoli/cca87822-d8b6-4e74-ac0c-a20bf9880340/tasks/a6f04aa5a748d5721.output</output-file>
+<status>completed</status>
+<summary>Agent "Work issue #31" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>PR #102 is open, but the Entire trail is not linked to the PR. Issue #31 is `size:S`, so I skipped `entire review` and did not add `review:pass`.
+
+**PR:** https://github.com/ehewes/durhack-proj/pull/102
+
+**What changed**, all in `packages/shared/src/stays/`:
+- **Schemas:** `schema.ts` defines `RankInput`, `HotelScore` and `RankResult`.
+  - `RankInput` has profile, `checkIn`, `checkOut` and an optional `near` point, and rejects a `checkOut` that is not after `checkIn`.
+  - `HotelScore` has a score from 0 to 100 and a per-input breakdown (noise, roadworks, air quality, real nights, nightlife), each with value, weight and points.
+  - Its sources list sensors, permits and real nights. `estimate` is fixed to `true`, and there is a placeholder booking link and a simulated flag.
+- **Fixtures:** `fixtures/rank-light-sleeper.json` and `fixtures/rank-night-out.json`, 15 hotels each, ranked by score.
+- **Tests:** `schema.test.ts` validates both fixtures and the input rules.
+- **Export:** `index.ts` now exports the schemas.
+
+**Evidence:**
+- `bun test packages/shared/src/stays` passed all 6 tests.
+- `./hq check` passed lint, typecheck and test (3/3). It first failed on formatting in my file, so I ran `bunx biome check --write` on the stays folder.
+- The branch was already up to date with `origin/main`.
+
+**Trail problem:** `entire trail show` and `entire trail ci-pr` both report "no discoverable project trail". I then ran `entire trail create`. It made trail `01M7DB0MGE0Q0CHNXZ1Q85Z0NG` but failed to link it to the branch (409, "Change already belongs to another Trail"). `ci-pr` and `trail ready` then failed with the same "no discoverable project trail" error. The create output said not to re-run `trail create`, and I didn't. It suggested `entire trail link 01M7DB0MGE0Q0CHNXZ1Q85Z0NG --repo=gh/ehewes/durhack-proj --project=gh/ehewes --branch=worktree-agent-a6f04aa5a748d5721 --branch-action=link --base=main ...`, which I did not run. A human should look at it, because another trail may already own this change.
+
+**Risks:** none. These are shared types only and nothing imports them yet.
+
+The fixture generator is a throwaway script at `.context/gen-stays.ts`, not committed.</result>
+<usage><subagent_tokens>51783</subagent_tokens><tool_uses>16</tool_uses><duration_ms>105569</duration_ms></usage>
+<worktree><worktreePath>/Users/nick/conductor/repos/durhack-proj/.claude/worktrees/agent-a6f04aa5a748d5721</worktreePath><worktreeBranch>worktree-agent-a6f04aa5a748d5721</worktreeBranch></worktree>
+</task-notification>
