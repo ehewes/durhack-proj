@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+**/.expo
+.git
+.context
+.entire
+infra
+.env
+.env.*
