@@ -3,7 +3,10 @@
 Exported ONNX models the API loads, copied into the Docker image. `handling-v1.onnx` lands
 here from the `ml` lane (#90). Raw data, runs and checkpoints stay out of git.
 
-## handling-poc.onnx (proof of concept)
+## handling-poc.onnx and handling-poc.pt (proof of concept)
+`handling-poc.pt` is the same model as PyTorch weights (0.42M parameters, trained on a Lium RTX 3090), used by
+`kipml.infer`, the notebook and any fine-tuning. The ONNX file is what the API runs.
+
 Trained by `ml/kipml/` on our venue recordings, placeholders and ESC-50 (see `ml/README.md`). The
 STFT stays outside the graph, so the server computes it (details in `handling-poc.json`):
 

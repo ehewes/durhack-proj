@@ -36,7 +36,7 @@ flowchart LR
 - **The GRU** reads the clip forwards and backwards, so each frame is judged against what the room sounds
   like before and after it. A knock is easier to spot when you know the background.
 - **Two heads**: a mask with one value per time-frequency cell, and one handling logit per frame.
-- 418,754 parameters, 1.6 MB as ONNX. A 10-second clip takes about 21 ms on one CPU thread in ONNX
+- 418,754 parameters: `models/handling-poc.pt` (PyTorch) and `models/handling-poc.onnx` (1.6 MB). A 10-second clip takes about 21 ms on one CPU thread in ONNX
   Runtime (90 ms in PyTorch, including the STFT).
 
 ## Two outputs
@@ -52,6 +52,22 @@ wake-up.
 
 On this held-out take the mask removes five narrow columns, one per drop, and leaves the room between
 them untouched.
+
+## Before and after
+Grey is the recording, blue is what the model kept. Any grey still showing is what it suppressed.
+
+![Before and after on real held-out takes](docs/img/before_after.png)
+
+The same held-out mixture through the model and through a spectral noise gate, with the right answer underneath:
+
+![Model against a spectral gate](docs/img/model_vs_gate.png)
+
+More views of the same runs, including spectrograms before and after, are in `reports/handling-gpu/`:
+[real drop take](reports/handling-gpu/real_venue_pickup_01.png),
+[walking-pocket take](reports/handling-gpu/real_venue_pocket_02.png),
+[mixture waveforms](reports/handling-gpu/mixture_waveforms.png),
+[mixture spectrograms](reports/handling-gpu/mixture_spectrograms.png).
+Before and after audio to listen to is in `reports/handling-gpu/audio/`.
 
 ## Training data
 There are only about 3 minutes of real handling noise, so training examples are mixed on the fly:

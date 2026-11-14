@@ -43,3 +43,4 @@ ml/audio/inbox/*
 ml/audio/private/*
 !ml/audio/private/README.md
 ml/notebooks/output/
+!ml/models/*.pt
