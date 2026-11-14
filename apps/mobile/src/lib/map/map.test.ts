@@ -1,17 +1,22 @@
 import { describe, expect, mock, test } from "bun:test";
 import {
   camerasMatch,
+  cameraTracker,
   classifyMapHit,
   featuresToCollections,
+  MAP_LAYER_ORDER,
   MAP_SOURCE,
   MAPBOX_STYLE,
   MISSING_MAPBOX_TOKEN_MESSAGE,
+  MISSING_MOBILE_MAPBOX_TOKEN_MESSAGE,
   mapboxToken,
   mapOverlayLayers,
+  mobileMapboxToken,
   NEWCASTLE,
-  OSM_ATTRIBUTION,
-  osmStyle,
+  nativeOverlayLayers,
+  pointPosition,
   pointSource,
+  pressedHit,
 } from "./style";
 import type { MapFeatureCollection } from "./types";
 
@@ -149,13 +154,86 @@ describe("overlay model", () => {
       ),
     ).toBe(false);
   });
+});
 
-  test("the native basemap stays OpenStreetMap raster", () => {
-    const osm = osmStyle.sources.osm;
-    expect(osm?.type).toBe("raster");
-    if (osm?.type !== "raster") return;
-    expect(osm.tiles).toEqual(["https://tile.openstreetmap.org/{z}/{x}/{y}.png"]);
-    expect(OSM_ATTRIBUTION).toContain("OpenStreetMap");
+describe("native map model", () => {
+  test("the iPhone reads its own public token and refuses a secret one", () => {
+    expect(mobileMapboxToken()).toBeUndefined();
+    expect(mobileMapboxToken({ EXPO_PUBLIC_MAPBOX_MOBILE_TOKEN: " " })).toBeUndefined();
+    expect(mobileMapboxToken({ EXPO_PUBLIC_MAPBOX_MOBILE_TOKEN: " pk.phone " })).toBe("pk.phone");
+    expect(mobileMapboxToken({ EXPO_PUBLIC_MAPBOX_MOBILE_TOKEN: "sk.secret" })).toBeUndefined();
+    expect(MISSING_MOBILE_MAPBOX_TOKEN_MESSAGE).toContain("EXPO_PUBLIC_MAPBOX_MOBILE_TOKEN");
+    expect(MISSING_MOBILE_MAPBOX_TOKEN_MESSAGE).toContain("Newcastle");
+  });
+
+  test("draws the web layers in the web order with camelCase style props", () => {
+    const layers = nativeOverlayLayers("sensor-1");
+    expect(layers.map((layer) => layer.id)).toEqual([...MAP_LAYER_ORDER]);
+    expect(layers.map((layer) => layer.aboveLayerID)).toEqual([
+      undefined,
+      ...MAP_LAYER_ORDER.slice(0, -1),
+    ]);
+
+    const find = (id: string) => layers.find((layer) => layer.id === id);
+    expect(find("kip-points")?.style).toEqual({
+      circleColor: INK,
+      circleRadius: 6,
+      circleStrokeColor: ACCENT,
+      circleStrokeWidth: ["case", ["==", ["get", "id"], "sensor-1"], 3, 0],
+    });
+    expect(find("kip-points")?.filter).toEqual(["!", ["has", "point_count"]]);
+    expect(find("kip-lines")?.style).toMatchObject({ lineCap: "round", lineJoin: "round" });
+    expect(find("kip-cluster-count")?.style).toMatchObject({
+      textField: ["get", "point_count_abbreviated"],
+      textColor: ON_INK,
+    });
+    expect(find("kip-polygons")?.source).toBe(MAP_SOURCE.polygons);
+  });
+
+  test("a tap selects the top feature, expands a cluster, or clears", () => {
+    expect(
+      pressedHit([{ properties: { id: "sensor-1" } }, { properties: { id: "zone-1" } }]),
+    ).toEqual({ kind: "feature", id: "sensor-1" });
+    expect(pressedHit([{ properties: { cluster: true, cluster_id: 9 } }])).toEqual({
+      kind: "cluster",
+      clusterId: 9,
+    });
+    expect(pressedHit([{ id: 12, properties: null }])).toEqual({ kind: "feature", id: "12" });
+    expect(pressedHit([])).toEqual({ kind: "empty" });
+    expect(pressedHit(undefined)).toEqual({ kind: "empty" });
+  });
+
+  test("a cluster centres on its point", () => {
+    expect(pointPosition({ type: "Point", coordinates: [-1.62, 54.97] })).toEqual([-1.62, 54.97]);
+    expect(pointPosition({ type: "Point", coordinates: [Number.NaN, 54.97] })).toBe(null);
+    expect(pointPosition({ type: "LineString", coordinates: [] })).toBe(null);
+    expect(pointPosition(null)).toBe(null);
+  });
+
+  test("reports only real camera moves and never echoes props back", () => {
+    const camera = cameraTracker({ center: NEWCASTLE, zoom: 13 });
+    // The first settle is where the map opened, a few metres off the request on a real device.
+    expect(camera.idle([-1.61314, 54.973141], 13)).toBe(null);
+    expect(camera.idle([-1.61314, 54.973141], 13)).toBe(null);
+    expect(camera.idle([-1.5, 55], 11)).toEqual({ center: [-1.5, 55], zoom: 11 });
+    expect(camera.idle([-1.5, 55], 11)).toBe(null);
+    expect(camera.idle([Number.NaN, 55], 11)).toBe(null);
+
+    expect(camera.request({ center: NEWCASTLE, zoom: 13 })).toBe(null);
+    expect(camera.request({ center: [-1.5, 55], zoom: 11 })).toBe(null);
+    expect(camera.request({ center: NEWCASTLE, zoom: 12 })).toEqual({
+      center: NEWCASTLE,
+      zoom: 12,
+    });
+    expect(camera.request({ center: NEWCASTLE, zoom: 12 })).toBe(null);
+  });
+
+  test("a camera asked for before the map settles still moves it", () => {
+    const camera = cameraTracker({ center: NEWCASTLE, zoom: 13 });
+    expect(camera.request({ center: [-1.5, 55], zoom: 11 })).toEqual({
+      center: [-1.5, 55],
+      zoom: 11,
+    });
   });
 });
 

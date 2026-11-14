@@ -1,4 +1,3 @@
-import type { StyleSpecification } from "maplibre-gl";
 import type {
   MapCamera,
   MapFeatureCollection,
@@ -10,28 +9,7 @@ import type {
 /** Newcastle city centre, [longitude, latitude] */
 export const NEWCASTLE: [number, number] = [-1.614, 54.973];
 
-export const OSM_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-
-/**
- * OpenStreetMap raster tiles for the native map. The web map uses Mapbox.
- * Kept so Map.native.tsx can stay on MapLibre until that migration lands.
- */
-export const osmStyle: StyleSpecification = {
-  version: 8,
-  sources: {
-    osm: {
-      type: "raster",
-      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-      tileSize: 256,
-      maxzoom: 19,
-      attribution: OSM_ATTRIBUTION,
-    },
-  },
-  layers: [{ id: "osm", type: "raster", source: "osm" }],
-};
-
-/** Restrained Mapbox basemap. The default Standard style is busier than this dashboard needs. */
+/** Restrained Mapbox basemap for web and iPhone. The default Standard style is busier than Kip needs. */
 export const MAPBOX_STYLE = "mapbox://styles/mapbox/light-v11";
 
 export const MAPBOX_TOKEN_ENV = "EXPO_PUBLIC_MAPBOX_TOKEN";
@@ -39,10 +17,19 @@ export const MAPBOX_TOKEN_ENV = "EXPO_PUBLIC_MAPBOX_TOKEN";
 export const MISSING_MAPBOX_TOKEN_MESSAGE =
   "Set EXPO_PUBLIC_MAPBOX_TOKEN to a Mapbox public token to show the Newcastle map.";
 
+/** The iPhone reads its own public token, so URL restrictions on the web token never reach it. */
+export const MAPBOX_MOBILE_TOKEN_ENV = "EXPO_PUBLIC_MAPBOX_MOBILE_TOKEN";
+
+export const MISSING_MOBILE_MAPBOX_TOKEN_MESSAGE =
+  "Set EXPO_PUBLIC_MAPBOX_MOBILE_TOKEN to a Mapbox public token (pk.), then restart Metro, to show the Newcastle map.";
+
 /** Ink, one accent, and white. Matches the app theme. No multi-hue scale. */
 const INK = "#1a1a18";
 const ACCENT = "#2f5bd3";
 const ON_INK = "#ffffff";
+
+/** Text drawn over the map. The basemap stays light in dark mode, so this ink always reads. */
+export const MAP_INK = INK;
 
 const CLUSTER_RADIUS = 48;
 const CLUSTER_MAX_ZOOM = 14;
@@ -52,6 +39,17 @@ export function mapboxToken(env?: { EXPO_PUBLIC_MAPBOX_TOKEN?: string }): string
   if (typeof raw !== "string") return undefined;
   const token = raw.trim();
   return token.length > 0 ? token : undefined;
+}
+
+/**
+ * The iPhone map's public token. A secret `sk.` token is refused: whatever sits in an
+ * `EXPO_PUBLIC_` variable ships inside the app bundle.
+ */
+export function mobileMapboxToken(env?: {
+  EXPO_PUBLIC_MAPBOX_MOBILE_TOKEN?: string;
+}): string | undefined {
+  const token = mapboxToken({ EXPO_PUBLIC_MAPBOX_TOKEN: env?.EXPO_PUBLIC_MAPBOX_MOBILE_TOKEN });
+  return token?.startsWith("sk.") ? undefined : token;
 }
 
 export const MAP_SOURCE = {
@@ -303,4 +301,98 @@ export function camerasMatch(
     Math.abs(current.lat - next.center[1]) < CAMERA_EPSILON &&
     Math.abs(current.zoom - next.zoom) < ZOOM_EPSILON
   );
+}
+
+/** One overlay layer in the shape `@rnmapbox/maps` takes: camelCase style props. */
+export type NativeLayerSpec = {
+  id: string;
+  type: MapLayerSpec["type"];
+  source: string;
+  filter?: unknown[];
+  /**
+   * The native SDK stacks layers in the order it adds them. Each layer sits above the one before
+   * it, so the stack matches MAP_LAYER_ORDER whatever order they mount in.
+   */
+  aboveLayerID?: string;
+  style: Record<string, unknown>;
+};
+
+function camelCase(key: string): string {
+  return key.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
+}
+
+/** The web overlay layers translated for the native SDK, so the iPhone draws the same map. */
+export function nativeOverlayLayers(selectedId: string | null): NativeLayerSpec[] {
+  const layers = mapOverlayLayers(selectedId);
+  return layers.map((layer, index) => {
+    const style: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries({ ...layer.layout, ...layer.paint })) {
+      style[camelCase(key)] = value;
+    }
+    return {
+      id: layer.id,
+      type: layer.type,
+      source: layer.source,
+      filter: layer.filter,
+      aboveLayerID: layers[index - 1]?.id,
+      style,
+    };
+  });
+}
+
+/** A tapped feature as the native SDK reports it: top-most first. */
+export type PressedFeature = {
+  id?: string | number;
+  properties?: Record<string, unknown> | null;
+};
+
+/** Classify a native tap the way a web click is classified: the top feature wins. */
+export function pressedHit(features: readonly PressedFeature[] | undefined): MapHit {
+  const top = features?.[0];
+  return top ? classifyMapHit(top.properties, top.id) : { kind: "empty" };
+}
+
+/** [longitude, latitude] of a point geometry, or null. Used to centre on a tapped cluster. */
+export function pointPosition(
+  geometry: { type?: string; coordinates?: unknown } | null | undefined,
+): MapPosition | null {
+  if (geometry?.type !== "Point" || !isPosition(geometry.coordinates)) return null;
+  return [geometry.coordinates[0], geometry.coordinates[1]];
+}
+
+function sameCamera(a: MapCamera, b: MapCamera): boolean {
+  return camerasMatch({ lng: a.center[0], lat: a.center[1], zoom: a.zoom }, b);
+}
+
+export type CameraTracker = {
+  /** The map went idle. Returns the camera to report, or null when it has not moved. */
+  idle: (center: readonly number[], zoom: number) => MapCamera | null;
+  /** The caller asked for a camera. Returns it when the map must move, or null. */
+  request: (next: MapCamera) => MapCamera | null;
+};
+
+/**
+ * Camera bookkeeping for the native map. The native SDK goes idle after loading, tiles and
+ * overlay updates too, so only real moves are reported, like web `moveend`: the first settle is
+ * where the map opened, not a move. The map moves only when the caller asks for a new camera, so
+ * echoing a reported camera back as props is a no-op.
+ */
+export function cameraTracker(initial: MapCamera): CameraTracker {
+  let shown: MapCamera | null = null;
+  let requested = initial;
+  return {
+    idle(center, zoom) {
+      if (!isPosition(center) || !Number.isFinite(zoom)) return null;
+      const next: MapCamera = { center: [center[0], center[1]], zoom };
+      const opened = shown === null;
+      if (shown && sameCamera(shown, next)) return null;
+      shown = next;
+      return opened ? null : next;
+    },
+    request(next) {
+      if (sameCamera(requested, next)) return null;
+      requested = next;
+      return shown && sameCamera(shown, next) ? null : next;
+    },
+  };
 }

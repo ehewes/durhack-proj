@@ -35,7 +35,8 @@ const config: ExpoConfig = {
         background: false,
       },
     ],
-    "@maplibre/maplibre-react-native",
+    // Mapbox Maps SDK for iOS. The SDK download needs no token; the app reads a public one at runtime.
+    "@rnmapbox/maps",
   ],
   experiments: { typedRoutes: true },
 };
