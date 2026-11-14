@@ -1,0 +1,87 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "6cbd05af044f",
+  "session_id": "4a9f6dc5-fe85-47ec-abde-6f9d440d834b",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-14T22:17:24.135931Z",
+  "branch": "ehewes/70-consent-onboarding",
+  "checkpoints_count": 2,
+  "save_step_count": 1,
+  "files_touched": [
+    "apps/mobile/src/features/account/components/Onboarding.tsx",
+    "apps/mobile/src/features/account/consent.ts",
+    "apps/mobile/src/features/account/hooks/useAccount.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "214a661bf7bd",
+  "checkpoint_transcript_start": 1439,
+  "transcript_lines_at_start": 1439,
+  "compact_transcript_start": 165,
+  "session_token_usage": {
+    "input_tokens": 268,
+    "cache_creation_tokens": 678731,
+    "cache_read_tokens": 26778370,
+    "output_tokens": 186977,
+    "api_call_count": 127,
+    "subagent_tokens": {
+      "input_tokens": 824,
+      "cache_creation_tokens": 3152049,
+      "cache_read_tokens": 79960162,
+      "output_tokens": 521327,
+      "api_call_count": 401
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 4,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 4,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_01N1APgaBA3zYA75fSJANAnD",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "commit-message"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "684e0bee2065",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 682,
+        "end": 683,
+        "entry_ids": [
+          "2b264347-af56-4f0f-b067-0a6a5a8bf9ed"
+        ],
+        "tool_use_id": "toolu_01N1APgaBA3zYA75fSJANAnD"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01N1APgaBA3zYA75fSJANAnD"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: commit-message",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 6
+  }
+}
