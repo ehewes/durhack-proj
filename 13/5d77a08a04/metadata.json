@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "135d77a08a04",
+  "strategy": "manual-commit",
+  "branch": "ehewes/mapbox-ios-setup",
+  "checkpoints_count": 5,
+  "files_touched": [
+    ".env.example",
+    "apps/mobile/README.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/13/5d77a08a04/0/metadata.json",
+      "transcript": "/13/5d77a08a04/0/full.jsonl",
+      "compact_transcript": "/13/5d77a08a04/0/transcript.jsonl",
+      "content_hash": "/13/5d77a08a04/0/content_hash.txt",
+      "prompt": "/13/5d77a08a04/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 40,
+    "cache_creation_tokens": 22701,
+    "cache_read_tokens": 6421505,
+    "output_tokens": 13976,
+    "api_call_count": 19
+  },
+  "redaction": {
+    "replacements": 35,
+    "layers": {
+      "betterleaks": 11,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 26,
+      "credentialed_uri": 3,
+      "entropy": 0,
+      "key_context": 4,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
