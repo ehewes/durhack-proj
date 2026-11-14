@@ -7,6 +7,7 @@ registry_password = "..."
 mongo_uri         = "mongodb+srv://..."
 tiger_uri         = "postgres://..."
 app_env = {
-  GEMINI_API_KEY     = "..."
-  ELEVENLABS_API_KEY = "..."
+  GEMINI_API_KEY      = "..."
+  ELEVENLABS_API_KEY  = "..."
+  ELEVENLABS_VOICE_ID = "..."
 }
