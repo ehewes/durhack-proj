@@ -1,4 +1,10 @@
-import { type StoredWork, storedWork, type WorkRecord, workRecord } from "@kip/shared/works";
+import {
+  type StoredWork,
+  storedWork,
+  type WorkGeometry,
+  type WorkRecord,
+  workRecord,
+} from "@kip/shared/works";
 import type { Db, Filter } from "mongodb";
 import { mongo } from "../../db/mongo";
 
@@ -39,7 +45,7 @@ function distanceToSegment(
 }
 
 /** Metres from a WGS84 point to a stored geometry. A line uses the closest point on it. */
-export function distanceToWork(lat: number, lon: number, work: WorkRecord): number {
+export function distanceToWork(lat: number, lon: number, work: { geometry: WorkGeometry }): number {
   const geometry = work.geometry;
   if (geometry.type === "Point") {
     const [workLon, workLat] = geometry.coordinates;
