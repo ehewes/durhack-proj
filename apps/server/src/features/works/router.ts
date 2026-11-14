@@ -1,11 +1,7 @@
-import { z } from "zod";
-import { notImplemented, publicProcedure, router } from "../../trpc/init";
+import { worksNearInput } from "@kip/shared/works";
+import { publicProcedure, router } from "../../trpc/init";
+import { worksNear } from "./near";
 
-// Stubs from docs/ARCHITECTURE.md (tRPC routers). The `works` feature fills them in.
 export const worksRouter = router({
-  near: publicProcedure
-    .input(
-      z.object({ lat: z.number(), lon: z.number(), radiusM: z.number().positive().default(200) }),
-    )
-    .query(() => notImplemented()),
+  near: publicProcedure.input(worksNearInput).query(({ input }) => worksNear(input)),
 });
