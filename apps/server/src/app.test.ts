@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { briefingAudioPath } from "@kip/shared/briefing";
 import { createApp } from "./app";
 import { createCallerFactory, createContext } from "./trpc/init";
 import { appRouter } from "./trpc/router";
@@ -23,6 +24,19 @@ describe("api", () => {
     const res = await app.request("/sns/street-manager", { method: "POST" });
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ ok: false, error: "malformed" });
+  });
+
+  test("GET /briefing/:nightId/audio reaches the briefing route, ahead of the web build", async () => {
+    // No briefing has been voiced, so the route's own 404 answers: not Hono's
+    // default 404, and not the web build's index.html.
+    const url = briefingAudioPath("9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d", "0".repeat(32));
+    const dir = await mkdtemp(join(tmpdir(), "kip-web-"));
+    await writeFile(join(dir, "index.html"), "<!doctype html><title>Kip</title>");
+    for (const api of [app, createApp({ webDist: dir })]) {
+      const res = await api.request(url);
+      expect(res.status).toBe(404);
+      expect(await res.json()).toEqual({ error: "Briefing audio not found" });
+    }
   });
 
   test("every feature router is registered", () => {
