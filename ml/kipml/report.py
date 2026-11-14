@@ -26,7 +26,7 @@ import numpy as np
 import torch
 
 from .audio import AUDIO, HOP, ML_ROOT, RATE, frame_db, read_wav, write_wav
-from .data import _crop, frames_to_samples, handling_labels, load_sources, make_example
+from .data import Clip, _crop, frames_to_samples, handling_labels, load_sources, make_example
 from .evaluate import load_model, si_sdr, spectral_gate
 from .infer import segments
 from .model import enhance, stft
@@ -79,7 +79,7 @@ def training_chart(run_dir: Path):
     for ax in axes:
         ax.set_ylim(bottom=0)
     fig.suptitle("HandlingNet training (held-out = mixtures it never trained on)", x=0.01, ha="left", fontsize=11.5, fontweight="bold")
-    fig.savefig(OUT / "training.png", dpi=160)
+    fig.savefig(OUT / "training.png", dpi=115)
     plt.close(fig)
 
 
@@ -143,7 +143,7 @@ def suppression_chart(stats):
     ax.legend(loc="upper center", ncol=2)
     fig.suptitle("Suppression on held-out mixtures: Kip model vs a spectral noise gate",
                  x=0.01, ha="left", fontsize=11.5, fontweight="bold")
-    fig.savefig(OUT / "suppression.png", dpi=160)
+    fig.savefig(OUT / "suppression.png", dpi=115)
     plt.close(fig)
 
 
@@ -184,7 +184,7 @@ def mixture_example(model, src):
     ax.annotate("threshold 0.5", (t[-1], 0.5), xytext=(-4, 4), textcoords="offset points", ha="right", color=INK2)
     ax.set_ylim(0, 1); ax.set_title("Handling probability per 10 ms (grey bands: where handling noise really is)")
     ax.set_xlabel("seconds")
-    fig.savefig(OUT / "mixture_waveforms.png", dpi=160); plt.close(fig)
+    fig.savefig(OUT / "mixture_waveforms.png", dpi=115); plt.close(fig)
 
     vmax = _spec_db(mix).max()
     fig, axes = plt.subplots(4, 1, figsize=(11, 8), sharex=True, constrained_layout=True)
@@ -194,17 +194,21 @@ def mixture_example(model, src):
     axes[-1].set_xlabel("seconds")
     fig.suptitle("Spectrograms on one colour scale (darker = louder)",
                  x=0.01, ha="left", fontsize=11.5, fontweight="bold")
-    fig.savefig(OUT / "mixture_spectrograms.png", dpi=160); plt.close(fig)
+    fig.savefig(OUT / "mixture_spectrograms.png", dpi=115); plt.close(fig)
     for name, y in (("mixture_input", mix), ("mixture_kip", out), ("mixture_gate", gate), ("mixture_true_background", bg)):
         write_wav(OUT / "audio" / f"{name}.wav", y)
     return {k: round(v, 2) for k, v in scores.items()}
 
 
-def real_take(model, path: Path):
+def real_take(model, path: Path, venue_floor_db):
     x = read_wav(path)
     out, prob = enhance(model, x)
     removed = x - out
-    segs = segments(prob, 0.5)
+    segs = segments(prob, 0.5, min_s=0.03)
+    clip = Clip(path.name, x, float(np.percentile(frame_db(x), 10)), venue_floor_db, True)
+    lab = handling_labels(x, clip)                      # the same rule training used
+    pred = prob[: len(lab)] > 0.5
+    drop = frame_db(x) - frame_db(out)
     fig, axes = plt.subplots(6, 1, figsize=(11, 10), sharex=True, constrained_layout=True,
                              gridspec_kw={"height_ratios": [1, 1, 1, 0.8, 1.3, 1.3]})
     lim = np.abs(x).max() * 1.05
@@ -213,20 +217,26 @@ def real_take(model, path: Path):
                                 (axes[2], removed, GATE, "What the model removed")):
         _envelope(ax, y, color); ax.set_ylim(-lim, lim); ax.set_title(title); ax.set_yticks([])
     ax = axes[3]
+    for s, e in segments(lab.astype(float), 0.5, min_s=0.0, gap_s=0.0):
+        ax.axvspan(s, e, color=GRID, linewidth=0)
     ax.plot(np.arange(len(prob)) * HOP / RATE, prob, color=MODEL, linewidth=1.5)
     ax.axhline(0.5, color=INK2, linewidth=0.8, linestyle=(0, (3, 3)))
-    ax.set_ylim(0, 1); ax.set_title(f"Handling probability: {len(segs)} events flagged, {sum(e - s for s, e in segs):.1f} s in total")
+    ax.set_ylim(0, 1)
+    ax.set_title(f"Handling probability (grey: louder than the venue, the training label): {len(segs)} events flagged")
     vmax = _spec_db(x).max()
     _spectrogram(axes[4], x, "Spectrogram before", vmax)
     _spectrogram(axes[5], out, "Spectrogram after", vmax)
     axes[-1].set_xlabel("seconds")
     fig.suptitle(f"{path.stem}: real phone-handling noise, before and after", x=0.01, ha="left", fontsize=11.5, fontweight="bold")
-    fig.savefig(OUT / f"real_{path.stem}.png", dpi=160); plt.close(fig)
+    fig.savefig(OUT / f"real_{path.stem}.png", dpi=115); plt.close(fig)
     write_wav(OUT / "audio" / f"{path.stem}_input.wav", x)
     write_wav(OUT / "audio" / f"{path.stem}_kip.wav", out)
-    reduction = float(np.mean(frame_db(x) - frame_db(out)))
-    return {"seconds": round(len(x) / RATE, 1), "flagged_events": len(segs), "flagged_s": round(sum(e - s for s, e in segs), 1),
-            "mean_energy_removed_db": round(reduction, 1)}
+    tp, fp, fn = int((pred & lab).sum()), int((pred & ~lab).sum()), int((~pred & lab).sum())
+    return {"seconds": round(len(x) / RATE, 1), "handling_s": round(lab.mean() * len(x) / RATE, 2),
+            "flagged_events": len(segs), "flagged_s": round(float(pred.mean()) * len(x) / RATE, 2),
+            "precision": round(tp / max(tp + fp, 1), 2), "recall": round(tp / max(tp + fn, 1), 2),
+            "removed_on_handling_db": round(float(drop[lab].mean()), 1) if lab.any() else None,
+            "removed_elsewhere_db": round(float(drop[~lab].mean()), 1)}
 
 
 def main(argv=None):
@@ -234,7 +244,10 @@ def main(argv=None):
     ap.add_argument("--checkpoint", default=str(ML_ROOT / "checkpoints" / "handling-poc.pt"))
     ap.add_argument("--run", help="training run dir (default: latest with metrics.json)")
     ap.add_argument("--n", type=int, default=150)
+    ap.add_argument("--name", default="handling-poc", help="report folder under ml/reports/")
     args = ap.parse_args(argv)
+    global OUT
+    OUT = ML_ROOT / "reports" / args.name
     (OUT / "audio").mkdir(parents=True, exist_ok=True)
     run = Path(args.run) if args.run else max((p.parent for p in (ML_ROOT / "runs").glob("*/metrics.json")), key=lambda p: p.name)
     model, src = load_model(args.checkpoint), load_sources()
@@ -242,21 +255,24 @@ def main(argv=None):
     stats = suppression_stats(model, src, args.n)
     suppression_chart(stats)
     example = mixture_example(model, src)
-    takes = {p.stem: real_take(model, p) for p in sorted((AUDIO / "ours").glob("*.wav"))
+    vf = src["handling"]["test"]["ours"][0].venue_floor_db
+    takes = {p.stem: real_take(model, p, vf) for p in sorted((AUDIO / "ours").glob("*.wav"))
              if any(t in p.name for t in ("sleeve_03", "pickup_01", "pocket_02"))}
     summary = {"run": run.name, **stats, "mixture_example_si_sdr_db": example, "real_takes": takes}
     (OUT / "summary.json").write_text(json.dumps(summary, indent=1))
     hist = json.load(open(run / "metrics.json"))["history"]
-    md = ["# HandlingNet proof of concept", "",
-          f"Trained {hist[-1]['step']} steps ({hist[-1]['secs'] // 60} min on an M1 Pro CPU). Every number below is on "
+    md = [f"# HandlingNet proof of concept ({args.name})", "",
+          f"Trained {hist[-1]['step']} steps in {hist[-1]['secs'] // 60} min. Every number below is on "
           "audio the model never trained on. Regenerate with `uv run python -m kipml.report`.", "",
           "| Metric | Kip model | Spectral gate |", "|---|---|---|",
           f"| SI-SDR improvement, median ({stats['mixtures']} mixtures) | {stats['si_sdr_improvement_db']['model']:+.1f} dB | {stats['si_sdr_improvement_db']['gate']:+.1f} dB |",
           f"| Energy removed on handling-noise frames | {stats['energy_removed_db']['model_handling']:.1f} dB | {stats['energy_removed_db']['gate_handling']:.1f} dB |",
           f"| Energy removed on background-only frames | {stats['energy_removed_db']['model_background']:.1f} dB | {stats['energy_removed_db']['gate_background']:.1f} dB |",
           f"| Handling-frame detection (precision / recall / F1) | {stats['detection']['precision']:.2f} / {stats['detection']['recall']:.2f} / {stats['detection']['f1']:.2f} | n/a |", "",
-          "Real held-out takes from the iPhone:", "", "| Take | Length | Events flagged | Flagged time | Energy removed |", "|---|---|---|---|---|"]
-    md += [f"| `{k}` | {v['seconds']} s | {v['flagged_events']} | {v['flagged_s']} s | {v['mean_energy_removed_db']} dB |" for k, v in takes.items()]
+          "Real held-out takes from the iPhone, scored against the training label rule (louder than the venue):", "",
+          "| Take | Length | Handling (label) | Flagged | Precision / recall | Removed on handling | Removed elsewhere |", "|---|---|---|---|---|---|---|"]
+    md += [f"| `{k}` | {v['seconds']} s | {v['handling_s']} s | {v['flagged_s']} s | {v['precision']} / {v['recall']} | "
+           f"{v['removed_on_handling_db']} dB | {v['removed_elsewhere_db']} dB |" for k, v in takes.items()]
     md += ["", "## Training", "", "![training](training.png)", "", "## Suppression compared", "", "![suppression](suppression.png)", "",
            "## A held-out mixture with ground truth", "", "![waveforms](mixture_waveforms.png)", "", "![spectrograms](mixture_spectrograms.png)", "",
            "## Real takes from the phone", ""] + [f"![{k}](real_{k}.png)\n" for k in takes] + [

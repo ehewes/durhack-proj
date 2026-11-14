@@ -4,6 +4,11 @@ Our own small model that removes phone-handling noise (sleeve, pocket, pillow, b
 spike clips before Gemini labels them. Plan and contracts: `docs/DOMAIN.md` (Noise
 classification), `docs/ARCHITECTURE.md` (ML row, `ml` lane), `docs/DECISIONS.md`. Issues: #85 to #92.
 
+## See it
+**[notebooks/handling_poc.ipynb](notebooks/handling_poc.ipynb)**: the data, training curves, comparison with a
+spectral noise gate, waveforms and spectrograms before and after, and real phone takes. GitHub renders it with every
+chart; to play the audio and run it yourself: `uv sync --group dev && uv run jupyter lab notebooks/handling_poc.ipynb`.
+
 ## Proof-of-concept model (`kipml/`)
 HandlingNet: a small STFT mask model (about 0.2M parameters) that removes phone-handling noise and
 flags the frames where it happens. Training mixes handling clips into background sounds on the fly
@@ -16,7 +21,7 @@ at -5 to +20 dB, so there is no mixture set on disk. Python 3.12 via `uv` (`ml/p
 | `uv run python -m kipml.infer <any recording>` | **Test on a device's recording** (m4a, wav, ...): writes `<name>.clean.wav` and prints the flagged moments |
 | `uv run python -m kipml.export` | Writes `models/handling-poc.onnx` and checks it matches PyTorch |
 | `uv run --group dev pytest` | Unit tests |
-| `uv run python -m kipml.report` | Charts, numbers and before/after audio in `reports/handling-poc/` ([REPORT.md](reports/handling-poc/REPORT.md)) |
+| `uv run python -m kipml.report [--name handling-gpu --checkpoint checkpoints/handling-gpu.pt]` | Charts, numbers and before/after audio in `reports/<name>/` |
 
 Labels: a frame is handling noise when the take is louder there than its own floor by 8 dB and, for our venue
 takes, louder than the venue (90th percentile of the private room tone plus 3 dB). The training target keeps the

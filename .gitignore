@@ -42,3 +42,4 @@ ml/audio/inbox/*
 !ml/audio/inbox/.gitkeep
 ml/audio/private/*
 !ml/audio/private/README.md
+ml/notebooks/output/
