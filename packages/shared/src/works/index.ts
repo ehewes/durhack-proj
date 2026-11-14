@@ -22,7 +22,27 @@ export function isInNewcastleArea(lat: number, lon: number): boolean {
   );
 }
 
-const position = z.tuple([z.number(), z.number()]);
+/** `[longitude, latitude]` in WGS84 degrees. Out-of-range or non-finite values are rejected. */
+const position = z
+  .tuple([z.number(), z.number()])
+  .refine(
+    ([lon, lat]) =>
+      Number.isFinite(lon) && Number.isFinite(lat) && Math.abs(lon) <= 180 && Math.abs(lat) <= 90,
+    { message: "coordinates out of range" },
+  );
+
+/** A closed ring: at least four positions, the last equal to the first. */
+const ring = z
+  .array(position)
+  .min(4)
+  .refine(
+    (points) => {
+      const first = points[0];
+      const last = points[points.length - 1];
+      return !!first && !!last && first[0] === last[0] && first[1] === last[1];
+    },
+    { message: "ring is not closed" },
+  );
 
 /** GeoJSON geometry. Coordinates are `[longitude, latitude]`. */
 export const workGeometry = z.discriminatedUnion("type", [
@@ -31,6 +51,7 @@ export const workGeometry = z.discriminatedUnion("type", [
     type: z.literal("LineString"),
     coordinates: z.array(position).min(2),
   }),
+  z.object({ type: z.literal("Polygon"), coordinates: z.array(ring).min(1) }),
 ]);
 
 export type WorkGeometry = z.infer<typeof workGeometry>;
@@ -71,33 +92,102 @@ export const workRecord = z.object({
 
 export type WorkRecord = z.infer<typeof workRecord>;
 
+/**
+ * A permit as read back from storage. The geometry is not trusted: it may be
+ * missing or malformed, and `classifyGeometry` decides which.
+ */
+export const storedWork = workRecord.extend({ geometry: z.unknown() });
+
+export type StoredWork = z.infer<typeof storedWork>;
+
+export type GeometryClass =
+  | { status: "ok"; geometry: WorkGeometry }
+  | { status: "absent" }
+  | { status: "malformed" };
+
+/** Absent (nothing stored) is told apart from malformed (stored, but not valid GeoJSON in range). */
+export function classifyGeometry(raw: unknown): GeometryClass {
+  if (raw === undefined || raw === null) return { status: "absent" };
+  const parsed = workGeometry.safeParse(raw);
+  return parsed.success ? { status: "ok", geometry: parsed.data } : { status: "malformed" };
+}
+
+/** Largest `works.near` radius, in metres. */
+export const MAX_RADIUS_M = 5000;
+
+/** Longest `works.near` date range, in days. */
+export const MAX_RANGE_DAYS = 92;
+
 /** `works.near`: permits whose geometry is within `radiusM` and whose dates overlap. */
 export const worksNearInput = z
   .object({
     lat: z.number().gte(-90).lte(90),
     lon: z.number().gte(-180).lte(180),
     /** Metres. 200 matches the Quiet Stay Score roadworks radius. */
-    radiusM: z.number().positive().default(200),
+    radiusM: z.number().positive().max(MAX_RADIUS_M).default(200),
     /** Inclusive Europe/London date, `YYYY-MM-DD`. */
     from: z.iso.date(),
     /** Inclusive Europe/London date, `YYYY-MM-DD`. */
     to: z.iso.date(),
   })
   .check((payload) => {
-    if (payload.value.from > payload.value.to) {
+    const { from, to } = payload.value;
+    if (from > to) {
       payload.issues.push({
         code: "custom",
         input: payload.value,
         message: "from is after to",
         path: ["from"],
       });
+    } else if ((Date.parse(to) - Date.parse(from)) / 86_400_000 >= MAX_RANGE_DAYS) {
+      payload.issues.push({
+        code: "custom",
+        input: payload.value,
+        message: `range is longer than ${MAX_RANGE_DAYS} days`,
+        path: ["to"],
+      });
     }
   });
 
 export type WorksNearInput = z.infer<typeof worksNearInput>;
 
+/** Whether the permit schedules work in the night window. Never a claim that noise was observed. */
+export const nightWorkStatus = z.enum(["scheduled", "not_scheduled", "unknown"]);
+
+export type NightWorkStatus = z.infer<typeof nightWorkStatus>;
+
+/**
+ * One permit for the roadworks map. A scheduled permit is not an observed noise event.
+ * `precision` is `extent` for a line or area and `point` when only a point is known.
+ */
+export const worksNearItem = z.object({
+  permitReferenceNumber: z.string().min(1),
+  workReferenceNumber: z.string().min(1),
+  streetName: z.string().min(1),
+  highwayAuthority: z.string().min(1),
+  workCategory: z.string().min(1),
+  workStatus: z.string().nullable(),
+  geometry: workGeometry,
+  precision: z.enum(["extent", "point"]),
+  proposedStart: clock,
+  proposedEnd: clock,
+  actualStart: z.string().nullable(),
+  actualEnd: z.string().nullable(),
+  nightWork: nightWorkStatus,
+  simulated: z.boolean(),
+});
+
+export type WorksNearItem = z.infer<typeof worksNearItem>;
+
+/** Permits found near the point but left off the map, by why. */
+export const worksNearOmitted = z.object({
+  absentGeometry: z.number().int().nonnegative(),
+  malformedGeometry: z.number().int().nonnegative(),
+});
+
 export const worksNearResult = z.object({
-  works: z.array(workRecord),
+  works: z.array(worksNearItem),
+  omitted: worksNearOmitted,
 });
 
 export type WorksNearResult = z.infer<typeof worksNearResult>;
@@ -206,4 +296,42 @@ export function overlapsDates(schedule: WorkSchedule, from: string, to: string):
   if (span.start > to) return false;
   if (span.end !== null && span.end < from) return false;
   return true;
+}
+
+/** Scheduled when the permit says night work; unknown when no proposed clock time says otherwise. */
+export function nightWorkStatusOf(work: {
+  nightWork: boolean;
+  proposedStart: { time: string | null };
+  proposedEnd: { time: string | null };
+}): NightWorkStatus {
+  if (work.nightWork) return "scheduled";
+  if (work.proposedStart.time || work.proposedEnd.time) return "not_scheduled";
+  return "unknown";
+}
+
+/** The map item for a stored permit, or why it has no usable geometry. */
+export function toWorksNearItem(
+  work: StoredWork,
+): { status: "ok"; item: WorksNearItem } | { status: "absent" | "malformed" } {
+  const geometry = classifyGeometry(work.geometry);
+  if (geometry.status !== "ok") return { status: geometry.status };
+  return {
+    status: "ok",
+    item: {
+      permitReferenceNumber: work.permitReferenceNumber,
+      workReferenceNumber: work.workReferenceNumber,
+      streetName: work.streetName,
+      highwayAuthority: work.highwayAuthority,
+      workCategory: work.workCategory,
+      workStatus: work.workStatus,
+      geometry: geometry.geometry,
+      precision: geometry.geometry.type === "Point" ? "point" : "extent",
+      proposedStart: work.proposedStart,
+      proposedEnd: work.proposedEnd,
+      actualStart: work.actualStart,
+      actualEnd: work.actualEnd,
+      nightWork: nightWorkStatusOf(work),
+      simulated: work.simulated,
+    },
+  };
 }
