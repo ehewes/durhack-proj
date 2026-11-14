@@ -1,12 +1,12 @@
-import { z } from "zod";
-import { notImplemented, publicProcedure, router, userProcedure } from "../../trpc/init";
+import { livePushInput } from "@kip/shared/live";
+import { publicProcedure, router, userProcedure } from "../../trpc/init";
+import { pushLiveSamples, streamLive } from "./service";
 
-// Stubs from docs/ARCHITECTURE.md (tRPC routers). The `live` feature fills them in.
+// `push` is the phone (it sends `x-kip-user`). `stream` is public so the
+// dashboard can subscribe without that id. One in-memory session feeds every viewer.
 export const liveRouter = router({
-  push: userProcedure
-    .input(z.object({ samples: z.array(z.tuple([z.number(), z.number()])) }))
-    .mutation(() => notImplemented()),
-  stream: publicProcedure.subscription(async function* () {
-    yield notImplemented();
+  push: userProcedure.input(livePushInput).mutation(({ input }) => pushLiveSamples(input)),
+  stream: publicProcedure.subscription(async function* ({ signal }) {
+    yield* streamLive(signal);
   }),
 });
