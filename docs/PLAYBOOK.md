@@ -101,6 +101,15 @@ Codex needs network for `gh`, `git push` and `entire trail`. To make it permanen
 
 Outside Conductor, copy `.env` into the new worktree yourself.
 
+### Cloud agents (Codex cloud, Cursor background agents, Claude Code on the web)
+1. Pick an issue without `needs:mac` from `./hq board`.
+2. Claim it for the agent: `./hq claim N --agent codex --workspace cloud-1` (one workspace name per
+   cloud agent, so the board shows who has what).
+3. Send the agent the issue URL with: "Work on #N following AGENTS.md. Start the PR description with
+   `Closes #N`."
+4. When the PR lands, review and ship it as usual: `./hq ship <PR>`. A `needs:keys` verify step is
+   yours to run locally.
+
 ## Review and merge
 - Every PR except `size:S` needs `review:pass` before `./hq ship`. `ship` only checks the label,
   so set it only after a real review.

@@ -198,6 +198,7 @@ disjoint paths. Each lane covers that feature's folder in `apps/mobile/src/featu
 | `city`, `night`, `attribution`, `labels`, `briefing`, `evidence`, `stays`, `works`, `live`, `account` | `*/features/<lane>/`, `packages/shared/src/<lane>/` |
 | `platform` | `apps/mobile/app/`, `apps/mobile/src/lib/`, `apps/mobile/modules/`, `apps/mobile/app.config.ts`, `apps/server/src/{trpc,integrations,db}/`, `apps/server/src/main.*.ts`, `apps/server/src/env.ts`, `packages/shared/src/domain/` |
 | `infra` | `infra/`, `Dockerfile` |
+| `demo` | `docs/demo/` (pitch, Devpost, demo clips, Entire evidence) |
 
 ## Contracts
 Merge in M0, before anyone branches. Agree the night upload schema in the first 30 minutes so
