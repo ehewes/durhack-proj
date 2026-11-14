@@ -5,6 +5,8 @@ spike clips before Gemini labels them. Plan and contracts: `docs/DOMAIN.md` (Noi
 classification), `docs/ARCHITECTURE.md` (ML row, `ml` lane), `docs/DECISIONS.md`. Issues: #85 to #92.
 
 ## See it
+**[MODEL.md](MODEL.md)**: how the model works, the theory behind it, and how it is measured.
+
 **[notebooks/handling_poc.ipynb](notebooks/handling_poc.ipynb)**: the data, training curves, comparison with a
 spectral noise gate, waveforms and spectrograms before and after, and real phone takes. GitHub renders it with every
 chart; to play the audio and run it yourself: `uv sync --group dev && uv run jupyter lab notebooks/handling_poc.ipynb`.
