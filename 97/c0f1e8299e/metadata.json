@@ -1,0 +1,49 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "97c0f1e8299e",
+  "strategy": "manual-commit",
+  "branch": "ehewes/77-devpost-readme",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "README.md",
+    "docs/demo/devpost.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/97/c0f1e8299e/0/metadata.json",
+      "transcript": "/97/c0f1e8299e/0/full.jsonl",
+      "compact_transcript": "/97/c0f1e8299e/0/transcript.jsonl",
+      "content_hash": "/97/c0f1e8299e/0/content_hash.txt",
+      "prompt": "/97/c0f1e8299e/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0,
+    "subagent_tokens": {
+      "input_tokens": 32,
+      "cache_creation_tokens": 289557,
+      "cache_read_tokens": 4987813,
+      "output_tokens": 22429,
+      "api_call_count": 16
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 4,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 4,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
