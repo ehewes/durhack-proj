@@ -31,28 +31,30 @@ export function DeleteEverything({ remove, disabled }: Props) {
   const [confirming, setConfirming] = useState(false);
   const busy = remove.isPending;
 
-  const cancel = () => {
-    setConfirming(false);
-    remove.reset();
-  };
-
   return (
     <Card>
       <Heading>{DELETE_HEADING}</Heading>
       <Text>{DELETE_BODY}</Text>
       <Text variant="caption">{DELETE_SOLANA}</Text>
+      {/* Stays after Cancel: a delete that stopped partway may have removed data and paused
+          uploads on the server, so the user should know it did not finish. */}
+      {remove.isError ? <Text>{DELETE_ERROR}</Text> : null}
       {confirming ? (
         <View style={[styles.confirm, { borderTopColor: colors.border }]}>
           <Heading>{DELETE_CONFIRM_TITLE}</Heading>
           <Text>{DELETE_CONFIRM_BODY}</Text>
           {busy ? <Text variant="caption">{DELETING}</Text> : null}
-          {remove.isError ? <Text>{DELETE_ERROR}</Text> : null}
           <Button
             label={DELETE_CONFIRM}
             onPress={() => remove.mutate()}
             disabled={busy || disabled}
           />
-          <Button label={DELETE_CANCEL} variant="secondary" onPress={cancel} disabled={busy} />
+          <Button
+            label={DELETE_CANCEL}
+            variant="secondary"
+            onPress={() => setConfirming(false)}
+            disabled={busy}
+          />
         </View>
       ) : (
         <Button

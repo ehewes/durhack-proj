@@ -114,7 +114,8 @@ export const DELETE_CONFIRM_BODY =
 export const DELETE_CONFIRM = "Yes, delete everything";
 export const DELETE_CANCEL = "Cancel";
 export const DELETING = "Deleting everything.";
-export const DELETE_ERROR = "Kip could not finish deleting. Try again.";
+export const DELETE_ERROR =
+  "Kip could not finish deleting. Some of your data may already be gone, and new nights may not save until a delete finishes. Try again.";
 export const DELETED_TITLE = "Everything is deleted";
 
 const counted = new Intl.NumberFormat("en-GB");
