@@ -1,31 +1,41 @@
 import { Button, Card, Screen, Text } from "@/lib/ui";
 import { AccountSettings } from "../components/AccountSettings";
-import { Onboarding } from "../components/Onboarding";
+import { ConsentGate } from "../components/ConsentGate";
 import { ACCOUNT_TITLE, LOAD_ERROR, LOADING, TRY_AGAIN } from "../copy";
 import { useAccount } from "../hooks/useAccount";
 
-/** The Account tab: onboarding until the user has made their consent choices, then settings. */
+/**
+ * The Account tab. ConsentGate shows onboarding until the user has made their consent choices,
+ * here and (once a route wraps the tabs in it) app-wide, so there is one onboarding.
+ */
 export function AccountScreen() {
+  return (
+    <ConsentGate>
+      <AccountTab />
+    </ConsentGate>
+  );
+}
+
+/** Settings once the user has answered; the gate lets errors through, so they show here. */
+function AccountTab() {
   const account = useAccount();
   return (
     <Screen>
-      {account.status === "loading" ? (
+      {account.status === "ready" ? (
+        <AccountSettings view={account.view} />
+      ) : (
         <>
           <Text variant="title">{ACCOUNT_TITLE}</Text>
-          <Text variant="caption">{LOADING}</Text>
+          {account.status === "error" ? (
+            <Card>
+              <Text>{LOAD_ERROR}</Text>
+              <Button label={TRY_AGAIN} onPress={account.retry} />
+            </Card>
+          ) : (
+            <Text variant="caption">{LOADING}</Text>
+          )}
         </>
-      ) : null}
-      {account.status === "error" ? (
-        <>
-          <Text variant="title">{ACCOUNT_TITLE}</Text>
-          <Card>
-            <Text>{LOAD_ERROR}</Text>
-            <Button label={TRY_AGAIN} onPress={account.retry} />
-          </Card>
-        </>
-      ) : null}
-      {account.status === "onboarding" ? <Onboarding savedProfile={account.view.profile} /> : null}
-      {account.status === "ready" ? <AccountSettings view={account.view} /> : null}
+      )}
     </Screen>
   );
 }
