@@ -45,6 +45,11 @@ the web build from inside the API container, then checks `https://kip.edenmatrix
 through Cloudflare. `DEPLOY_HOST` overrides the ssh host (default `ehewesagents`). The ssh user
 needs Docker and must own `/opt/kip`.
 
+A build whose image is unchanged (docs or `infra/` only) leaves the containers running. One that
+changes the image restarts the API, and the URL answers 502 for about a second, so deploy between
+demo steps, not during one. The first build on the host takes a few minutes; later ones reuse the
+cache.
+
 ### Settings and secrets
 On the host, edit `/opt/kip/.env`. It lists every server variable, commented out. Then rerun
 `deploy.sh`, or apply it in place:
