@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>bvyvyvcvg</task-id>
+<tool-use-id>toolu_01AiT4tCGjkQ63mzW5NC72QA</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-provo/e2aa2aa7-cfb9-44fc-9496-641f18a9c534/tasks/bvyvyvcvg.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the second deploy while probing the public health URL" completed (exit code 0)</summary>
+</task-notification>
