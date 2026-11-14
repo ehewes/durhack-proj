@@ -1,0 +1,12 @@
+{
+  "Type": "SubscriptionConfirmation",
+  "MessageId": "c3b5d1e0-7a14-4c2e-9f0a-1b2c3d4e5f60",
+  "Token": "simulated-confirmation-token",
+  "TopicArn": "arn:aws:sns:eu-west-2:287813576808:prod-permit-topic",
+  "Message": "You have chosen to subscribe to the topic arn:aws:sns:eu-west-2:287813576808:prod-permit-topic.\nTo confirm the subscription, visit the SubscribeURL included in this message.",
+  "SubscribeURL": "https://sns.eu-west-2.amazonaws.com/?Action=ConfirmSubscription&TopicArn=arn:aws:sns:eu-west-2:287813576808:prod-permit-topic&Token=simulated-confirmation-token",
+  "Timestamp": "2026-11-14T14:05:15.215Z",
+  "SignatureVersion": "1",
+  "Signature": "UNSIGNED",
+  "SigningCertURL": "https://sns.eu-west-2.amazonaws.com/SimpleNotificationService-a86cb10b4e1f29c941702d737128f7b6.pem"
+}

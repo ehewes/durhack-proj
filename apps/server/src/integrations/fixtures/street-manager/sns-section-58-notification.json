@@ -1,0 +1,21 @@
+{
+  "Type": "Notification",
+  "MessageId": "4f0d8a0e-6b1c-4d2a-8e7f-333333333333",
+  "TopicArn": "arn:aws:sns:eu-west-2:287813576808:prod-section-58-topic",
+  "Message": "{\"event_reference\":529772,\"event_type\":\"SECTION_58_CREATED\",\"object_data\":{\"section_58_reference_number\":\"S58-5990-46589070\",\"section_58_coordinates\":\"LINESTRING(501251.53 222574.64,501305.92 222506.65)\",\"section_58_status\":\"proposed\",\"start_date\":\"2020-06-10T14:30:00.000Z\",\"end_date\":\"2020-06-11T09:00:00.000Z\",\"section_58_duration\":\"six_months\",\"section_58_extent\":\"whole_road\",\"section_58_location_type\":\"Cycleway, Footpath\",\"status_change_date\":\"2020-06-10T14:30:00.000Z\",\"highway_authority_swa_code\":\"5990\",\"highway_authority\":\"CITY OF WESTMINSTER\",\"usrn\":\"8401426\",\"street_name\":\"Fake Street\",\"area_name\":\"MARYLEBONE HIGH STREET\",\"town\":\"London\"},\"event_time\":\"2020-06-04T08:00:00.000Z\",\"object_type\":\"SECTION_58\",\"object_reference\":\"S58-5990-46589070\",\"version\":1}",
+  "Timestamp": "2020-06-24T14:22:01.847Z",
+  "SignatureVersion": "1",
+  "Signature": "UNSIGNED",
+  "SigningCertURL": "https://sns.eu-west-2.amazonaws.com/SimpleNotificationService-a86cb10b4e1f29c941702d737128f7b6.pem",
+  "UnsubscribeURL": "https://sns.eu-west-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-2:287813576808:prod-permit-topic:simulated",
+  "MessageAttributes": {
+    "area": {
+      "Type": "String",
+      "Value": "MARYLEBONE HIGH STREET"
+    },
+    "ha_org": {
+      "Type": "String",
+      "Value": "5990"
+    }
+  }
+}
