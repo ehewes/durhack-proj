@@ -26,12 +26,12 @@ RUN bun install --frozen-lockfile --production --filter @kip/server
 
 FROM oven/bun:1.4-slim
 WORKDIR /app
-ENV NODE_ENV=production WEB_DIST=/app/web PORT=3000
+ENV NODE_ENV=production WEB_DIST=/app/web PORT=8080
 COPY --from=server-deps /app/node_modules node_modules
 COPY package.json tsconfig.base.json ./
 COPY packages/shared packages/shared
 COPY apps/server apps/server
 COPY --from=web /app/apps/mobile/dist web
 USER bun
-EXPOSE 3000
+EXPOSE 8080
 CMD ["bun", "apps/server/src/main.api.ts"]

@@ -69,7 +69,7 @@ Bun is the package manager and workspace tool everywhere, and the server runtime
 | App | React Native + TypeScript on Expo (SDK current at kick-off) with a dev client, Expo Router, TanStack Query + tRPC client | One codebase, two targets: iOS (the phone on the nightstand) and web (the demo dashboard). Needs an Apple developer account and the HealthKit entitlement |
 | HealthKit | `@kingstinct/react-native-healthkit` with its Expo config plugin | Reads the Watch's sleep stages, heart rate, HRV and respiratory rate after the night ends |
 | Audio | Local Expo Module `kip-audio` (Swift): AVAudioRecorder metering at 1 Hz, 10 s spike clips, on-device speech check (SoundAnalysis built-in classifier), background audio mode | No JS library does all of this reliably while locked; one small native module does |
-| Map | MapLibre with OpenStreetMap tiles: `@maplibre/maplibre-react-native` on iOS, `maplibre-gl` on web, behind one `Map` component split by `.native.tsx` / `.web.tsx` | |
+| Map | MapLibre with OpenStreetMap tiles: `@maplibre/maplibre-react-native` on iOS, `maplibre-gl` on web, behind one `MapView` component split by `.native.tsx` / `.web.tsx` | |
 | watchOS (stretch) | Native SwiftUI watch target: haptics, "something woke me", briefing playback | Only if Watch signing works in the first 2 hours |
 | API | TypeScript, tRPC v11 on Hono (`@hono/trpc-server`), Zod, SuperJSON | tRPC for every JSON call and the live subscription (SSE). Plain Hono routes only for binary clip upload, the Street Manager SNS endpoint, health check and the web build |
 | Worker | TypeScript, node-cron, same image as the API | Runs each feature's jobs |
@@ -80,7 +80,7 @@ Bun is the package manager and workspace tool everywhere, and the server runtime
 | Chain | Solana mainnet, Memo program only (no Anchor) | A memo costs a fraction of a penny |
 | Hosting | Vultr Cloud Compute (London), Vultr Container Registry, Caddy with an `<ip>.sslip.io` hostname | iOS requires HTTPS; no domain needed |
 | Infra | Terraform: `vultr/vultr`, `mongodb/mongodbatlas` (IP access list), Tiger Cloud provider; cloud-init via `templatefile()` | One command rebuilds the stack |
-| Quality | Biome (lint + format), `tsc` per package (typecheck), `bun test` | `./hq check` runs all three; CI runs them plus Terraform and Docker builds |
+| Quality | Biome (lint + format), `tsc` per package (typecheck; not `tsc -b`, whose declaration checks reject the tRPC client types), `bun test` | `./hq check` runs all three; CI runs them plus Terraform and Docker builds |
 | Process | Entire in the repo from the first commit | Records every agent session |
 
 `./hq check` runs the `check` commands in `hq.json`: `bun run lint`, `bun run typecheck`,
@@ -118,7 +118,9 @@ apps/
       lib/
         trpc.ts                   tRPC client, links, base URL
         ui/                       shared primitives (Button, Card, Text, theme)
-        map/                      Map.native.tsx, Map.web.tsx
+        map/                      Map.native.tsx, Map.web.tsx (TypeScript resolves the native one via
+                                  `moduleSuffixes`; Metro picks per platform)
+        user-id.ts                anonymous ID sent as `x-kip-user`, persisted on first launch
     modules/
       kip-audio/                  local Expo Module (Swift + TS bindings)
     app.config.ts                 plugins, permission strings, background modes
@@ -146,7 +148,7 @@ apps/
       db/
         tiger.ts, mongo.ts        clients; retry on boot
         migrations/               SQL, one file per change, timestamp-prefixed; applied on API boot
-        migrate.ts                migration runner (`bun run db:migrate`)
+        migrate.ts                migration runner (`bun run db:migrate`); checks TimescaleDB is installed
         indexes.ts                Mongo collections and indexes
 packages/
   shared/                         pure TypeScript, no IO; used by app and server
@@ -159,7 +161,7 @@ compose.yaml                      local TimescaleDB and MongoDB for development
 Dockerfile                        builds server + Expo web export into one image
 ```
 
-The app gets end-to-end types from `import type { AppRouter } from "@kip/server/trpc"`.
+The app gets end-to-end types from `import type { AppRouter } from "@kip/server/trpc/router"`.
 It never imports server runtime code.
 
 ### Features
@@ -312,7 +314,8 @@ Either of us deploys. The demo runs from tag `demo-v1`.
   only; 80 and 443 open for Caddy), a `vc2-2c-4gb` Ubuntu 24.04 instance in `lhr`, and the Atlas IP
   access list for the instance's IP. Keys come from variables, never the repo.
 - The `Dockerfile` builds the server and `expo export --platform web` into one image; the API
-  serves the web build.
+  serves the web build on port 8080 (`docker run -p 8080:8080 kip`). Without database URIs it
+  still boots, serving `/health`, the web build and the stubs. Steps: `infra/README.md`.
 - cloud-init installs Docker, writes `/opt/kip/.env`, a Caddyfile and a compose file, derives an
   `<ip>.sslip.io` hostname from instance metadata, logs in to the registry, then runs the API,
   the worker (same image, `main.worker.ts`) and Caddy.

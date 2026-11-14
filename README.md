@@ -28,7 +28,7 @@ Kip is a Bun monorepo: an Expo app (`apps/mobile`, iOS and web), a Hono + tRPC s
 bun install
 cp .env.example .env        # local defaults; never commit .env
 bun run db:up               # TimescaleDB + MongoDB in Docker
-bun run dev:api             # http://localhost:3000, migrates on boot
+bun run dev:api             # http://localhost:3000; migrates on boot, skips any database not configured
 bun run dev:worker          # cron jobs
 bun run dev:app             # Expo: press w for web, or use a dev-client build on iPhone
 ./hq check                  # lint, typecheck, tests (what CI runs)

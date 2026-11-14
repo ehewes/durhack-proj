@@ -16,7 +16,7 @@ write_files:
   - path: /opt/kip/Caddyfile
     content: |
       {$KIP_HOST} {
-        reverse_proxy api:3000
+        reverse_proxy api:8080
       }
   - path: /opt/kip/compose.yaml
     content: |
