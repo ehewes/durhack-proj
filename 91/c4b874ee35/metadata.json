@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "91c4b874ee35",
+  "strategy": "manual-commit",
+  "branch": "ehewes/kip-issues",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/ARCHITECTURE.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/91/c4b874ee35/0/metadata.json",
+      "transcript": "/91/c4b874ee35/0/full.jsonl",
+      "compact_transcript": "/91/c4b874ee35/0/transcript.jsonl",
+      "content_hash": "/91/c4b874ee35/0/content_hash.txt",
+      "prompt": "/91/c4b874ee35/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 64,
+    "cache_creation_tokens": 159814,
+    "cache_read_tokens": 10888663,
+    "output_tokens": 105771,
+    "api_call_count": 26,
+    "subagent_tokens": {
+      "input_tokens": 6,
+      "cache_creation_tokens": 57330,
+      "cache_read_tokens": 82998,
+      "output_tokens": 3149,
+      "api_call_count": 3
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 11,
+    "layers": {
+      "betterleaks": 4,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 2,
+      "key_context": 5,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
