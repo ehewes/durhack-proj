@@ -45,8 +45,11 @@ type LayerFilter = ComponentProps<typeof CircleLayer>["filter"];
 const CLUSTER_EASE_MS = 500;
 
 function OverlayLayer({ layer }: { layer: NativeLayerSpec }) {
+  // ShapeSource hands sourceID only to its direct children, and this wrapper is that child,
+  // so the layer names its source itself.
   const common = {
     id: layer.id,
+    sourceID: layer.source,
     aboveLayerID: layer.aboveLayerID,
     filter: layer.filter as LayerFilter,
   };
