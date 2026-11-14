@@ -161,3 +161,13 @@ mixtures, runs and checkpoints still stay out of git. No Git LFS, because its ho
 Entire's.
 **Consequences:** Every clone carries the audio library. ESC-50 is CC BY-NC, acceptable for the
 prototype only. Raw Voice Memos files stay in the ignored `ml/audio/inbox/`.
+
+## 2026-11-14: Recordings with other people's conversation stay out of git
+**Context:** The venue is loud. The room tone and the Watch's general audio are mostly other attendees
+talking, and the repo becomes public at submission.
+**Decision:** Every recording is scanned with Apple's sound classifier. Speech windows (confidence 0.5
+or more) are cut from committed clips; recordings that are mostly conversation go to the git-ignored
+`ml/audio/private/`, used for training on our machines or the Lium pod only, and deleted after the event.
+**Consequences:** The committed handling set is smaller (about 3 minutes). The data pipeline must cope
+with room tone being absent on a fresh clone, for example by taking the noise floor from each take's
+quiet start and end.
