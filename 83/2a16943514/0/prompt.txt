@@ -1,0 +1,89 @@
+Browse
+Home
+Projects
+Dispatches
+Current
+Overview
+Commits
+Sessions
+Memories
+Analytics
+
+ehewes
+Overview
+
+durhack-proj
+Star
+0
+Your changes. Your agents. Your rules.
+Track changes with Trails, automate reviews with Agents,
+and set merge requirements with Gates.
+Latest commit
+Could not load commit information.
+View all files
+D
+Activity
+0%
+0 commits
+
+No checkpoint activity in the selected period.
+README
+
+README is not available.
+A better experience starts with cookies. We use cookies to improve our product. Entirely your choice.
+
+(eval):39: command not found: compdef
+ellishewes@Elliss-MacBook-Pro new-conversation % entire enable
+  Selected agents: Claude Code, Codex, Cursor
+  Codex reads hooks from: /Users/ellishewes/conductor/repos/durhack-proj/.codex/hooks.json
+  Entire configured this worktree at: /Users/ellishewes/conductor/workspaces/durhack-proj/cayenne/.codex/hooks.json
+  Hooks in the current-worktree file will not run here.
+  Codex will read the discovered file above, not the current-worktree file above.
+  .codex/hooks.json is tracked — commit it and make sure the root worktree has it
+  (merge to the default branch, or check that branch out there).
+  ✓ Installed hooks
+  ✓ Configured project
+    .entire/settings.json
+✓ Importing Claude Code sessions... (session 1/1 · turn 4/4)
+Imported 4 turn(s) from 1 session(s) (0 already imported).
+
+Ready.
+
+Make sure to commit these files to your Git repo so Entire works across worktrees and clones:
+  .entire/settings.json
+  .entire/.gitignore
+  .claude/settings.json
+  .codex/hooks.json
+  .cursor/hooks.json
+✓ Committed them to ehewes/new-conversation
+
+Checkpoints will be uploaded when you push to origin.
+  They contain your agent transcripts. If that repo is public, anyone can read them.
+  Secret redaction is best effort, not bulletproof. Review with `entire checkpoint explain`.
+  To stop uploads: `entire configure --local --skip-push-sessions`
+  To upload only the checkpoints you choose: `entire configure --checkpoint-push-policy manual`
+  To use a separate private repo: `entire configure --local --checkpoint-remote github:<owner>/<repo>`
+ellishewes@Elliss-MacBook-Pro new-conversation %
+
+---
+
+continue
+
+---
+
+please hurry up too
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/uUUAsX/PR instructions.md (1.1 KB)
+</system_instruction>
+
+
+
+Create a PR .context/attachments/uUUAsX/PR instructions.md
+
+---
+
+no need for constant reviews

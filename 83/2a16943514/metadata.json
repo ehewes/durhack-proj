@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "832a16943514",
+  "strategy": "manual-commit",
+  "branch": "ehewes/new-conversation",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".conductor/settings.toml",
+    ".githooks/pre-commit",
+    ".github/workflows/ci.yml",
+    ".gitignore",
+    ".worktreeinclude"
+  ],
+  "sessions": [
+    {
+      "metadata": "/83/2a16943514/0/metadata.json",
+      "transcript": "/83/2a16943514/0/full.jsonl",
+      "compact_transcript": "/83/2a16943514/0/transcript.jsonl",
+      "content_hash": "/83/2a16943514/0/content_hash.txt",
+      "prompt": "/83/2a16943514/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2,
+    "cache_creation_tokens": 2338,
+    "cache_read_tokens": 299808,
+    "output_tokens": 788,
+    "api_call_count": 1
+  },
+  "redaction": {
+    "replacements": 6,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 2,
+      "key_context": 4,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
