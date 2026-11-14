@@ -228,6 +228,19 @@ describe("native map model", () => {
     expect(camera.request({ center: NEWCASTLE, zoom: 12 })).toBe(null);
   });
 
+  test("asking for A, B, then A again before the map settles sends it back to A", () => {
+    const camera = cameraTracker({ center: NEWCASTLE, zoom: 13 });
+    expect(camera.idle(NEWCASTLE, 13)).toBe(null);
+    expect(camera.request({ center: [-1.5, 55], zoom: 11 })).toEqual({
+      center: [-1.5, 55],
+      zoom: 11,
+    });
+    expect(camera.request({ center: NEWCASTLE, zoom: 13 })).toEqual({
+      center: NEWCASTLE,
+      zoom: 13,
+    });
+  });
+
   test("a camera asked for before the map settles still moves it", () => {
     const camera = cameraTracker({ center: NEWCASTLE, zoom: 13 });
     expect(camera.request({ center: [-1.5, 55], zoom: 11 })).toEqual({
