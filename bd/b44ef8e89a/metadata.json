@@ -1,0 +1,58 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "bdb44ef8e89a",
+  "strategy": "manual-commit",
+  "branch": "ehewes/new-conversation",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/ISSUE_TEMPLATE/task.yml",
+    ".github/pull_request_template.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "README.md",
+    "docs/ARCHITECTURE.md",
+    "docs/DECISIONS.md",
+    "docs/PLAYBOOK.md",
+    "docs/SPEC.md",
+    "docs/hack/BRIEF.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/bd/b44ef8e89a/0/metadata.json",
+      "transcript": "/bd/b44ef8e89a/0/full.jsonl",
+      "compact_transcript": "/bd/b44ef8e89a/0/transcript.jsonl",
+      "content_hash": "/bd/b44ef8e89a/0/content_hash.txt",
+      "prompt": "/bd/b44ef8e89a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 9064,
+    "cache_read_tokens": 1829058,
+    "output_tokens": 6687,
+    "api_call_count": 6,
+    "subagent_tokens": {
+      "input_tokens": 16,
+      "cache_creation_tokens": 52443,
+      "cache_read_tokens": 744994,
+      "output_tokens": 33641,
+      "api_call_count": 8
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 6,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 2,
+      "key_context": 4,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}

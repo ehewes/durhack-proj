@@ -1,0 +1,37 @@
+<task-notification>
+<task-id>a8bf4afe74c608fb2</task-id>
+<tool-use-id>toolu_013FWE7VFjiCfxqsoD4GjMit</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-cayenne/75ebc4d6-b1a3-4b5e-abb6-240a50b09726/tasks/a8bf4afe74c608fb2.output</output-file>
+<status>completed</status>
+<summary>Agent "Write agent rules, skills, docs" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I've created all the files and the symlink. I didn't touch any other files and ran no git add, commit or push. I checked the Entire, `gh` and `claude` flags I used against their `--help` output; every command I documented exists.
+
+| File | Lines |
+|---|---|
+| `AGENTS.md` | 66 (under the 90 limit) |
+| `CLAUDE.md` | 10 |
+| `README.md` | 22 |
+| `.agents/skills/hq-work/SKILL.md` | 60 |
+| `.agents/skills/hq-plan/SKILL.md` | 49 |
+| `.agents/skills/hq-review/SKILL.md` | 29 |
+| `.agents/skills/hq-ship/SKILL.md` | 22 |
+| `docs/hack/BRIEF.md` | 46 |
+| `docs/SPEC.md` | 24 |
+| `docs/ARCHITECTURE.md` | 46 |
+| `docs/DECISIONS.md` | 45 |
+| `docs/PLAYBOOK.md` | 170 |
+| `.github/ISSUE_TEMPLATE/task.yml` | 51 |
+| `.github/ISSUE_TEMPLATE/config.yml` | 1 |
+| `.github/pull_request_template.md` | 18 |
+
+`.claude/skills` now points to `../.agents/skills` and lists all four skills. There are no em or en dashes anywhere. The skill frontmatter and both YAML templates parse. The issue form labels are exactly the seven headings.
+
+Things I decided or wasn't sure about:
+1. **Push vs rebase:** the rules ban force-pushing already-pushed commits, but rebasing a pushed branch needs one. I added "if already pushed, `git merge origin/main` instead". Check this against how `hq pr` pushes.
+2. **Follow-up issues:** issues an agent opens for out-of-scope work get `status:needs-human`, so a human sorts them before they reach the ready queue.
+3. **Overnight limits:** `claude --help` doesn't list `--max-turns`, so the overnight example only sets `--max-budget-usd`.
+4. **Invite command:** kick-off step 1 includes `gh api -X PUT .../collaborators/&lt;login&gt;` to invite the teammate.
+5. **Bracketed text:** "files/dirs this issue may touch", the `Blocked by` format and "commands or manual steps" are field descriptions, not part of the labels.</result>
+<usage><subagent_tokens>111767</subagent_tokens><tool_uses>31</tool_uses><duration_ms>473742</duration_ms></usage>
+</task-notification>
