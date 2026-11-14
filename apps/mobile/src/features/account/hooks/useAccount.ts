@@ -1,7 +1,8 @@
-import type { AccountView, ConsentChoices, DeleteEverythingResult } from "@kip/shared/account";
+import type { ConsentChoices, DeleteEverythingResult } from "@kip/shared/account";
 import type { TravellerProfile } from "@kip/shared/domain";
 import { useMutation, useMutationState, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTRPC, useTRPCClient } from "@/lib/trpc";
+import { accountCache } from "../cache";
 import {
   type AccountState,
   accountState,
@@ -45,18 +46,15 @@ export function useHasConsent(type: ConsentType): boolean {
   return useConsent().consent[type];
 }
 
-function useWriteMe(): (view: AccountView) => void {
+function useAccountCache() {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
-  return (view) => {
-    queryClient.setQueryData(trpc.account.me.queryKey(), view);
-  };
+  return accountCache(useQueryClient(), trpc.account.me.queryKey());
 }
 
 /** Saves the onboarding answers: the profile, then consent (see `saveOnboarding`). */
 export function useFinishOnboarding() {
   const client = useTRPCClient();
-  const writeMe = useWriteMe();
+  const cache = useAccountCache();
   return useMutation({
     mutationFn: (answers: { consent: ConsentChoices; profile: TravellerProfile | null }) =>
       saveOnboarding(
@@ -66,20 +64,23 @@ export function useFinishOnboarding() {
         },
         answers,
       ),
-    onSuccess: writeMe,
+    onSuccess: cache.write,
   });
 }
 
+// The Account tab allows one account write at a time (AccountSettings), so responses cannot
+// arrive out of order, and nothing is saved while a delete runs.
+
 export function useSaveConsent() {
   const trpc = useTRPC();
-  const writeMe = useWriteMe();
-  return useMutation(trpc.account.setConsent.mutationOptions({ onSuccess: writeMe }));
+  const cache = useAccountCache();
+  return useMutation(trpc.account.setConsent.mutationOptions({ onSuccess: cache.write }));
 }
 
 export function useSaveProfile() {
   const trpc = useTRPC();
-  const writeMe = useWriteMe();
-  return useMutation(trpc.account.setProfile.mutationOptions({ onSuccess: writeMe }));
+  const cache = useAccountCache();
+  return useMutation(trpc.account.setProfile.mutationOptions({ onSuccess: cache.write }));
 }
 
 /**
@@ -88,15 +89,17 @@ export function useSaveProfile() {
  */
 export function useDeleteEverything() {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
+  const cache = useAccountCache();
   return useMutation(
     trpc.account.deleteEverything.mutationOptions({
       onSuccess: () => {
-        void queryClient.resetQueries();
+        void cache.forget();
       },
     }),
   );
 }
+
+export type DeleteMutation = ReturnType<typeof useDeleteEverything>;
 
 /** The latest successful "delete everything", for the notice above onboarding. */
 export function useLastDeletion(): DeleteEverythingResult | undefined {

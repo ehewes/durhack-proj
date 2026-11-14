@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { type AccountView, accountView, NO_CONSENT } from "@kip/shared/account";
 import { bannedWording, SAY_RELATIVE_DB, TRAVELLER_PROFILES } from "@kip/shared/domain";
+import { QueryClient } from "@tanstack/react-query";
+import { accountCache } from "./cache";
 import {
   accountState,
   answer,
@@ -176,5 +178,41 @@ describe("deletion summary", () => {
     expect(deletionSummary({ users: 0, nights: 0, noiseRows: 0, vitalRows: 0, stageRows: 0 })).toBe(
       "Kip had nothing stored for you.",
     );
+  });
+});
+
+describe("account cache", () => {
+  const ME = [["account", "me"], { type: "query" }];
+  // No garbage-collection timers, so the test process can exit.
+  const newClient = () => new QueryClient({ defaultOptions: { queries: { gcTime: Infinity } } });
+
+  test("a fetch that started before a save cannot bring back the old answers", async () => {
+    const client = newClient();
+    client.setQueryData(ME, answered);
+    let arrive: (view: AccountView) => void = noop;
+    const earlier = client.fetchQuery({
+      queryKey: ME,
+      staleTime: 0,
+      queryFn: () =>
+        new Promise<AccountView>((resolve) => {
+          arrive = resolve;
+        }),
+    });
+    const revoked = { ...answered, consent: { microphone: false, health: false, location: true } };
+    await accountCache(client, ME).write(revoked);
+    arrive(answered);
+    await earlier.catch(noop);
+    expect(client.getQueryData(ME)).toEqual(revoked);
+    client.clear();
+  });
+
+  test("after a delete, nothing cached for the old user is left", async () => {
+    const client = newClient();
+    client.setQueryData(ME, answered);
+    client.setQueryData([["night", "list"], { type: "query" }], [{ nightId: "n1" }]);
+    await accountCache(client, ME).forget();
+    expect(client.getQueryData(ME)).toBeUndefined();
+    expect(client.getQueryData([["night", "list"], { type: "query" }])).toBeUndefined();
+    client.clear();
   });
 });

@@ -13,17 +13,22 @@ import {
   DELETE_SOLANA,
   DELETING,
 } from "../copy";
-import { useDeleteEverything } from "../hooks/useAccount";
+import type { DeleteMutation } from "../hooks/useAccount";
 import { Heading } from "./Heading";
+
+type Props = {
+  remove: DeleteMutation;
+  /** True while another account change saves: the delete waits for it */
+  disabled: boolean;
+};
 
 /**
  * "Delete everything" behind a confirmation step. The step is inline rather than an Alert,
  * which the web build cannot show.
  */
-export function DeleteEverything() {
+export function DeleteEverything({ remove, disabled }: Props) {
   const colors = useColors();
   const [confirming, setConfirming] = useState(false);
-  const remove = useDeleteEverything();
   const busy = remove.isPending;
 
   const cancel = () => {
@@ -42,11 +47,20 @@ export function DeleteEverything() {
           <Text>{DELETE_CONFIRM_BODY}</Text>
           {busy ? <Text variant="caption">{DELETING}</Text> : null}
           {remove.isError ? <Text>{DELETE_ERROR}</Text> : null}
-          <Button label={DELETE_CONFIRM} onPress={() => remove.mutate()} disabled={busy} />
+          <Button
+            label={DELETE_CONFIRM}
+            onPress={() => remove.mutate()}
+            disabled={busy || disabled}
+          />
           <Button label={DELETE_CANCEL} variant="secondary" onPress={cancel} disabled={busy} />
         </View>
       ) : (
-        <Button label={DELETE_BUTTON} variant="secondary" onPress={() => setConfirming(true)} />
+        <Button
+          label={DELETE_BUTTON}
+          variant="secondary"
+          onPress={() => setConfirming(true)}
+          disabled={disabled}
+        />
       )}
     </Card>
   );
