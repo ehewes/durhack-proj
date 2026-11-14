@@ -57,3 +57,15 @@ test("accepts a live-mode night without sleep data", () => {
   });
   expect(result.success).toBe(true);
 });
+
+test("event label slots accept handling", () => {
+  const timeline = nightTimeline.parse(nightTimelineFixture);
+  const event = timeline.events[0];
+  if (!event) throw new Error("fixture has no events");
+  const withHandling = {
+    ...timeline,
+    events: [{ ...event, label: "handling", labelSources: { gemini: "handling", scribe: null } }],
+  };
+  expect(nightTimeline.safeParse(withHandling).success).toBe(true);
+  expect(nightSummary.shape.labelCounts.safeParse({ handling: 2 }).success).toBe(true);
+});
