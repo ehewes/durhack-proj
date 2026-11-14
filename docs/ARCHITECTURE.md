@@ -149,6 +149,7 @@ packages/
                                   score weights, wording strings, each with tests
 infra/                            Terraform, cloud-init.yaml.tftpl, Caddyfile
 ml/                               handling-noise filter: data scripts, model, training, ONNX export (Python, uv)
+  audio/                          committed audio library, 16 kHz mono WAV: ours/, online/, synthetic/, generated/ (licences in SOURCES.md)
   models/handling-v1.onnx         the exported model the API loads (small, committed)
 Dockerfile                        builds server + Expo web export into one image
 ```
