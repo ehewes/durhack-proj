@@ -86,7 +86,7 @@ Every variable is optional in development. Where to get each one: [docs/ARCHITEC
 | `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID` | The briefing voice. `briefing.get` fails without both. `ELEVENLABS_VOICE_ID` is not in `.env.example` yet (#144) |
 | `EXPO_PUBLIC_API_URL` | Where the app finds the API. On an iPhone, use your Mac's LAN IP, not `localhost` |
 | `EXPO_PUBLIC_MAPBOX_TOKEN` | Web map tiles: a public `pk.` token. iOS uses MapLibre and does not read it |
-| `SOLANA_RPC_URL`, `SOLANA_KEYPAIR` | Nothing yet: Solana anchoring is planned (#71) |
+| `SOLANA_RPC_URL`, `SOLANA_KEYPAIR` | The Solana Memo client: a mainnet RPC URL and a small funded keypair. Nothing calls it yet; anchoring is planned (#71) |
 | `STREET_MANAGER_TOPIC_ARN` | Nothing yet: the SNS route accepts all three official Street Manager topics (#144) |
 | `VULTR_API_KEY`, `MONGODB_ATLAS_*`, `TF_VAR_*` | Terraform only: [infra/README.md](infra/README.md) |
 

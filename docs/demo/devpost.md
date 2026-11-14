@@ -1,7 +1,7 @@
 # Kip: Devpost submission
 
 The text for Kip's Devpost page, one section per Devpost field. It was checked against `main` at
-commit `d18be9b` (2026-11-14). Anything not merged there is marked **planned**, with its issue or
+commit `de073c7` (2026-11-14). Anything not merged there is marked **planned**, with its issue or
 PR. Simulated data is labelled simulated, and the wording follows `docs/DOMAIN.md`.
 
 ## Before you submit (Ellis and Nick)
@@ -14,20 +14,19 @@ Each item is still open. Tick it, or cut the claim it supports.
 - [ ] **TODO:** Add the backup demo video link (#80).
 - [ ] **TODO:** Make the repository public after reviewing the Entire transcripts (#78). It is
       private today, so judges cannot open the code link yet.
-- [ ] **TODO:** Confirm the hosted databases (#8). Local runs use Docker containers, and the
-      MongoDB Atlas and Tiger Data prizes ask for the hosted services.
-- [ ] **TODO:** Decide the Solana entry. The Memo client is an open PR (#109) and anchoring is
-      blocked (#71, #73). If neither merges, leave Solana off the prize list.
+- [ ] **TODO:** Enter only Best Use of MongoDB Atlas on Devpost. Each team may enter one sponsor
+      track (confirmed 2026-11-14, `docs/DECISIONS.md`).
+- [ ] **TODO:** Confirm the data lives in a MongoDB Atlas cluster (#8). It is our only prize
+      entry, and local runs use a Docker container.
+- [ ] **TODO:** Decide how much of the MongoDB fallback to build before the freeze (#149): the
+      time series in MongoDB time series collections, and the hotel ranking as the centrepiece.
 - [ ] **TODO:** Backfill 30 nights of Observatory history (#33). Until then every sensor reads
       "not enough data". On 2026-11-14 the only live Sound sensor sat 4.25 km from the city
       centre, outside the 3 km circle the worker reads, so check which noise sensors report.
-- [ ] **TODO:** Record a real night (#49) or import one from a Health export (#48). The Night tab
-      shows a simulated night until then.
+- [ ] **TODO:** Import a night from a Health export (#48) for demo step 4. Nobody sleeps near an
+      Observatory sensor during the event (`docs/DECISIONS.md`), and the Night tab shows a
+      simulated night until a real one is stored.
 - [ ] **TODO:** Add a source link for the Bewick Court story.
-- [ ] **TODO:** Add the Entire numbers from #78: sessions, Trails, `entire graph stats`, token
-      savings.
-- [ ] **TODO:** Check whether we may enter more than one prize track (#9). If only one, enter
-      MongoDB Atlas (`docs/DECISIONS.md`).
 - [ ] **TODO:** Devpost does not render Mermaid. Export the diagram under "How we built it" as an
       image for the gallery.
 
@@ -71,7 +70,9 @@ followed a spike", because one night is too few for a percentage. It claims a li
   for. It counts the wake-ups that followed a spike against the random baseline. The Night tab
   draws the stages, the noise with its spikes, and the wake-ups.
 - Planned: recording on the phone while it is locked (#38, #59, #60), reading HealthKit (#39),
-  uploading the night (#40), and wake-up marks on the timeline (#43, open PR #137).
+  uploading the night (#40), and wake-up marks on the timeline (#43, open PR #137). Nobody sleeps
+  near an Observatory sensor during the event, so the demo night will be imported from a Health
+  export (#48).
 
 **Morning briefing.** A short spoken summary when you wake, such as "Two wake-ups followed
 drilling at 06:41, outside the council's recommended hours."
@@ -109,10 +110,14 @@ estimate of a hotel's surroundings, not of a room, with its sources one tap away
   map (#68, #113). Live permits need the open data registration (#8) and a public HTTPS endpoint
   (#74).
 
-**Evidence log.** Planned: hash each night's log with SHA-256 and write the hash to Solana mainnet
-with the Memo program, then show a tamper check on stage (#71, #73, open PR #109). A memo proves
-when the log existed, not that the noise happened. Gemini will draft the out-of-hours report for
-the council (#72).
+**Evidence log.** Each night's log, hashed with SHA-256 and written to Solana mainnet with the
+Memo program, then a tamper check on stage. A memo proves when the log existed, not that the noise
+happened.
+- Works today: a Memo client that writes a memo transaction and reads it back by signature, with
+  no Anchor (#109). It is tested against a mocked RPC and has not yet sent a transaction on
+  mainnet.
+- Planned: hashing and anchoring each night's log (#71), the tamper check (#73), and Gemini's
+  draft of the out-of-hours report for the council (#72).
 
 **Privacy.** Sleep and heart data are special-category health data under UK GDPR.
 - Works today, in the API: consent per data type (microphone, HealthKit, location), a traveller
@@ -139,7 +144,7 @@ finds and removes that handling noise.
 | Observatory noise, NO2 and PM2.5 | Real, pulled every 5 minutes from the Urban Observatory API | `apps/server/src/features/city/` |
 | City estimate per sensor | Real calculation; "not enough data" until a sensor has 30 nights (backfill: #33) | `sensor_lnight_daily` in Tiger Data |
 | Council hours and bank holidays | Real: Newcastle City Council's recommended hours, England bank holidays from gov.uk | `packages/shared/src/domain/` |
-| Night on the Night tab | **Simulated**, labelled "Simulated night." on screen, until a real night is uploaded (#49) | `apps/mobile/src/features/night/data/fixture.ts` |
+| Night on the Night tab | **Simulated**, labelled "Simulated night." on screen, until a real night is stored, such as one imported from a Health export (#48) | `apps/mobile/src/features/night/data/fixture.ts` |
 | Demo nights in tests | **Simulated** fixtures, which disagree on which wake-ups are linked (#135) | `packages/shared/src/night/fixtures/` |
 | Live dashboard | Real when the API is running. A development build that cannot reach the API plays a short **simulated** stream under a "Simulated stream" banner | `apps/mobile/src/features/live/` |
 | Labels on live spikes | `uncertain` until live labelling lands (#55). The "construction" label appears only in the simulated stream | |
@@ -192,7 +197,8 @@ flowchart LR
   class ios,osm,solana,model planned
 ```
 
-Dashed: planned, not on `main` yet.
+Dashed: planned. Nothing on `main` uses these yet, although the OpenStreetMap and Solana clients
+exist.
 
 - **Stack.** A Bun monorepo in TypeScript. One Expo (React Native) codebase builds the iPhone app
   and the web dashboard. The API is tRPC on Hono, and a node-cron worker runs from the same Docker
@@ -246,7 +252,8 @@ Dashed: planned, not on `main` yet.
 2. A real night end to end: the recorder (#38, #59, #60, #61), HealthKit (#39), upload (#40) and
    clip labels (#44).
 3. The city map: backfill (#33) and shading (#35, #36).
-4. Quiet Stays (#62, #63, #64), the evidence log on Solana (#71, #73) and the deploy (#74).
+4. Quiet Stays as the centre of our MongoDB entry (#62, #63, #64, #149), the evidence log on
+   Solana (#71, #73) and the deploy (#74).
 5. The business: affiliate commission at launch, Verified Quiet in year one (hotels pay to replace
    the estimate with measured, room-by-room data), and area-level data licensing for councils and
    developers later. Renters choosing a flat may be a bigger market than hotel guests; that is a
@@ -255,8 +262,8 @@ Dashed: planned, not on `main` yet.
 ## Built with
 bun, typescript, react-native, expo, expo-router, tanstack-query, trpc, hono, zod, timescaledb,
 tiger-data, mongodb, gemini, elevenlabs, mapbox, maplibre, openstreetmap, urban-observatory,
-street-manager, aws-sns, pytorch, onnx, python, uv, lium, docker, caddy, terraform, vultr,
-github-actions, biome, entire, claude-code, cursor, codex
+street-manager, aws-sns, solana, pytorch, onnx, python, uv, lium, docker, caddy, terraform,
+vultr, github-actions, biome, entire, claude-code, cursor, codex
 
 ## Try it out
 - Code: https://github.com/ehewes/durhack-proj (private until the transcripts are reviewed; see
@@ -266,10 +273,32 @@ github-actions, biome, entire, claude-code, cursor, codex
 - **TODO:** backup video (#80)
 
 ## Prize tracks
-What each sponsor does in Kip today and what is planned. The prize table is in
-`docs/hack/BRIEF.md`.
+Each team may enter one sponsor track (confirmed 2026-11-14), so Kip enters **Best Use of MongoDB
+Atlas** (`docs/DECISIONS.md`). The other sponsors' technology is still part of Kip. For every
+track in the prize table in `docs/hack/BRIEF.md`, here is what Kip uses today and what is planned.
 
-### Best Use of ElevenLabs
+### Our entry: Best Use of MongoDB Atlas
+Used today:
+- Kip's documents, with collections and indexes ensured on every API boot: users with their
+  consent and profile (#130), one summary per night (#107), Observatory sensors with their 30-night
+  Lnight and indicative estimate (#119), and Street Manager permits (#106). Sensors, hotels,
+  venues and works carry `2dsphere` indexes.
+- Geo queries: `works.near` finds permits within a radius with `$near` on the works `2dsphere`
+  index (#106).
+- One action deletes everything a user has, in MongoDB and in Tiger Data (#130).
+
+Planned:
+- The hotel ranking pipeline: `$geoNear` on hotels, then `$lookup` with `$geoWithin` into sensors,
+  works and venues, weighted by profile (#63), over OpenStreetMap hotels and venues (#62).
+- The MongoDB fallback in `docs/DECISIONS.md`: the time series in MongoDB time series collections,
+  and the hotel ranking as the centrepiece. How much of it lands before the freeze is still open
+  (#149).
+- **TODO:** confirm the data lives in an Atlas cluster (#8); local runs use the `mongo:8` Docker
+  image.
+
+### Not entered: the other sponsor tracks
+
+#### Best Use of ElevenLabs
 Used today:
 - The morning briefing's voice: the API sends Gemini's briefing text to ElevenLabs text to speech
   (`eleven_multilingual_v2`) and keeps the mp3 in memory for that night (#134).
@@ -283,7 +312,7 @@ Planned:
   (#50). This stops a user's own snoring being blamed on the building site.
 - The demo's drilling and siren clips, made with Sound Effects (#58).
 
-### Best Use of Gemini API
+#### Best Use of Gemini API
 Used today:
 - Gemini writes the morning briefing (`gemini-3.5-flash`, JSON output, a paid-tier key) within
   40 words and Kip's wording rules; drafts that break them are rejected (#134).
@@ -295,7 +324,7 @@ Planned:
   the demo (#55).
 - Drafting the out-of-hours report for the council (#72).
 
-### Best Use of Entire
+#### Best Use of Entire
 Used today:
 - Sessions: agent sessions are saved as checkpoints on the `entire/checkpoints/v1` branch, and
   squash merges keep their `Entire-Checkpoint` trailers, so `entire why <file>:<line>` can lead
@@ -314,17 +343,18 @@ Planned:
   `entire dispatch --local`, and the token savings from `entire session tokens`.
   **TODO:** add the numbers here.
 
-### Best Use of Solana
-Used today: nothing on `main` yet.
+#### Best Use of Solana
+Used today:
+- A Memo client that writes a memo transaction to mainnet and reads it back by signature, over
+  plain JSON-RPC with no Anchor (#109). It is tested against a mocked RPC and has not yet sent a
+  transaction on mainnet.
 
 Planned:
-- The Memo client for mainnet (open PR #109).
 - Each night's log serialised canonically, hashed with SHA-256 and written to mainnet with the
-  Memo program, with no Anchor (#71). Then the tamper check on stage: edit a log, re-hash it and
-  show it no longer matches its memo (#73). A memo proves when the log existed, not that the noise
-  happened.
+  Memo program (#71). Then the tamper check on stage: edit a log, re-hash it and show it no longer
+  matches its memo (#73). A memo proves when the log existed, not that the noise happened.
 
-### Best Use of Tiger Data
+#### Best Use of Tiger Data
 Used today:
 - Every timestamped value: Observatory readings in the `sensor_readings` hypertable, written every
   5 minutes (#105), and each night's relative dB, sleep stages and vitals (#107).
@@ -335,10 +365,11 @@ Used today:
 - Deleting a user removes their night series from Tiger Data as well as MongoDB (#130).
 
 Planned:
-- The 30-night backfill (#33). **TODO:** confirm the Tiger Cloud service (#8); local runs use the
-  TimescaleDB Docker image.
+- The 30-night backfill (#33). If the MongoDB fallback moves the time series (#149), update this
+  section. **TODO:** confirm the Tiger Cloud service (#8); local runs use the TimescaleDB Docker
+  image.
 
-### Best Use of Vultr
+#### Best Use of Vultr
 Used today:
 - Terraform in `infra/` describes the server: an SSH key, a private Container Registry, a firewall
   group (SSH from the admin IP only, 80 and 443 for Caddy), a reserved IPv4, a `vc2-2c-4gb`
@@ -353,20 +384,6 @@ Planned:
   `terraform apply -replace=vultr_instance.api` while the data stays put (#74). Nothing is
   deployed yet.
 
-### DEV Writing Challenge
-Planned after submission: a DEV post about building Kip with parallel agents (#79).
-
-### Best Use of MongoDB Atlas
-Used today:
-- Kip's documents, with collections and indexes ensured on every API boot: users with their
-  consent and profile (#130), one summary per night (#107), Observatory sensors with their 30-night
-  Lnight and indicative estimate (#119), and Street Manager permits (#106). Sensors, hotels,
-  venues and works carry `2dsphere` indexes.
-- Geo queries: `works.near` finds permits within a radius with `$near` on the works `2dsphere`
-  index (#106).
-
-Planned:
-- The hotel ranking pipeline: `$geoNear` on hotels, then `$lookup` with `$geoWithin` into sensors,
-  works and venues, weighted by profile (#63), over OpenStreetMap hotels and venues (#62).
-- **TODO:** confirm the data lives in an Atlas cluster (#8); local runs use the `mongo:8` Docker
-  image.
+#### DEV Writing Challenge
+Planned after submission: a DEV post about building Kip with parallel agents (#79). **TODO:**
+check whether the one-track limit covers it.
