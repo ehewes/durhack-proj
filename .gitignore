@@ -28,3 +28,6 @@ apps/mobile/android/
 *.tfstate.*
 *.tfvars
 !*.tfvars.example
+
+# Source folders named lib/ are code, even if a global gitignore says otherwise
+!**/src/lib/
