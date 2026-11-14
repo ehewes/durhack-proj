@@ -73,7 +73,10 @@ export function createBriefingService(deps: BriefingDeps, cache: BriefingCache =
       const fingerprint = JSON.stringify(facts);
       const cached = cache.read(nightId);
       if (cached && cached.userId === userId && cached.fingerprint === fingerprint) {
-        return briefingGetOutput.parse({ text: cached.text, audioUrl: briefingAudioPath(nightId) });
+        return briefingGetOutput.parse({
+          text: cached.text,
+          audioUrl: briefingAudioPath(nightId, cached.token),
+        });
       }
 
       const text = await writtenBriefing(facts, deps.write);
@@ -86,8 +89,9 @@ export function createBriefingService(deps: BriefingDeps, cache: BriefingCache =
       }
       if (audio.byteLength === 0) throw new BriefingAudioError();
 
-      cache.write(nightId, { userId, fingerprint, text, audio });
-      return briefingGetOutput.parse({ text, audioUrl: briefingAudioPath(nightId) });
+      const token = crypto.randomUUID().replaceAll("-", "");
+      cache.write(nightId, { userId, fingerprint, text, token, audio });
+      return briefingGetOutput.parse({ text, audioUrl: briefingAudioPath(nightId, token) });
     },
   };
 }

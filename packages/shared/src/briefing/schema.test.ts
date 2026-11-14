@@ -58,8 +58,9 @@ describe("briefing wording", () => {
 describe("briefing.get contract", () => {
   test("returns text and an audio path", () => {
     const nightId = "4f7b1c5e-1d2a-4c3b-9e8f-0a1b2c3d4e5f";
-    const parsed = briefingGetOutput.parse({ text: EXAMPLE, audioUrl: briefingAudioPath(nightId) });
-    expect(parsed.audioUrl).toBe(`/briefing/${nightId}/audio`);
+    const audioUrl = briefingAudioPath(nightId, "0f1e2d3c");
+    const parsed = briefingGetOutput.parse({ text: EXAMPLE, audioUrl });
+    expect(parsed.audioUrl).toBe(`/briefing/${nightId}/audio?token=0f1e2d3c`);
     expect(parsed.text).toBe(EXAMPLE);
   });
 });

@@ -51,8 +51,12 @@ export function acceptBriefingText(text: string): string | null {
   return parsed.success ? parsed.data : null;
 }
 
-export function briefingAudioPath(nightId: string): string {
-  return `/briefing/${nightId}/audio`;
+/**
+ * Where a night's briefing audio is served, relative to the API. The token is
+ * random per briefing, so a player can fetch it without the user header.
+ */
+export function briefingAudioPath(nightId: string, token: string): string {
+  return `/briefing/${encodeURIComponent(nightId)}/audio?token=${encodeURIComponent(token)}`;
 }
 
 export const briefingGetOutput = z.object({

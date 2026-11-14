@@ -214,6 +214,20 @@ describe("briefing facts", () => {
   });
 });
 
+describe("briefing audio cache", () => {
+  test("keeps the newest nights and drops the oldest", () => {
+    const cache = createBriefingCache(2);
+    const entry = { userId: USER, fingerprint: "f", text: EXAMPLE, token: "t", audio: MP3 };
+    cache.write("night-1", entry);
+    cache.write("night-2", entry);
+    cache.write("night-1", entry);
+    cache.write("night-3", entry);
+    expect(cache.read("night-2")).toBeUndefined();
+    expect(cache.read("night-1")?.text).toBe(EXAMPLE);
+    expect(cache.read("night-3")?.text).toBe(EXAMPLE);
+  });
+});
+
 describe("briefing.get", () => {
   test("returns Gemini's text and serves the cached audio once", async () => {
     const record = fixtureRecord();
@@ -224,7 +238,9 @@ describe("briefing.get", () => {
 
     const result = await caller.briefing.get({ nightId: record.nightId });
     expect(result.text).toBe(EXAMPLE);
-    expect(result.audioUrl).toBe(briefingAudioPath(record.nightId));
+    const token = new URL(result.audioUrl, "http://kip.test").searchParams.get("token") ?? "";
+    expect(token).toMatch(/^[0-9a-f]{32}$/);
+    expect(result.audioUrl).toBe(briefingAudioPath(record.nightId, token));
     expect(forNight).toHaveBeenCalledTimes(1);
     expect(speak).toHaveBeenCalledTimes(1);
     expect(promptsOf(write).join("\n")).not.toContain("handling");
@@ -238,11 +254,13 @@ describe("briefing.get", () => {
 
     const app = new Hono();
     createBriefingHttp(cache)(app);
-    const audio = await app.request(result.audioUrl, { headers: { "x-kip-user": USER } });
+    // An audio element sends no user header: the token in the URL is enough.
+    const audio = await app.request(result.audioUrl);
     expect(audio.status).toBe(200);
     expect(audio.headers.get("content-type")).toBe("audio/mpeg");
+    expect(audio.headers.get("accept-ranges")).toBe("bytes");
     expect(new Uint8Array(await audio.arrayBuffer())).toEqual(MP3);
-    const replay = await app.request(result.audioUrl, { headers: { "x-kip-user": USER } });
+    const replay = await app.request(result.audioUrl);
     expect(new Uint8Array(await replay.arrayBuffer())).toEqual(MP3);
 
     const preflight = await app.request(result.audioUrl, {
@@ -250,22 +268,48 @@ describe("briefing.get", () => {
       headers: {
         Origin: "http://localhost:8081",
         "Access-Control-Request-Method": "GET",
-        "Access-Control-Request-Headers": "x-kip-user",
+        "Access-Control-Request-Headers": "range",
       },
     });
     expect(preflight.headers.get("access-control-allow-origin")).toBe("*");
-    expect(preflight.headers.get("access-control-allow-headers")?.toLowerCase()).toContain(
-      "x-kip-user",
-    );
+    expect(preflight.headers.get("access-control-allow-headers")?.toLowerCase()).toContain("range");
 
-    const stranger = await app.request(result.audioUrl, { headers: { "x-kip-user": OTHER } });
-    expect(stranger.status).toBe(404);
-    const anon = await app.request(result.audioUrl);
-    expect(anon.status).toBe(401);
-    const missing = await app.request("/briefing/not-a-night/audio", {
-      headers: { "x-kip-user": USER },
-    });
-    expect(missing.status).toBe(404);
+    const wrongToken = await app.request(briefingAudioPath(record.nightId, "0".repeat(32)));
+    expect(wrongToken.status).toBe(404);
+    const noToken = await app.request(`/briefing/${record.nightId}/audio`);
+    expect(noToken.status).toBe(404);
+    const otherNight = await app.request(briefingAudioPath(OTHER, token));
+    expect(otherNight.status).toBe(404);
+  });
+
+  test("serves byte ranges, which iOS players ask for", async () => {
+    const record = fixtureRecord();
+    const { svc, cache } = setup(record);
+    const { audioUrl } = await svc.get(USER, record.nightId);
+    const app = new Hono();
+    createBriefingHttp(cache)(app);
+    const ranged = (range: string) => app.request(audioUrl, { headers: { range } });
+
+    const head = await ranged("bytes=0-1");
+    expect(head.status).toBe(206);
+    expect(head.headers.get("content-range")).toBe("bytes 0-1/4");
+    expect(new Uint8Array(await head.arrayBuffer())).toEqual(MP3.slice(0, 2));
+
+    const rest = await ranged("bytes=2-");
+    expect(rest.headers.get("content-range")).toBe("bytes 2-3/4");
+    expect(new Uint8Array(await rest.arrayBuffer())).toEqual(MP3.slice(2));
+
+    const last = await ranged("bytes=-1");
+    expect(last.headers.get("content-range")).toBe("bytes 3-3/4");
+    expect(new Uint8Array(await last.arrayBuffer())).toEqual(MP3.slice(3));
+
+    const past = await ranged("bytes=9-");
+    expect(past.status).toBe(416);
+    expect(past.headers.get("content-range")).toBe("bytes */4");
+
+    const several = await ranged("bytes=0-0,2-3");
+    expect(several.status).toBe(200);
+    expect(new Uint8Array(await several.arrayBuffer())).toEqual(MP3);
   });
 
   test("rejects a draft that uses a never-say phrase or mentions handling", async () => {
@@ -346,9 +390,7 @@ describe("briefing.get", () => {
     await expect(quiet.svc.get(USER, record.nightId)).rejects.toBeInstanceOf(BriefingAudioError);
     const app = new Hono();
     createBriefingHttp(quiet.cache)(app);
-    const audio = await app.request(briefingAudioPath(record.nightId), {
-      headers: { "x-kip-user": USER },
-    });
+    const audio = await app.request(briefingAudioPath(record.nightId, "0".repeat(32)));
     expect(audio.status).toBe(404);
 
     const empty = setup(record, { emptyAudio: true });
