@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>brme44cg4</task-id>
+<tool-use-id>toolu_01R5XKaMYDDds4rh8gQeWnFH</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-oslo/4a9f6dc5-fe85-47ec-abde-6f9d440d834b/tasks/brme44cg4.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the Entire multi-agent review on the PR branch" completed (exit code 0)</summary>
+</task-notification>
