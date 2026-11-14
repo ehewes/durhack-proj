@@ -1,0 +1,53 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "9f801d87b73e",
+  "strategy": "manual-commit",
+  "branch": "ehewes/new-conversation",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/PLAYBOOK.md",
+    "hq",
+    "hq.cmd",
+    "hq.json",
+    "tools/hq/hq.py",
+    "tools/hq/tests/test_hq.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/9f/801d87b73e/0/metadata.json",
+      "transcript": "/9f/801d87b73e/0/full.jsonl",
+      "compact_transcript": "/9f/801d87b73e/0/transcript.jsonl",
+      "content_hash": "/9f/801d87b73e/0/content_hash.txt",
+      "prompt": "/9f/801d87b73e/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 6371,
+    "cache_read_tokens": 1898068,
+    "output_tokens": 3969,
+    "api_call_count": 6,
+    "subagent_tokens": {
+      "input_tokens": 20,
+      "cache_creation_tokens": 176631,
+      "cache_read_tokens": 1211136,
+      "output_tokens": 141445,
+      "api_call_count": 9
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 6,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 2,
+      "key_context": 4,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
