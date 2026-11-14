@@ -8,6 +8,7 @@ const light = {
   text: "#1a1a18",
   textSecondary: "#5f5f5a",
   accent: "#2f5bd3",
+  onAccent: "#ffffff",
 } as const;
 
 const dark: Record<keyof typeof light, string> = {
@@ -17,6 +18,7 @@ const dark: Record<keyof typeof light, string> = {
   text: "#ededeb",
   textSecondary: "#a3a39e",
   accent: "#7c9cf0",
+  onAccent: "#111110",
 };
 
 export type Colors = Record<keyof typeof light, string>;

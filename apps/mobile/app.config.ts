@@ -15,11 +15,28 @@ const config: ExpoConfig = {
     infoPlist: {
       NSMicrophoneUsageDescription:
         "Kip measures how loud your bedroom is overnight. Clips with speech never leave your phone.",
+      NSLocationWhenInUseUsageDescription:
+        "Kip uses your location to compare your nights with the city's noise sensors nearby.",
+      // Keeps metering while the phone is locked on the nightstand
       UIBackgroundModes: ["audio"],
     },
   },
   web: { output: "single", bundler: "metro" },
-  plugins: ["expo-router", "expo-status-bar"],
+  plugins: [
+    "expo-router",
+    "expo-status-bar",
+    [
+      "@kingstinct/react-native-healthkit",
+      {
+        NSHealthShareUsageDescription:
+          "Kip reads your Apple Watch sleep stages, heart rate, HRV and breathing rate to show which noises woke you.",
+        // Kip only reads health data
+        NSHealthUpdateUsageDescription: false,
+        background: false,
+      },
+    ],
+    "@maplibre/maplibre-react-native",
+  ],
   experiments: { typedRoutes: true },
 };
 
