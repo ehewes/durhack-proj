@@ -1,0 +1,25 @@
+{
+  "name": "kip",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "typecheck": "bun run --filter '*' typecheck",
+    "test": "bun test packages apps/server",
+    "dev:api": "bun --env-file=.env --filter @kip/server dev:api",
+    "dev:worker": "bun --env-file=.env --filter @kip/server dev:worker",
+    "dev:app": "bun --env-file=.env --filter @kip/mobile start",
+    "db:up": "docker compose up -d --wait",
+    "db:migrate": "bun --env-file=.env --filter @kip/server db:migrate"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.7",
+    "typescript": "~6.0.3"
+  },
+  "packageManager": "bun@1.4.4"
+}

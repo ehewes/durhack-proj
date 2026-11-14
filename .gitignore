@@ -13,3 +13,18 @@ __pycache__/
 *.pyc
 .venv/
 node_modules/
+
+# Builds and generated files
+dist/
+.expo/
+expo-env.d.ts
+*.tsbuildinfo
+apps/mobile/ios/
+apps/mobile/android/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
