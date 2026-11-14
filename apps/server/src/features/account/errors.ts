@@ -5,3 +5,11 @@ export class AccountStorageError extends Error {
     this.name = "AccountStorageError";
   }
 }
+
+/** The user asked to delete everything and it has not finished: nothing new may be stored. */
+export class AccountDeletingError extends Error {
+  constructor() {
+    super("Account is being deleted");
+    this.name = "AccountDeletingError";
+  }
+}

@@ -10,6 +10,8 @@ export type UserDocument = {
   consent: ConsentChoices;
   consentUpdatedAt: string | null;
   profile: TravellerProfile | null;
+  /** Set when "delete everything" starts; the document goes when it finishes */
+  deletingSince: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -19,6 +21,8 @@ export type AccountRepo = {
   /** Creates the user on first write. `at` is an ISO timestamp */
   saveConsent(userId: string, consent: ConsentChoices, at: string): Promise<UserDocument>;
   saveProfile(userId: string, profile: TravellerProfile, at: string): Promise<UserDocument>;
+  /** Sets `deletingSince`, creating a bare user if needed. True if the user already existed */
+  markDeleting(userId: string, at: string): Promise<boolean>;
   /** Number of user documents removed: 1, or 0 if there was none */
   remove(userId: string): Promise<number>;
 };
@@ -28,7 +32,7 @@ export type StoredUser = Omit<UserDocument, "userId"> & { _id: string };
 type UserFields = Partial<Omit<StoredUser, "_id" | "createdAt" | "updatedAt">>;
 
 function documentOf({ _id, ...rest }: StoredUser): UserDocument {
-  return { userId: _id, ...rest };
+  return { userId: _id, ...rest, deletingSince: rest.deletingSince ?? null };
 }
 
 async function guard<T>(action: "read" | "write", run: () => Promise<T>): Promise<T> {
@@ -72,12 +76,39 @@ export function createAccountRepo(db: () => Db = mongo): AccountRepo {
       }),
     saveConsent: (userId, consent, at) =>
       guard("write", () =>
-        upsert(userId, { consent, consentUpdatedAt: at }, { profile: null }, at),
+        upsert(
+          userId,
+          { consent, consentUpdatedAt: at },
+          { profile: null, deletingSince: null },
+          at,
+        ),
       ),
     saveProfile: (userId, profile, at) =>
       guard("write", () =>
-        upsert(userId, { profile }, { consent: { ...NO_CONSENT }, consentUpdatedAt: null }, at),
+        upsert(
+          userId,
+          { profile },
+          { consent: { ...NO_CONSENT }, consentUpdatedAt: null, deletingSince: null },
+          at,
+        ),
       ),
+    markDeleting: (userId, at) =>
+      guard("write", async () => {
+        const before = await users().findOneAndUpdate(
+          { _id: userId },
+          {
+            $set: { deletingSince: at, updatedAt: at },
+            $setOnInsert: {
+              consent: { ...NO_CONSENT },
+              consentUpdatedAt: null,
+              profile: null,
+              createdAt: at,
+            },
+          },
+          { upsert: true, returnDocument: "before" },
+        );
+        return before !== null;
+      }),
     remove: (userId) =>
       guard("write", async () => (await users().deleteOne({ _id: userId })).deletedCount),
   };
