@@ -4,7 +4,7 @@ import { RANDOM_WINDOW_COUNT, SAY_SIMULATED } from "@kip/shared/domain";
 export const TITLE = "Wake-ups";
 export const METHOD =
   "Wake-ups linked to noise spikes, counted against random moments from the same night.";
-export const TRACK_CAPTION = "Wake-ups. A filled mark followed a spike.";
+export const TRACK_CAPTION = "Wake-ups. A filled mark followed the spike above it.";
 export const NO_WAKE_UPS = "No wake-ups recorded for this night.";
 export const LOADING = "Loading wake-ups.";
 export const LOAD_ERROR = "We could not load wake-ups for this night.";
@@ -59,6 +59,12 @@ export function attributionSummaryText(
 ): string {
   const random = randomMomentCounts(result.randomWindowRate);
   return `${result.night.text}; random moments: ${random.hits} of ${random.moments}`;
+}
+
+/** What a screen reader says for the marks track, as one image. */
+export function trackLabel(wakeUps: number, followedSpike: number): string {
+  const noun = wakeUps === 1 ? "wake-up" : "wake-ups";
+  return `${wakeUps} ${noun}, ${followedSpike} followed a spike`;
 }
 
 export function wakeLine(wake: { t: number; linkedEventId: string | null }): string {

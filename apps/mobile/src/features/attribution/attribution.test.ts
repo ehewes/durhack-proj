@@ -22,6 +22,7 @@ import {
   TITLE,
   TRACK_CAPTION,
   TRY_AGAIN,
+  trackLabel,
   wakeLine,
 } from "./copy";
 import { demoAttribution, demoEvents, demoWindow } from "./data/demo";
@@ -190,6 +191,11 @@ describe("marks from forNight", () => {
     expect(attributionSummaryText({ night, randomWindowRate: 0.1 })).toBe(
       "3 of 4 wake-ups followed a spike; random moments: 1 of 10",
     );
+  });
+
+  test("the track reads as one image, singular for one wake-up", () => {
+    expect(trackLabel(4, 3)).toBe("4 wake-ups, 3 followed a spike");
+    expect(trackLabel(1, 0)).toBe("1 wake-up, 0 followed a spike");
   });
 
   test("fractionAlong clamps to the night", () => {
