@@ -15,7 +15,8 @@
       "!.claude",
       "!.agents",
       "!**/*.md",
-      "!hq.json"
+      "!hq.json",
+      "!**/fixtures"
     ]
   },
   "formatter": {

@@ -1,5 +1,49 @@
-import { expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
+import { isOutsideRecommendedHours, nightOf } from "../domain";
+import nightTimelineFixture from "./fixtures/night-timeline.json";
+import nightUploadFixture from "./fixtures/night-upload.json";
+import { nightSummary, nightTimeline } from "./timeline";
 import { nightUpload } from "./upload";
+
+describe("night fixtures", () => {
+  const upload = nightUpload.parse(nightUploadFixture);
+  const timeline = nightTimeline.parse(nightTimelineFixture);
+
+  test("the upload is a full 8-hour night at 1 Hz", () => {
+    expect(upload.noise.samples).toHaveLength(8 * 60 * 60);
+    expect(upload.sleep?.stages.length).toBeGreaterThan(5);
+  });
+
+  test("the timeline matches the upload", () => {
+    expect(timeline.nightId).toBe(upload.nightId);
+    expect(timeline.night).toBe(nightOf(new Date(upload.startedAt)));
+    expect(timeline.events.map((e) => e.t)).toEqual(upload.spikes.map((s) => s.t));
+  });
+
+  test("the drilling at 06:41 is outside the recommended hours", () => {
+    const drilling = timeline.events.find((e) => e.label === "construction");
+    expect(drilling).toBeDefined();
+    expect(isOutsideRecommendedHours(new Date((drilling?.t ?? 0) * 1000))).toBe(true);
+    expect(drilling?.outsideRecommendedHours).toBe(true);
+  });
+
+  test("a summary can be built from the timeline", () => {
+    const summary = nightSummary.parse({
+      nightId: timeline.nightId,
+      userId: upload.userId,
+      night: timeline.night,
+      startedAt: timeline.startedAt,
+      endedAt: timeline.endedAt,
+      eventCount: timeline.events.length,
+      labelCounts: { construction: 1, traffic: 1, siren: 1, snoring: 1 },
+      outsideRecommendedHoursCount: 1,
+      wakeUpCount: timeline.wakeUps.length,
+      attribution: timeline.attribution,
+      evidence: timeline.evidence,
+    });
+    expect(summary.wakeUpCount).toBe(3);
+  });
+});
 
 test("accepts a live-mode night without sleep data", () => {
   const result = nightUpload.safeParse({
