@@ -1,0 +1,31 @@
+{
+ "model": "handling-v1",
+ "version": 1,
+ "input": {
+  "pcm": "float32 [1, N], 16 kHz mono in [-1, 1], N >= 512"
+ },
+ "outputs": {
+  "clean": "float32 [1, N], the clip with handling noise removed",
+  "handling": "float32 [1, frames], frames = 1 + N // 160; > threshold means handling noise"
+ },
+ "frames_per_second": 100,
+ "min_samples": 512,
+ "stft": {
+  "rate": 16000,
+  "n_fft": 512,
+  "hop": 160,
+  "win": 400,
+  "window": "hann",
+  "center": true
+ },
+ "threshold": 0.5,
+ "opset": 17,
+ "max_abs_diff_vs_pytorch": 1.3709068298339844e-06,
+ "max_abs_diff_vs_enhance": 1.6093254089355469e-06,
+ "checkpoint": "handling-poc.pt",
+ "parameters": 418754,
+ "config": {
+  "ch": 32,
+  "hidden": 128
+ }
+}
