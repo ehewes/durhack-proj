@@ -1,0 +1,112 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "38ad03b94677",
+  "session_id": "829c4789-d388-4f09-ab14-3b824c7938d2",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-14T23:03:28.225323Z",
+  "branch": "ehewes/mapbox-ios-setup",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/mobile/src/lib/map/Map.native.tsx",
+    "apps/mobile/src/lib/map/index.ts",
+    "apps/mobile/src/lib/map/map.test.ts",
+    "apps/mobile/src/lib/map/style.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "647bf24bc7bf",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 154,
+    "cache_creation_tokens": 221947,
+    "cache_read_tokens": 10940417,
+    "output_tokens": 108136,
+    "api_call_count": 69
+  },
+  "session_token_usage": {
+    "input_tokens": 154,
+    "cache_creation_tokens": 221947,
+    "cache_read_tokens": 10940417,
+    "output_tokens": 108136,
+    "api_call_count": 69
+  },
+  "redaction": {
+    "replacements": 12,
+    "layers": {
+      "betterleaks": 9,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 8,
+      "credentialed_uri": 3,
+      "entropy": 0,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_01MT8eCxiiu2rYr12XhwDLLV",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "hq-work"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "647bf24bc7bf",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 185,
+        "end": 186,
+        "entry_ids": [
+          "e5d88bd0-572c-46f0-945a-0a084e89dc52"
+        ],
+        "tool_use_id": "toolu_01MT8eCxiiu2rYr12XhwDLLV"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01MT8eCxiiu2rYr12XhwDLLV"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: hq-work",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "claude-skill-toolu_01YR1GfAMfUKJVME3pXTysML",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "commit-message"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "647bf24bc7bf",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 675,
+        "end": 676,
+        "entry_ids": [
+          "c8421224-e457-48c5-b4c5-01da98db9de0"
+        ],
+        "tool_use_id": "toolu_01YR1GfAMfUKJVME3pXTysML"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01YR1GfAMfUKJVME3pXTysML"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: commit-message",
+        "default_collapsed": true
+      }
+    }
+  ]
+}
