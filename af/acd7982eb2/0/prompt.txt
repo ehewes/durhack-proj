@@ -1,0 +1,28 @@
+/review Review profile: general
+
+Task: Review this change for correctness, regressions, API design, missing tests, maintainability, and user-facing behavior changes. Return only real, actionable defects with concrete evidence and an exact code pointer. No praise, summaries, speculation, style preferences, or nice-to-have refactors.
+
+Output format:
+- Start with one verdict line: approve / approve with nits / request changes, plus a short reason.
+- Then list actionable findings only. Each finding MUST be a separate top-level Markdown bullet starting with [high], [medium], or [low].
+- Include an exact file:line pointer in each finding when possible, plus the bug, impact, and fix in one concise paragraph.
+- Do not combine multiple defects in one bullet or paragraph. Do not emit severity-heading paragraphs like "**[HIGH] ...**" without a leading bullet.
+- If there are no actionable findings, output only the verdict line and the final JSON line.
+- Keep the report compact: quote only the minimal relevant snippet (a few lines) per finding. Never paste whole files, full diffs, or large logs, and skip decorative formatting like tables or ASCII art — it wastes effort and is not rendered.
+
+Scope: review the commits unique to this branch vs refs/remotes/origin/main, plus any uncommitted changes in the working tree. Ignore code outside this scope.
+
+Checkpoint context from commits in scope:
+- 1575b2614614: prompt: <task-notification> <task-id>a0d3e2876f812f029</task-id> <tool-use-id>toolu_01X3dmpiRuPZNUvKCtDKYzZc</tool-use-id> <output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-oslo/4a9f6dc5-fe85-47ec-abde-6f9d440d834b/tasks/a0d3e2876f812f029.output</output-file> <status>completed</status>...
+- 2aa3e463152f: prompt: <task-notification> <task-id>a0d3e2876f812f029</task-id> <tool-use-id>toolu_01X3dmpiRuPZNUvKCtDKYzZc</tool-use-id> <output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-oslo/4a9f6dc5-fe85-47ec-abde-6f9d440d834b/tasks/a0d3e2876f812f029.output</output-file> <status>completed</status>...
+- 8a58a60c9dbf: prompt: i didnt ask u to bring any tickets reality up to date i js asked u to go through the tickets
+
+Use `entire checkpoint explain <id>` for full checkpoint context, or `entire checkpoint explain <id> --raw-transcript` for raw transcripts.
+
+Final line (required, read by a program):
+End your output with exactly one line holding only this JSON object, with no code fence and nothing after it:
+{"summary":"one-sentence verdict","comments":[{"severity":"high","body":"bug; impact; fix","location":{"granularity":"line","file_path":"path/to/file.go","start_line":42}}]}
+- Add one comment per actionable finding reported above, with the same severity: high, medium, or low.
+- location.granularity is line (with start_line), range (with start_line and end_line), file, or whole_change.
+- If nothing is actionable, use an empty array: "comments":[].
+- This line is required even where other instructions say to output nothing else.

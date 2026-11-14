@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "afacd7982eb2",
+  "strategy": "manual-commit",
+  "branch": "ehewes/70-consent-onboarding",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/mobile/src/features/account/account.test.ts",
+    "apps/mobile/src/features/account/cache.ts",
+    "apps/mobile/src/features/account/components/AccountSettings.tsx",
+    "apps/mobile/src/features/account/components/DeleteEverything.tsx",
+    "apps/mobile/src/features/account/hooks/useAccount.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/af/acd7982eb2/0/metadata.json",
+      "transcript": "/af/acd7982eb2/0/full.jsonl",
+      "content_hash": "/af/acd7982eb2/0/content_hash.txt",
+      "prompt": "/af/acd7982eb2/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "redaction": {
+    "replacements": 0,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "has_review": true
+}
