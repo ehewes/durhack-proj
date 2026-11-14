@@ -28,6 +28,9 @@ const INK = "#1a1a18";
 const ACCENT = "#2f5bd3";
 const ON_INK = "#ffffff";
 
+/** Text drawn over the map. The basemap stays light in dark mode, so this ink always reads. */
+export const MAP_INK = INK;
+
 const CLUSTER_RADIUS = 48;
 const CLUSTER_MAX_ZOOM = 14;
 
