@@ -37,6 +37,7 @@ const config: ExpoConfig = {
     ],
     "@maplibre/maplibre-react-native",
   ],
+  // The HealthKit plugin above also adds the com.apple.developer.healthkit entitlement on prebuild.
   experiments: { typedRoutes: true },
 };
 
