@@ -1,0 +1,284 @@
+{
+ "rate": 16000,
+ "note": "PLACEHOLDER synthetic handling noise",
+ "clips": {
+  "synthetic_handling_00.wav": [
+   {
+    "start": 3.227,
+    "end": 3.635,
+    "kind": "bump"
+   }
+  ],
+  "synthetic_handling_01.wav": [
+   {
+    "start": 2.053,
+    "end": 3.503,
+    "kind": "rustle"
+   },
+   {
+    "start": 2.534,
+    "end": 4.397,
+    "kind": "rustle"
+   },
+   {
+    "start": 2.629,
+    "end": 3.08,
+    "kind": "bump"
+   }
+  ],
+  "synthetic_handling_02.wav": [
+   {
+    "start": 2.102,
+    "end": 2.978,
+    "kind": "scrape"
+   },
+   {
+    "start": 3.541,
+    "end": 4.531,
+    "kind": "scrape"
+   },
+   {
+    "start": 4.141,
+    "end": 4.548,
+    "kind": "bump"
+   }
+  ],
+  "synthetic_handling_03.wav": [
+   {
+    "start": 1.245,
+    "end": 2.231,
+    "kind": "scrape"
+   },
+   {
+    "start": 4.272,
+    "end": 4.756,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_04.wav": [
+   {
+    "start": 2.41,
+    "end": 3.416,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_05.wav": [
+   {
+    "start": 0.001,
+    "end": 0.335,
+    "kind": "bump"
+   },
+   {
+    "start": 1.298,
+    "end": 2.491,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_06.wav": [
+   {
+    "start": 0.035,
+    "end": 0.59,
+    "kind": "bump"
+   },
+   {
+    "start": 1.658,
+    "end": 3.601,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_07.wav": [
+   {
+    "start": 4.051,
+    "end": 4.709,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_08.wav": [
+   {
+    "start": 2.304,
+    "end": 2.748,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_09.wav": [
+   {
+    "start": 1.912,
+    "end": 3.345,
+    "kind": "scrape"
+   }
+  ],
+  "synthetic_handling_10.wav": [
+   {
+    "start": 0.246,
+    "end": 1.006,
+    "kind": "rustle"
+   },
+   {
+    "start": 1.633,
+    "end": 2.67,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_11.wav": [
+   {
+    "start": 1.352,
+    "end": 3.317,
+    "kind": "scrape"
+   }
+  ],
+  "synthetic_handling_12.wav": [
+   {
+    "start": 1.571,
+    "end": 2.071,
+    "kind": "bump"
+   },
+   {
+    "start": 2.468,
+    "end": 4.242,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_13.wav": [
+   {
+    "start": 1.166,
+    "end": 1.585,
+    "kind": "bump"
+   },
+   {
+    "start": 2.378,
+    "end": 2.71,
+    "kind": "bump"
+   }
+  ],
+  "synthetic_handling_14.wav": [
+   {
+    "start": 2.781,
+    "end": 4.212,
+    "kind": "rustle"
+   },
+   {
+    "start": 3.031,
+    "end": 3.473,
+    "kind": "bump"
+   },
+   {
+    "start": 3.725,
+    "end": 4.506,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_15.wav": [
+   {
+    "start": 0.031,
+    "end": 0.424,
+    "kind": "bump"
+   },
+   {
+    "start": 0.963,
+    "end": 1.505,
+    "kind": "rustle"
+   },
+   {
+    "start": 1.266,
+    "end": 3.097,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_16.wav": [
+   {
+    "start": 1.012,
+    "end": 2.095,
+    "kind": "rustle"
+   },
+   {
+    "start": 2.781,
+    "end": 4.061,
+    "kind": "scrape"
+   }
+  ],
+  "synthetic_handling_17.wav": [
+   {
+    "start": 1.472,
+    "end": 2.417,
+    "kind": "scrape"
+   },
+   {
+    "start": 1.589,
+    "end": 2.173,
+    "kind": "scrape"
+   }
+  ],
+  "synthetic_handling_18.wav": [
+   {
+    "start": 3.533,
+    "end": 4.117,
+    "kind": "bump"
+   },
+   {
+    "start": 3.626,
+    "end": 3.944,
+    "kind": "bump"
+   },
+   {
+    "start": 3.929,
+    "end": 4.863,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_19.wav": [
+   {
+    "start": 1.758,
+    "end": 3.75,
+    "kind": "rustle"
+   },
+   {
+    "start": 2.144,
+    "end": 4.097,
+    "kind": "rustle"
+   },
+   {
+    "start": 3.198,
+    "end": 4.181,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_20.wav": [
+   {
+    "start": 1.704,
+    "end": 3.385,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_21.wav": [
+   {
+    "start": 0.321,
+    "end": 0.644,
+    "kind": "bump"
+   },
+   {
+    "start": 0.499,
+    "end": 1.753,
+    "kind": "scrape"
+   },
+   {
+    "start": 0.874,
+    "end": 2.003,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_22.wav": [
+   {
+    "start": 2.294,
+    "end": 3.524,
+    "kind": "rustle"
+   }
+  ],
+  "synthetic_handling_23.wav": [
+   {
+    "start": 1.044,
+    "end": 2.792,
+    "kind": "rustle"
+   }
+  ]
+ }
+}
