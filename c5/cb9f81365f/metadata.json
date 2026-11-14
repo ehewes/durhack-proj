@@ -1,0 +1,54 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "c5cb9f81365f",
+  "strategy": "manual-commit",
+  "branch": "ehewes/85-87-handling-poc",
+  "checkpoints_count": 5,
+  "files_touched": [
+    "ml/.python-version",
+    "ml/README.md",
+    "ml/kipml/__init__.py",
+    "ml/kipml/audio.py",
+    "ml/kipml/data.py",
+    "ml/kipml/evaluate.py",
+    "ml/kipml/export.py",
+    "ml/kipml/infer.py",
+    "ml/kipml/model.py",
+    "ml/kipml/report.py",
+    "ml/kipml/train.py",
+    "ml/models/README.md",
+    "ml/pyproject.toml",
+    "ml/tests/test_kipml.py",
+    "ml/uv.lock"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c5/cb9f81365f/0/metadata.json",
+      "transcript": "/c5/cb9f81365f/0/full.jsonl",
+      "compact_transcript": "/c5/cb9f81365f/0/transcript.jsonl",
+      "content_hash": "/c5/cb9f81365f/0/content_hash.txt",
+      "prompt": "/c5/cb9f81365f/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 120,
+    "cache_creation_tokens": 120112,
+    "cache_read_tokens": 35236170,
+    "output_tokens": 84037,
+    "api_call_count": 52
+  },
+  "redaction": {
+    "replacements": 29,
+    "layers": {
+      "betterleaks": 7,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 2,
+      "credentialed_uri": 1,
+      "entropy": 2,
+      "key_context": 20,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
