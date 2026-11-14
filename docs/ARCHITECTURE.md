@@ -130,7 +130,7 @@ The app gets end-to-end types from `import type { AppRouter } from "@kip/server/
 It never imports server runtime code.
 
 ### Features
-| Feature | App (`apps/mobile/src/features/`) | Server (`apps/server/src/features/`) | What it owns |
+| Feature | App (`apps/mobile/src/features/`) | Server (`apps/server/src/features/`) | Its data |
 |---|---|---|---|
 | `city` | City map screen | Sensors query, Observatory ingest job | 30-night Lnight and %HSD per sensor |
 | `night` | Recording, upload, night timeline | Night upload, timeline query | Night documents and noise samples |
@@ -165,21 +165,21 @@ features and both apps use them.
    iOS-only features (recording, HealthKit) ship a `.web.ts` stub that renders "Open on iPhone".
 
 ## Lanes
-Lanes are features. Both of us work across every lane; lanes exist so parallel issues touch
+Lanes are features. Both of us own every lane; lanes only exist so parallel issues touch
 disjoint paths. Each lane covers that feature's folder in `apps/mobile/src/features/`,
 `apps/server/src/features/` and `packages/shared/src/`. They are mirrored in `hq.json`.
 
-| Lane | Dirs | Owner |
-|---|---|---|
-| `city`, `night`, `attribution`, `labels`, `briefing`, `evidence`, `stays`, `works`, `live`, `account` | `*/features/<lane>/`, `packages/shared/src/<lane>/` | Both |
-| `platform` | `apps/mobile/app/`, `apps/mobile/src/lib/`, `apps/mobile/modules/`, `apps/mobile/app.config.ts`, `apps/server/src/{trpc,integrations,db}/`, `apps/server/src/main.*.ts`, `apps/server/src/env.ts`, `packages/shared/src/domain/` | Both (one issue at a time) |
-| `infra` | `infra/`, `Dockerfile` | Both (Ellis merges, owns deploys) |
+| Lane | Dirs |
+|---|---|
+| `city`, `night`, `attribution`, `labels`, `briefing`, `evidence`, `stays`, `works`, `live`, `account` | `*/features/<lane>/`, `packages/shared/src/<lane>/` |
+| `platform` | `apps/mobile/app/`, `apps/mobile/src/lib/`, `apps/mobile/modules/`, `apps/mobile/app.config.ts`, `apps/server/src/{trpc,integrations,db}/`, `apps/server/src/main.*.ts`, `apps/server/src/env.ts`, `packages/shared/src/domain/` |
+| `infra` | `infra/`, `Dockerfile` |
 
 ## Contracts
 Merge in M0, before anyone branches. Agree the night upload schema in the first 30 minutes so
 recording and server work never block each other.
 
-| Contract | Lives in | Owner lane |
+| Contract | Lives in | Lane |
 |---|---|---|
 | Night upload schema | `packages/shared/src/night/upload.ts` | `night` |
 | Each feature's tRPC inputs and outputs | `packages/shared/src/<feature>/`, used by `features/<feature>/router.ts` | that feature |
@@ -274,7 +274,7 @@ into each new workspace via `.worktreeinclude`. For a plain git worktree, copy `
 Only `EXPO_PUBLIC_*` variables reach the app, and they end up in the bundle: never put a key there.
 
 ## Deploy
-Ellis owns deploys. The demo runs from tag `demo-v1`.
+Either of us deploys. The demo runs from tag `demo-v1`.
 - `infra/` holds Terraform: SSH key, private container registry, firewall (22 from `admin_ip`
   only; 80 and 443 open for Caddy), a `vc2-2c-4gb` Ubuntu 24.04 instance in `lhr`, and the Atlas IP
   access list for the instance's IP. Keys come from variables, never the repo.

@@ -3,8 +3,9 @@
 How the two of us run DurHack with 6 to 10 agents. Agents follow `AGENTS.md`. This file is for us.
 
 ## Roles
-- **Ellis** owns `main` and the demo build: deploys, the code freeze, the `demo-v1` tag.
-- **Both** own lanes (see `docs/ARCHITECTURE.md`) and merge their own lane's PRs.
+- **Both of us own everything**: every lane, `main`, deploys, the code freeze and the `demo-v1`
+  tag. Either of us can merge any PR. Lanes (see `docs/ARCHITECTURE.md`) only keep agents on
+  disjoint paths.
 - **Humans dispatch.** Agents never pick or self-assign issues.
 
 ## Cheat sheet
@@ -68,7 +69,7 @@ Milestones: M0 Skeleton, M1 MVP demo path, M2 Prizes + polish, M3 Submission.
   budget limits (for example `claude -p "work on #N" --max-budget-usd 5`). Review it in the morning.
 
 **Freeze (~3h before judging)**
-- Ellis tags the known-good build and deploys it:
+- Either of us tags the known-good build and deploys it:
   `git fetch origin && git tag demo-v1 origin/main && git push origin demo-v1`.
 - After the freeze only demo-path fixes merge, each rehearsed on the demo script. Tag `demo-v2`
   if one lands.
@@ -109,8 +110,8 @@ Outside Conductor, copy `.env` into the new worktree yourself.
   - local `entire review` (needs the `claude` and `codex` CLIs);
   - hosted Trail review agents on entire.com (optional, needs credits: MLH promo code);
   - the other human's agent running `/hq-review <PR>`.
-- Lane owners merge their own lane's PRs: tell the agent "ship it", or run `./hq ship <PR>`.
-- Contracts, deploy config and anything after the freeze: Ellis merges.
+- Either of us merges any PR, including contracts, deploy config and post-freeze fixes: tell the
+  agent "ship it", or run `./hq ship <PR>`.
 
 ## Rate limits and tokens
 - Spread agents across the Claude, OpenAI and Cursor subscriptions. When one rate-limits,
@@ -161,7 +162,7 @@ Outside Conductor, copy `.env` into the new worktree yourself.
 | Symptom | Fix |
 |---|---|
 | `entire status`: Codex hooks not active | Fast-forward the root checkout: `git -C <root checkout> pull --ff-only` (Conductor: `~/conductor/repos/<name>`) |
-| Commit on `main` blocked | Create a branch: `git switch -c <login>/N-slug`. `HQ_ALLOW_MAIN=1` is for emergencies, by the main owner only |
+| Commit on `main` blocked | Create a branch: `git switch -c <login>/N-slug`. `HQ_ALLOW_MAIN=1` is for emergencies only |
 | `./hq ship` refused | Read the gate it names (CI, review, draft, conflicts), fix it, retry. Never bypass |
 | `./hq claim` refused | The issue is closed, blocked or claimed by someone else. Check `./hq board` |
 | Keychain or network errors from `entire trail` in a sandbox | Rerun unsandboxed (Codex: the network flag above) |

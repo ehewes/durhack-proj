@@ -5,7 +5,8 @@ Event facts, deadlines and prize targets. Fill in the TBDs at kick-off.
 ## Event
 - DurHack 2026, an MLH member event. About 24 hours.
 - Dates: TBD. Plan assumes 24 hours from about 10am, so hours 14 to 20 fall overnight.
-- Team: Ellis and Nick. Both work across the whole stack (lanes in `docs/ARCHITECTURE.md`).
+- Team: Ellis and Nick. Both of us own everything; lanes in `docs/ARCHITECTURE.md` only split
+  work between agents.
 - Project: **Kip**, sleep, noise and the city. See `docs/SPEC.md` and `docs/BUSINESS.md`.
 - MLH workshop: Intro to Google AI Studio (time announced at the opening ceremony).
 

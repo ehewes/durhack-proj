@@ -129,3 +129,11 @@ typecheck. Non-TypeScript clients (SNS) still get plain HTTP.
 written once in M0 with every feature stubbed; shared code changes through `platform` issues.
 **Consequences:** Parallel issues touch disjoint paths. Cross-feature calls go through a feature's
 `index.ts`. The rules are in `docs/ARCHITECTURE.md`.
+
+## 2026-11-14: Both of us own everything
+**Context:** The template gave Ellis `main`, deploys and the freeze, and gave each human lanes.
+With two people working across the whole stack, that split only adds hand-offs.
+**Decision:** No split ownership. Either of us can merge any PR, deploy, call the freeze and tag
+`demo-v1`. Lanes stay, but only to keep parallel agents on disjoint paths.
+**Consequences:** No waiting on a specific person. Say in chat before merging contracts, deploy
+config or anything after the freeze, so we don't both do it.

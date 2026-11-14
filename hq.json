@@ -2,7 +2,6 @@
   "default_branch": "main",
   "lanes": {
     "city": {
-      "owner": "both",
       "paths": [
         "apps/mobile/src/features/city/",
         "apps/server/src/features/city/",
@@ -10,7 +9,6 @@
       ]
     },
     "night": {
-      "owner": "both",
       "paths": [
         "apps/mobile/src/features/night/",
         "apps/server/src/features/night/",
@@ -18,7 +16,6 @@
       ]
     },
     "attribution": {
-      "owner": "both",
       "paths": [
         "apps/mobile/src/features/attribution/",
         "apps/server/src/features/attribution/",
@@ -26,7 +23,6 @@
       ]
     },
     "labels": {
-      "owner": "both",
       "paths": [
         "apps/mobile/src/features/labels/",
         "apps/server/src/features/labels/",
@@ -34,7 +30,6 @@
       ]
     },
     "briefing": {
-      "owner": "both",
       "paths": [
         "apps/mobile/src/features/briefing/",
         "apps/server/src/features/briefing/",
@@ -42,7 +37,6 @@
       ]
     },
     "evidence": {
-      "owner": "both",
       "paths": [
         "apps/mobile/src/features/evidence/",
         "apps/server/src/features/evidence/",
@@ -50,7 +44,6 @@
       ]
     },
     "stays": {
-      "owner": "both",
       "paths": [
         "apps/mobile/src/features/stays/",
         "apps/server/src/features/stays/",
@@ -58,7 +51,6 @@
       ]
     },
     "works": {
-      "owner": "both",
       "paths": [
         "apps/mobile/src/features/works/",
         "apps/server/src/features/works/",
@@ -66,7 +58,6 @@
       ]
     },
     "live": {
-      "owner": "both",
       "paths": [
         "apps/mobile/src/features/live/",
         "apps/server/src/features/live/",
@@ -74,7 +65,6 @@
       ]
     },
     "account": {
-      "owner": "both",
       "paths": [
         "apps/mobile/src/features/account/",
         "apps/server/src/features/account/",
@@ -82,7 +72,6 @@
       ]
     },
     "platform": {
-      "owner": "both",
       "paths": [
         "apps/mobile/app/",
         "apps/mobile/src/lib/",
@@ -94,7 +83,6 @@
       ]
     },
     "infra": {
-      "owner": "both",
       "paths": [
         "infra/",
         "Dockerfile"
