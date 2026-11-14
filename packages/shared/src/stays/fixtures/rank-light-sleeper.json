@@ -8,7 +8,7 @@
       "name": "Bigg Market Hotel",
       "location": {
         "lat": 54.97,
-        "lng": -1.614
+        "lon": -1.614
       },
       "pricePerNightGbp": 140,
       "score": 81,
@@ -65,7 +65,7 @@
       "name": "Chinatown Guesthouse",
       "location": {
         "lat": 54.986,
-        "lng": -1.608
+        "lon": -1.608
       },
       "pricePerNightGbp": 118,
       "score": 75,
@@ -122,7 +122,7 @@
       "name": "Grey Street Hotel",
       "location": {
         "lat": 54.974,
-        "lng": -1.614
+        "lon": -1.614
       },
       "pricePerNightGbp": 77,
       "score": 72,
@@ -179,7 +179,7 @@
       "name": "Gateshead Riverside",
       "location": {
         "lat": 54.982,
-        "lng": -1.608
+        "lon": -1.608
       },
       "pricePerNightGbp": 106,
       "score": 72,
@@ -236,7 +236,7 @@
       "name": "Toon Townhouse",
       "location": {
         "lat": 54.97,
-        "lng": -1.608
+        "lon": -1.608
       },
       "pricePerNightGbp": 145,
       "score": 70,
@@ -293,7 +293,7 @@
       "name": "Heaton House",
       "location": {
         "lat": 54.978,
-        "lng": -1.62
+        "lon": -1.62
       },
       "pricePerNightGbp": 84,
       "score": 68,
@@ -357,7 +357,7 @@
       "name": "Jesmond Lodge",
       "location": {
         "lat": 54.982,
-        "lng": -1.62
+        "lon": -1.62
       },
       "pricePerNightGbp": 111,
       "score": 66,
@@ -421,7 +421,7 @@
       "name": "Eldon Square Stay",
       "location": {
         "lat": 54.986,
-        "lng": -1.62
+        "lon": -1.62
       },
       "pricePerNightGbp": 123,
       "score": 64,
@@ -485,7 +485,7 @@
       "name": "Haymarket Suites",
       "location": {
         "lat": 54.978,
-        "lng": -1.614
+        "lon": -1.614
       },
       "pricePerNightGbp": 89,
       "score": 56,
@@ -542,7 +542,7 @@
       "name": "Tyne Bridge Hotel",
       "location": {
         "lat": 54.982,
-        "lng": -1.614
+        "lon": -1.614
       },
       "pricePerNightGbp": 101,
       "score": 54,
@@ -599,7 +599,7 @@
       "name": "Leazes Park Inn",
       "location": {
         "lat": 54.974,
-        "lng": -1.608
+        "lon": -1.608
       },
       "pricePerNightGbp": 67,
       "score": 50,
@@ -656,7 +656,7 @@
       "name": "Central Station Inn",
       "location": {
         "lat": 54.978,
-        "lng": -1.608
+        "lon": -1.608
       },
       "pricePerNightGbp": 94,
       "score": 45,
@@ -713,7 +713,7 @@
       "name": "Quayside Rooms",
       "location": {
         "lat": 54.97,
-        "lng": -1.62
+        "lon": -1.62
       },
       "pricePerNightGbp": 60,
       "score": 44,
@@ -777,7 +777,7 @@
       "name": "Castle Garth Hotel",
       "location": {
         "lat": 54.974,
-        "lng": -1.62
+        "lon": -1.62
       },
       "pricePerNightGbp": 72,
       "score": 39,
@@ -841,7 +841,7 @@
       "name": "Ouseburn Loft",
       "location": {
         "lat": 54.986,
-        "lng": -1.614
+        "lon": -1.614
       },
       "pricePerNightGbp": 128,
       "score": 36,

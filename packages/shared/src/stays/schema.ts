@@ -2,7 +2,37 @@ import { z } from "zod";
 import { TRAVELLER_PROFILES } from "../domain";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "expected YYYY-MM-DD");
-const point = z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) });
+
+/** Newcastle city centre. Human-facing objects stay `{ lat, lon }`. */
+const NEWCASTLE_CENTRE = { lat: 54.973, lon: -1.614 } as const;
+
+/**
+ * Newcastle's latitude is about 55 and its longitude about -1.6. Exchanging
+ * them still fits in WGS84, so a range check would accept a pin in the ocean.
+ */
+const NEWCASTLE_AXIS_TOLERANCE_DEG = 0.25;
+
+function newcastleAxesSwapped(lat: number, lon: number): boolean {
+  return (
+    Math.abs(lat - NEWCASTLE_CENTRE.lon) <= NEWCASTLE_AXIS_TOLERANCE_DEG &&
+    Math.abs(lon - NEWCASTLE_CENTRE.lat) <= NEWCASTLE_AXIS_TOLERANCE_DEG
+  );
+}
+
+const point = z
+  .object({
+    lat: z.number().min(-90).max(90),
+    lon: z.number().min(-180).max(180),
+  })
+  .refine((value) => !newcastleAxesSwapped(value.lat, value.lon), {
+    message: "coordinates are swapped: expected { lat, lon }",
+  });
+
+/** GeoJSON position for the map renderer: `[longitude, latitude]`. */
+export function toGeoJsonPosition(location: { lat: number; lon: number }): [number, number] {
+  const parsed = point.parse(location);
+  return [parsed.lon, parsed.lat];
+}
 
 export const travellerProfile = z.enum(TRAVELLER_PROFILES);
 
