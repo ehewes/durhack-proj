@@ -97,6 +97,8 @@ function mockRepo() {
     upsertSensors: async (points) => {
       sensors.push(points);
     },
+    lnight30: async () => [],
+    writeSensorLevels: async () => {},
   };
   return { repo, readings, sensors };
 }
@@ -119,6 +121,7 @@ describe("city.observatory", () => {
   test("runs every five minutes", () => {
     expect(jobs.map((job) => [job.name, job.schedule])).toEqual([
       ["city.observatory", "*/5 * * * *"],
+      ["city.lnight", "*/5 * * * *"],
     ]);
   });
 

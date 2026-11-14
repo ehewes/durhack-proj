@@ -16,6 +16,7 @@ import {
   type SensorReadingInsert,
   type SensorUpsert,
 } from "./repo";
+import { refreshSensorLnight } from "./service";
 
 /** Circle around Grey's Monument. The bounding box is only the API query. */
 export const CITY_RADIUS_KM = 3;
@@ -139,6 +140,14 @@ export const jobs: Job[] = [
       console.log(
         `city.observatory stored ${pulled.readings.length} readings (${metricCounts(pulled.readings)}) across ${pulled.sensors.length} sensors`,
       );
+    },
+  },
+  {
+    name: "city.lnight",
+    schedule: "*/5 * * * *",
+    run: async () => {
+      const updated = await refreshSensorLnight({ repo: createCityRepo() });
+      console.log(`city.lnight updated ${updated} sensors`);
     },
   },
 ];
