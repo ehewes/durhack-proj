@@ -1,4 +1,47 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(./hq:*)",
+      "Bash(python3 tools/hq/hq.py:*)",
+      "Bash(gh issue:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh label list:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh api user:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git fetch:*)",
+      "Bash(git rebase:*)",
+      "Bash(git switch:*)",
+      "Bash(git branch:*)",
+      "Bash(git worktree list:*)",
+      "Bash(entire search:*)",
+      "Bash(entire why:*)",
+      "Bash(entire status:*)",
+      "Bash(entire agent-help:*)",
+      "Bash(entire trail:*)",
+      "Bash(entire review:*)",
+      "Bash(entire graph:*)",
+      "Bash(entire brain:*)",
+      "Bash(entire dispatch:*)",
+      "Bash(entire session:*)",
+      "Bash(entire checkpoint:*)",
+      "Bash(entire recap:*)"
+    ],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git stash:*)",
+      "Bash(entire disable:*)",
+      "Bash(entire clean:*)",
+      "Bash(entire configure:*)"
+    ]
+  },
   "hooks": {
     "PostToolUse": [
       {
