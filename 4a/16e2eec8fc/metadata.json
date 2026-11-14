@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "4a16e2eec8fc",
+  "strategy": "manual-commit",
+  "branch": "ehewes/85-87-handling-poc",
+  "checkpoints_count": 2,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/4a/16e2eec8fc/0/metadata.json",
+      "transcript": "/4a/16e2eec8fc/0/full.jsonl",
+      "compact_transcript": "/4a/16e2eec8fc/0/transcript.jsonl",
+      "content_hash": "/4a/16e2eec8fc/0/content_hash.txt",
+      "prompt": "/4a/16e2eec8fc/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 30,
+    "cache_creation_tokens": 17085,
+    "cache_read_tokens": 10140910,
+    "output_tokens": 11007,
+    "api_call_count": 13
+  },
+  "redaction": {
+    "replacements": 30,
+    "layers": {
+      "betterleaks": 7,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 2,
+      "credentialed_uri": 1,
+      "entropy": 2,
+      "key_context": 21,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
