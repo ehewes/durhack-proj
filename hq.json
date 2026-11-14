@@ -76,10 +76,17 @@
         "apps/mobile/app/",
         "apps/mobile/src/lib/",
         "apps/mobile/modules/",
+        "apps/mobile/app.config.ts",
+        "apps/server/src/*.ts",
         "apps/server/src/trpc/",
         "apps/server/src/integrations/",
         "apps/server/src/db/",
-        "packages/shared/src/domain/"
+        "packages/shared/src/domain/",
+        "package.json",
+        "biome.json",
+        "tsconfig.base.json",
+        "compose.yaml",
+        ".github/workflows/"
       ]
     },
     "infra": {
@@ -89,7 +96,13 @@
       ]
     }
   },
-  "check": [],
-  "setup": [],
+  "check": [
+    "bun run lint",
+    "bun run typecheck",
+    "bun run test"
+  ],
+  "setup": [
+    "bun install --frozen-lockfile"
+  ],
   "stale_minutes": 60
 }
