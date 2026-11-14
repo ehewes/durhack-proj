@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01Jb4AWywT5jPhxrqWKvKFRX",
+  "agent_id": "acd5bcaf9834df040",
+  "subagent_type": "general-purpose",
+  "task_description": "Build issue 133 briefing route",
+  "token_usage": {
+    "input_tokens": 100,
+    "cache_creation_tokens": 100735,
+    "cache_read_tokens": 3701842,
+    "output_tokens": 34840,
+    "api_call_count": 49
+  },
+  "started_at": "2026-11-14T22:25:27.132483Z",
+  "completed_at": "2026-11-14T22:32:53.375684Z"
+}
