@@ -47,3 +47,43 @@ same `light-v11` style and overlay layers as the web map.
 - **Location:** browsing the map asks for no location permission. The map shows no user-location
   puck.
 - **Attribution:** the Mapbox logo and the attribution button stay on.
+
+## Run on a physical iPhone
+
+HealthKit and background audio only work on a real iPhone, not in Expo Go or the simulator.
+
+Needs a Mac with Xcode, an Apple ID signed in under Xcode, and the iPhone on USB with Developer Mode
+on (Settings, Privacy & Security). Use Xcode 27.2 or later (`/Applications/Xcode.app`): the Xcode 27.0
+beta lacks the iOS 27 header API that `react-native-screens` needs and fails to compile.
+
+1. Follow steps 1 and 2 above (`.env` at the repo root, `DEVELOPER_DIR` pointing at Xcode).
+2. Build and install: `cd apps/mobile && bunx expo run:ios --device --no-bundler`, then pick the iPhone.
+3. First run: in Xcode, open `apps/mobile/ios/*.xcworkspace`, select the Kip target, Signing &
+   Capabilities, choose your team and change `com.durhack.kip` if Apple rejects it. HealthKit must
+   appear under capabilities.
+4. On the phone: Settings, General, VPN & Device Management, trust your developer certificate.
+5. Start Metro from the repo root (`bun run dev:app`) and open it in the dev client.
+
+`EXPO_PUBLIC_*` values are inlined when Metro bundles, so a Metro started without
+`EXPO_PUBLIC_API_URL` makes the app stop at launch. Set it in `.env` and restart Metro with
+`--clear`. The live API is `https://kip.edenmatrix.xyz`. It is public and ends up in the bundle:
+never put a secret in an `EXPO_PUBLIC_*` variable.
+
+## What the config sets (`app.config.ts`)
+
+- HealthKit: `@kingstinct/react-native-healthkit` adds the `com.apple.developer.healthkit`
+  entitlement and `NSHealthShareUsageDescription`. Kip only reads, so `NSHealthUpdateUsageDescription`
+  is `false`, `background` is `false` (no background delivery) and clinical records are not requested.
+- Background audio: `UIBackgroundModes: ["audio"]` keeps metering while the phone is locked.
+
+## Device checklist (to be run by a human)
+
+- [ ] App launches on the iPhone and shows the tabs
+- [ ] HealthKit permission sheet appears
+- [ ] Microphone prompt appears
+- [ ] With the phone locked, audio metering keeps running
+- [ ] The app reaches `EXPO_PUBLIC_API_URL`
+
+## Apple Watch signing result
+
+TODO (human): record the result here. Stop trying at hour 2.
