@@ -25,17 +25,19 @@ const schema = z.object({
 
 export type Env = z.infer<typeof schema>;
 
-let cached: Env | undefined;
-
 /** Parses an environment, treating blank values (`KEY=` in .env) as unset. */
 export function parseEnv(source: Record<string, string | undefined>): Env {
   return schema.parse(Object.fromEntries(Object.entries(source).filter(([, v]) => v !== "")));
 }
 
-/** Parsed on first use, so tests and type-only imports never need a full environment. */
+/**
+ * The current environment. Parsing stays lazy, so importing this module never
+ * requires a full environment. Each call reads `process.env` again: a feature
+ * test can set its key just before using it, and a test file that parsed the
+ * environment earlier cannot hide that key.
+ */
 export function env(): Env {
-  cached ??= parseEnv(process.env);
-  return cached;
+  return parseEnv(process.env);
 }
 
 /** A variable a feature can't run without. Throws a message that names it, never its value. */
