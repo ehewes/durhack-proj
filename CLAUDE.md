@@ -7,7 +7,7 @@
 - Superpowers: an issue is an approved design. Skip brainstorming. Do not write
   `docs/superpowers` specs or plans for issue work.
 - Use subagents sparingly. They cost tokens.
-- Skills live in `.claude/skills`: `/hq-work`, `/hq-plan`, `/hq-review`, `/hq-ship`.
+- Skills live in `.claude/skills`: `/hq-work`, `/hq-plan`, `/hq-review`, `/hq-ship`, `/anti-slop`.
 
 <!-- entire-agent:begin -->
 <!-- Entire agent instructions are inherited through AGENTS.md. -->

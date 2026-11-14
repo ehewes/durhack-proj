@@ -9,23 +9,47 @@ image runs two processes, the API (tRPC on Hono) and the ingest worker, on a Vul
 London behind Caddy for HTTPS. Terraform provisions the instance, its firewall, the container
 registry and the database access rules.
 
-```
- Kip app (iOS)                      Kip app (web build)      Open data
-  mic relative dB, clips,            city map, live event,   Observatory, OSM,
-  HealthKit sleep + vitals           Quiet Stays             Street Manager (SNS push)
-        | tRPC + clip upload               | tRPC                 |            |
-        v                                  v                      | push       | pull every 5 min
- +--------------------------- Vultr, London -------------------------------------------+
- |  API: Hono + tRPC, Caddy HTTPS, SNS route, serves web build  <--+   Ingest worker   |
- +-------------------------------------------------------------------------------------+
-        |            |              |            | reads/writes            | writes readings
-        v            v              v            v                         v
-     Gemini     ElevenLabs       Solana     +------------- Data stores ---------------+
-   classify,    TTS, Scribe,     Memo       |  Tiger Data: noise, sensor readings,    |
-   narrate      Sound Effects    hashes     |    sleep stages, vitals                 |
-                                            |  MongoDB Atlas: users, night summaries, |
-                                            |    hotels, sensors, works, scores       |
-                                            +-----------------------------------------+
+```mermaid
+flowchart TB
+  subgraph clients["Kip app (one Expo codebase)"]
+    ios["iOS<br/>mic relative dB, spike clips,<br/>HealthKit sleep and vitals"]
+    web["Web build (demo dashboard)<br/>city map, live event, Quiet Stays"]
+  end
+
+  subgraph open["Open data"]
+    obs["Urban Observatory"]
+    osm["OpenStreetMap (Overpass)"]
+    sm["Street Manager"]
+  end
+
+  subgraph vultr["Vultr, London (Terraform)"]
+    api["API<br/>Hono + tRPC, Caddy HTTPS,<br/>SNS route, serves web build"]
+    worker["Ingest worker<br/>node-cron, every 5 min"]
+  end
+
+  subgraph ext["Third-party services (API only)"]
+    gemini["Gemini<br/>classify, narrate"]
+    eleven["ElevenLabs<br/>TTS, Scribe, Sound Effects"]
+    solana["Solana<br/>Memo log hashes"]
+  end
+
+  subgraph stores["Data stores (Terraform)"]
+    tiger[("Tiger Data<br/>noise, sensor readings,<br/>sleep stages, vitals")]
+    mongo[("MongoDB Atlas<br/>users, night summaries,<br/>hotels, sensors, works, scores")]
+  end
+
+  ios -- "tRPC + clip upload" --> api
+  web -- "tRPC" --> api
+  sm -- "SNS push" --> api
+  worker -- "pull" --> obs
+  worker -- "pull" --> osm
+  api --> gemini
+  api --> eleven
+  api --> solana
+  api -- "reads, writes" --> tiger
+  api -- "reads, writes" --> mongo
+  worker -- "writes readings" --> tiger
+  worker -- "writes" --> mongo
 ```
 
 - The phone uploads each night through tRPC, and each spike clip through a plain upload route.

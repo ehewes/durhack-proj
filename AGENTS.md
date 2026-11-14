@@ -26,6 +26,13 @@ Code is split by feature (`docs/ARCHITECTURE.md`, "File tree"). Your issue's lan
 - Never edit registries (`trpc/router.ts`, `main.worker.ts`, `app/`) or shared code (`lib/`,
   `integrations/`, `db/`, `packages/shared/src/domain/`) unless your issue's lane is `platform`.
 
+## UI and docs
+- Any change to UI (screens, components, `lib/ui`) runs the `anti-slop` skill
+  (`.agents/skills/anti-slop`) before the PR. In React Native the banned patterns show up as
+  `expo-blur` / `BlurView`, multi-hue `expo-linear-gradient`, and pill-shaped `borderRadius` on
+  static text.
+- Diagrams in docs, issues and PRs are Mermaid code blocks, not ASCII art or images.
+
 ## The loop
 One issue = one agent = one worktree/branch = one PR. Humans assign issues. Never pick your own.
 
