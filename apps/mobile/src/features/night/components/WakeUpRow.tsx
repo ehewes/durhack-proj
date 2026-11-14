@@ -10,7 +10,7 @@ export function WakeUpRow({ wakeUps, scale }: { wakeUps: NightTimeline["wakeUps"
     <View style={styles.row} accessibilityLabel={`${wakeUps.length} wake-ups`}>
       {wakeUps.map((w) => (
         <View
-          key={w.t}
+          key={`${w.t}-${w.source}`}
           style={[
             styles.mark,
             {

@@ -71,7 +71,7 @@ export function NightTimelineChart({
           </View>
         ))}
         {night.wakeUps.map((w) => (
-          <View key={w.t} style={styles.item}>
+          <View key={`${w.t}-${w.source}`} style={styles.item}>
             <Text style={[type.body, { color: colors.text }]}>
               {clock(w.t)} Wake-up{w.linkedEventId ? ", followed a spike" : ""}
             </Text>

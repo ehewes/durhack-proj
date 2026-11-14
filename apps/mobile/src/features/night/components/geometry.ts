@@ -13,10 +13,11 @@ export function makeScale(night: NightTimeline, width: number, height: number): 
     ...night.noise.map(([, db]) => db),
     ...night.events.map((e) => e.peakDb),
   ];
+  const span = end > start ? end - start : 1;
   const lo = Math.min(...values) - 2;
   const hi = Math.max(...values) + 2;
   return {
-    x: (t) => ((Math.min(Math.max(t, start), end) - start) / (end - start)) * width,
+    x: (t) => ((Math.min(Math.max(t, start), end) - start) / span) * width,
     y: (db) => height - ((db - lo) / (hi - lo)) * height,
   };
 }

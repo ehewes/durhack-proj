@@ -40,19 +40,21 @@ export function StageBand({
       accessibilityLabel="Sleep stages across the night"
       style={[styles.band, { height, borderColor: colors.border }]}
     >
-      {stages.map((s) => {
-        const left = scale.x(Date.parse(s.start) / 1000);
-        const right = scale.x(Date.parse(s.end) / 1000);
-        return (
-          <View
-            key={`${s.start}-${s.stage}`}
-            style={[
-              styles.span,
-              { left, width: Math.max(right - left, 1), backgroundColor: fills[s.stage] },
-            ]}
-          />
-        );
-      })}
+      {stages
+        .filter((s) => s.stage !== "inBed")
+        .map((s) => {
+          const left = scale.x(Date.parse(s.start) / 1000);
+          const right = scale.x(Date.parse(s.end) / 1000);
+          return (
+            <View
+              key={`${s.start}-${s.stage}`}
+              style={[
+                styles.span,
+                { left, width: Math.max(right - left, 1), backgroundColor: fills[s.stage] },
+              ]}
+            />
+          );
+        })}
     </View>
   );
 }
