@@ -1,0 +1,96 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "39174e7c5212",
+  "session_id": "736d853a-59a1-497e-9c09-03efc1099979",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-14T22:55:07.828572Z",
+  "branch": "worktree-agent-a320534075171177a",
+  "checkpoints_count": 2,
+  "save_step_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "2e5aec6f13cf",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 28,
+    "cache_creation_tokens": 10061,
+    "cache_read_tokens": 1866549,
+    "output_tokens": 6549,
+    "api_call_count": 13,
+    "subagent_tokens": {
+      "input_tokens": 4,
+      "cache_creation_tokens": 31647,
+      "cache_read_tokens": 27779,
+      "output_tokens": 971,
+      "api_call_count": 2
+    },
+    "subagent_tokens_complete": true
+  },
+  "session_token_usage": {
+    "input_tokens": 276,
+    "cache_creation_tokens": 330158,
+    "cache_read_tokens": 10240491,
+    "output_tokens": 50761,
+    "api_call_count": 108,
+    "subagent_tokens": {
+      "input_tokens": 70,
+      "cache_creation_tokens": 199032,
+      "cache_read_tokens": 1241898,
+      "output_tokens": 18602,
+      "api_call_count": 35
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 47,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 18,
+      "key_context": 29,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_01NAr1bxbAoHkaUCgRT7ikvY",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "hq-review"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "c5254ae7e39d",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 47,
+        "end": 48,
+        "entry_ids": [
+          "73ca9603-cb3d-4ffd-b2cb-62e2fbd7fce5"
+        ],
+        "tool_use_id": "toolu_01NAr1bxbAoHkaUCgRT7ikvY"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01NAr1bxbAoHkaUCgRT7ikvY"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: hq-review",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 32
+  }
+}

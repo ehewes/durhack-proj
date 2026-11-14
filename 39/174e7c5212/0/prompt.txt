@@ -1,0 +1,221 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /Users/nick/conductor/workspaces/durhack-proj/tripoli directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/main. Use this for actions like diffing (`git diff origin/main...`) or creating PRs (`gh pr create --base main`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+Conductor shows the PR for whichever branch is checked out. After you open a PR from a different branch, or a PR stack, check out that PR's branch (for a stack, the top-most branch) so Conductor shows it.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+Save screenshots under `.context/` and embed them inline in the final response using Markdown image syntax, for example `![Screenshot](</Users/nick/conductor/workspaces/durhack-proj/tripoli/.context/screenshot.png>)`.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+Review my active issues and merge them
+
+---
+
+not issues, pull requests
+
+---
+
+from main, run the mobile app for me to test
+
+---
+
+<task-notification>
+<task-id>bymp1942a</task-id>
+<tool-use-id>toolu_017xvLpD1a9VyjxMNAoAz9ee</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-nick-conductor-workspaces-durhack-proj-tripoli/736d853a-59a1-497e-9c09-03efc1099979/tasks/bymp1942a.output</output-file>
+<status>completed</status>
+<summary>Background command "cd apps/mobile &amp;&amp; (bun install &gt;/dev/null 2&gt;&amp;1; true); nohup bunx expo start --web --port 8081 &gt; ../../.context/expo-web.log 2&gt;&amp;1 &amp;
+sleep 25; tail -15 /Users/nick/conductor/workspaces/durhack-proj/tripoli/.context/expo-web.log" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+implement the 6 M0 issues in parallel
+
+---
+
+correction, implement 21, 13, 9, 8
+
+---
+
+<task-notification>
+<task-id>a21f626616dbfc92a</task-id>
+<tool-use-id>toolu_012eVoKTVftdW4er1vSp3ZTe</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-nick-conductor-workspaces-durhack-proj-tripoli/736d853a-59a1-497e-9c09-03efc1099979/tasks/a21f626616dbfc92a.output</output-file>
+<status>completed</status>
+<summary>Agent "Implement issue #21" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>PR #109 is open for #21 and CI-clean locally. The Entire trail is not fully linked, and I did not run the review step because the issue is `size:S`.
+
+- **Code:** I added `apps/server/src/integrations/solana.ts` and its test. It uses plain JSON-RPC over `fetch` and `node:crypto`, with no new dependency and no Anchor.
+- **Evidence:** `./hq check` passed, 3/3 (lint, typecheck, tests). The 6 mocked tests pass.
+- **Keyed step not run:** the `(keys)` step, writing and reading back one memo on mainnet, is left for a human with `.env`. The PR says so.
+- **Trail:** `entire trail show` and `ci-pr` found no trail. `entire trail create` made one (`01M7DC6Z0B74CZZRH19THWMH6F`), but linking it to the branch failed with a 409 ("Change already belongs to another Trail"). I did not retry.
+- **Not shipped:** the PR is not merged.</result>
+<usage><subagent_tokens>57711</subagent_tokens><tool_uses>23</tool_uses><duration_ms>165318</duration_ms></usage>
+<worktree><worktreePath>/Users/nick/conductor/repos/durhack-proj/.claude/worktrees/agent-a21f626616dbfc92a</worktreePath><worktreeBranch>worktree-agent-a21f626616dbfc92a</worktreeBranch></worktree>
+</task-notification>
+
+---
+
+what's the current implementation state of the 4 issues I mentioned
+
+---
+
+Ask if anything needed to implement the 3 other issues
+
+---
+
+list specific companies/websites I should create accounts with, this is for a hackathon so everything should be free
+
+---
+
+what permissions does the mongodb atlas api key need
+
+---
+
+Add ElevenLabs to my project: run `npx -y @elevenlabs/cli@latest onboard init` and follow what it prints.
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/K3dVK3/file-24a886413d6837ab8a78b584e05d80ee.png (274.0 KB)
+</system_instruction>
+
+
+
+make answers to these questions.context/attachments/K3dVK3/file-24a886413d6837ab8a78b584e05d80ee.png
+
+---
+
+I have everything except the following:
+
+- Paid Gemini (will free suffice?)
+- Hotel affiliate (can openstreetmap be used instead?)
+- Street manager (complicated process)
+
+---
+
+replace cloudflare be used instead of vultr
+
+---
+
+is there any free alternative to vultr
+
+---
+
+what do I need from cloudflare tunnel
+
+---
+
+no api key or anything?
+
+---
+
+what about tailscale
+
+---
+
+Continue with the implementation of the 4 issues, I added all the env files to my 1password instance (double-check them before going parallel) and ask me if anything is missing
+
+---
+
+try again
+
+---
+
+run it outside the sandbox
+
+---
+
+They're part of the dev environment for durhack 2026, not a login
+
+---
+
+2yrb3ct22f6yv36fu2k56p6vem
+
+---
+
+<task-notification>
+<task-id>a3bb137d2ec9bec69</task-id>
+<tool-use-id>toolu_015E1Fu4Y8zGBVvszMiQRs5e</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-nick-conductor-workspaces-durhack-proj-tripoli/736d853a-59a1-497e-9c09-03efc1099979/tasks/a3bb137d2ec9bec69.output</output-file>
+<status>completed</status>
+<summary>Agent "Implement issue #13 code side" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Claim refused; stopping as instructed.
+
+Exact message: `✗ #13 is blocked by open #8`
+
+I didn't force the claim. I made no code changes, opened no PR and ran no Entire trail steps. Issue #13 can't start until #8 is closed or merged. Tell me once it is and I'll claim and build the `app.config.ts` and README changes. The on-device Verify steps will stay marked as needing your Mac and iPhone.</result>
+<usage><subagent_tokens>32119</subagent_tokens><tool_uses>2</tool_uses><duration_ms>8151</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a15092e6d8a7dce29</task-id>
+<tool-use-id>toolu_01ULfXPaS41kiKkLQAjDGzHX</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-nick-conductor-workspaces-durhack-proj-tripoli/736d853a-59a1-497e-9c09-03efc1099979/tasks/a15092e6d8a7dce29.output</output-file>
+<status>completed</status>
+<summary>Agent "Record #9 answers in docs" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>PR #146 is open, but the trail step failed. I did not merge anything.
+
+- **Claim:** `./hq claim 9` succeeded.
+- **Docs:** Both answers are marked answered in `docs/SPEC.md`. `docs/DECISIONS.md` has a dated 2026-11-14 entry, and `docs/hack/BRIEF.md` has two small edits. The "35" and the event timing questions stay open.
+- **Check:** `./hq check` passes 3/3, but only after I ran `bun install` in the worktree; the first run failed typecheck without it.
+- **Trail:** `trail show` and `ci-pr` found no trail for the branch, so I ran `trail create`. It returned a 409: "Change already belongs to another Trail". It also printed a `trail link` command, which I did not run.
+- **Review:** The issue is `size:S`, so I skipped `entire review`.
+
+PR: https://github.com/ehewes/durhack-proj/pull/146 (I inferred this URL from the repo path and the number 146.)</result>
+<usage><subagent_tokens>39335</subagent_tokens><tool_uses>8</tool_uses><duration_ms>139291</duration_ms></usage>
+<worktree><worktreePath>/Users/nick/conductor/repos/durhack-proj/.claude/worktrees/agent-a15092e6d8a7dce29</worktreePath><worktreeBranch>worktree-agent-a15092e6d8a7dce29</worktreeBranch></worktree>
+</task-notification>
+
+---
+
+What are the pending requirements from me to implement those 4 issues
+
+---
+
+35 means nothing in team notes, just remove it, even started 14 Nov 12:00pm and will end 15 Nov 12:00pm (code freeze). Replace vultr with tailscale (installed locally and in cli), free gemini api key is provided in 1password. Ship [#146](.context/pull-requests/146.md). Tell me which (free) wallet to use for #21, ship [#109](.context/pull-requests/109.md)
+
+---
+
+c
+
+---
+
+how do I add SOL to the wallet
+
+---
+
+is there any way to use solana in this project without a wallet or is one required
+
+---
+
+Use devnet
+
+---
+
+check now
+
+---
+
+1password has been unlocked for commit signing, continue with everything. also update the docs to mention devnet will be used for the demo and that the plan is to use mainnet for the real app
+
+---
+
+push and merge, then start 8 and 13 in parallel
