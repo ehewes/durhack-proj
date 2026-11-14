@@ -186,3 +186,12 @@ Mapbox attribution stays visible.
 **Consequences:** The web export shows Newcastle tiles only when the public token is set. A missing
 token shows a message naming `EXPO_PUBLIC_MAPBOX_TOKEN` instead of a blank map. The phone build does
 not gain a Mapbox native SDK. Secret Mapbox tokens (`sk.`) stay out of the app.
+
+## 2026-11-14: Open questions answered: no home sensor, one sponsor track
+**Context:** Two open questions in `docs/SPEC.md` changed the plan. The human answered both.
+**Decision:** Nobody sleeps at home in Newcastle near an Observatory noise sensor during the event,
+so the city map uses sensors near the venue and demo step 4 uses a night exported from HealthKit
+(the SPEC's stated fallback). Each team is limited to one sponsor track, so we enter MongoDB per
+"Tiger for time series, MongoDB for documents and geo". Still open: the event length and start
+time, and what the "35" in the team's notes means. Both keep their assumptions in `docs/SPEC.md`.
+**Consequences:** Follow the MongoDB fallback in that entry. Do not build on the "35".
