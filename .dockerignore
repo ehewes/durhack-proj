@@ -5,5 +5,8 @@
 .context
 .entire
 infra
+# Only the exported models go into the image; training data stays out of the build context
+ml
+!ml/models
 **/.env
 **/.env.*

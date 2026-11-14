@@ -23,14 +23,25 @@ export async function retry<T>(
   for (let attempt = 1; ; attempt++) {
     try {
       return await fn();
-    } catch {
+    } catch (error) {
       if (attempt >= attempts) {
         // Deliberately drop the driver error: its message can contain a connection URI
         throw new Error(`${label}: gave up after ${attempts} attempts`);
       }
       const delay = Math.min(baseDelayMs * 2 ** (attempt - 1), maxDelayMs);
-      console.warn(`${label}: attempt ${attempt} failed, retrying in ${delay}ms`);
+      // Log only the error's code or name (e.g. ECONNREFUSED), never its message: it can hold a URI
+      const reason = errorCode(error);
+      console.warn(`${label}: attempt ${attempt} failed (${reason}), retrying in ${delay}ms`);
       await sleep(delay);
     }
   }
+}
+
+function errorCode(error: unknown): string {
+  if (error && typeof error === "object") {
+    const { code, name } = error as { code?: unknown; name?: unknown };
+    if (typeof code === "string" || typeof code === "number") return String(code);
+    if (typeof name === "string") return name;
+  }
+  return "unknown";
 }

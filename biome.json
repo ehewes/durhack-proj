@@ -16,7 +16,8 @@
       "!.agents",
       "!**/*.md",
       "!hq.json",
-      "!**/fixtures"
+      "!**/fixtures",
+      "!ml"
     ]
   },
   "formatter": {

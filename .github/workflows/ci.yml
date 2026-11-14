@@ -39,11 +39,16 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "~1.13"
+          # The default wrapper breaks `terraform console` reading piped stdin
+          terraform_wrapper: false
       - run: terraform fmt -check -diff
       - run: terraform init -backend=false -input=false
       - run: terraform validate
       - name: Render cloud-init with sample values and parse the YAML
-        run: ./scripts/check-cloud-init.sh
+        timeout-minutes: 2
+        run: |
+          python3 -m pip install --quiet pyyaml
+          ./scripts/check-cloud-init.sh
 
   docker:
     runs-on: ubuntu-latest
