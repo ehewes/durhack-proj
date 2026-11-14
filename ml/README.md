@@ -12,7 +12,7 @@ spectral noise gate, waveforms and spectrograms before and after, and real phone
 chart; to play the audio and run it yourself: `uv sync --group dev && uv run jupyter lab notebooks/handling_poc.ipynb`.
 
 ## Results so far
-The exported model (`models/handling-poc.onnx`) is the RTX 3090 run: 0.42M parameters, 15,000 steps, trained on a Lium
+The exported model (`models/handling-v1.onnx`, weights in `models/handling-poc.pt`) is the RTX 3090 run: 0.42M parameters, 15,000 steps, trained on a Lium
 pod for $0.16. On held-out mixtures it improves SI-SDR by +11.9 dB (a spectral gate: -3.9 dB), removes 17.9 dB where
 there is handling noise and 0.15 dB elsewhere, and flags handling frames with F1 0.91. On a real held-out drop take
 it flags exactly the five drops (precision 0.96, recall 1.0) and removes them by 27.8 dB. Details: the notebook,
@@ -28,7 +28,7 @@ at -5 to +20 dB, so there is no mixture set on disk. Python 3.12 via `uv` (`ml/p
 | `uv run python -m kipml.train --steps 2000 --device cpu` | Trains (about 10 min on an M1 Pro CPU; `--device cuda` on the Lium pod). Writes `checkpoints/handling-poc.pt` |
 | `uv run python -m kipml.evaluate` | Scores held-out mixtures against a spectral-gating baseline |
 | `uv run python -m kipml.infer <any recording>` | **Test on a device's recording** (m4a, wav, ...): writes `<name>.clean.wav` and prints the flagged moments |
-| `uv run python -m kipml.export` | Writes `models/handling-poc.onnx` and checks it matches PyTorch |
+| `uv run python -m kipml.export [--checkpoint <ckpt>]` | Writes `models/handling-v1.onnx` (raw audio in, STFT inside) from `models/handling-poc.pt` or any checkpoint, trained or not, and checks it against PyTorch. `--features-in` writes the older features graph |
 | `uv run --group dev pytest` | Unit tests |
 | `uv run python -m kipml.report [--name handling-gpu --checkpoint checkpoints/handling-gpu.pt]` | Charts, numbers and before/after audio in `reports/<name>/` |
 
@@ -38,6 +38,30 @@ quiet parts of each take, so the model removes handling bursts and leaves the ro
 
 Splits are by source file: `sleeve_03`, `pickup_01` and `pocket_02` from our takes, the last four
 synthetic clips, ESC-50 fold 5 and the last 20% of each private recording are never trained on.
+
+## The model the API runs (`models/handling-v1.onnx`)
+One ONNX file (opset 17, 2.4 MB) runs the whole filter: raw audio in, cleaned audio and handling probabilities
+out. The STFT is a strided convolution with fixed DFT weights and the inverse STFT a transposed convolution, so the
+server (#90) needs no STFT or FFT code: decode the 16-bit WAV clip, run the model, read the two outputs.
+
+| | Name | Type and shape | Meaning |
+|---|---|---|---|
+| Input | `pcm` | float32 [1, N] | 16 kHz mono in [-1, 1]: 16-bit samples divided by 32768. N >= 512 |
+| Output | `clean` | float32 [1, N] | The clip with handling noise removed: what goes on to labelling |
+| Output | `handling` | float32 [1, frames] | Probability that each 10 ms frame is handling noise. frames = 1 + N // 160 |
+
+- **Frames:** 100 per second. Frame `i` is centred on sample `160 * i`, time `i / 100` s, and covers 25 ms.
+  A 10-second clip gives 1,001 frames.
+- **Threshold:** a frame is handling noise when its probability is above 0.5. At 0.5 the model finds handling
+  frames in held-out mixtures with precision 0.90, recall 0.92 and F1 0.91.
+- **Clip rule (suggestion for #90):** a phone drop or rustle lasts 0.1 to 1 s. Judge the spike by the frames around
+  its time in the clip rather than by the whole clip. If most of them are above 0.5, the event is `handling`.
+- **Short input:** spike clips are 10 s long, so only tests go below 512 samples (32 ms). Zero-pad shorter input to
+  512 samples and keep the first N samples and 1 + N // 160 frames, as `kipml.model.enhance` does.
+- **Speed:** about 80 ms for a 10-second clip on one CPU thread in ONNX Runtime, STFT included.
+- **Checks:** `tests/test_export.py` checks the in-graph STFT against `torch.stft`, an all-pass mask returns the
+  input, and ONNX Runtime matches both PyTorch and `kipml.model.enhance` (the training path) within 1e-3. The
+  measured gap is about 2e-6. `models/handling-v1.json` records it.
 
 ## Audio library
 Every clip is 16 kHz mono 16-bit WAV. Licences and sources for every file: `audio/SOURCES.md`.
