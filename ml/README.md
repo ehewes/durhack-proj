@@ -13,6 +13,7 @@ Every clip is 16 kHz mono 16-bit WAV. Licences and sources for every file: `audi
 | `audio/online/background/<category>/` | Night background sounds from ESC-50 (traffic, siren, construction, aircraft, rail, snoring, breathing, weather, room, footsteps). CC BY-NC 3.0 | yes |
 | `audio/synthetic/handling/` | **Placeholder** procedural rustle, scrapes and bumps, with `labels.json` intervals, until real recordings exist | yes |
 | `audio/generated/elevenlabs/` | Extra handling and background clips from ElevenLabs Sound Effects (once a key exists) | yes |
+| `audio/private/` | Recordings with other people's conversation (venue room tone, Watch audio): training on the local machine or the Lium pod only | no |
 | `audio/inbox/` | Drop folder for raw Voice Memos files | no |
 
 ## Add your recordings
@@ -23,7 +24,10 @@ Every clip is 16 kHz mono 16-bit WAV. Licences and sources for every file: `audi
    `corridor_roomtone.m4a`. Kinds: sleeve, pocket, pillow, sheet, bedsheet, hoodie, jacket, pickup,
    bag, handling, roomtone.
 3. Put them in `ml/audio/inbox/` and run `python3 ml/scripts/import_recordings.py`.
-4. Commit `ml/audio/ours/` on a branch and open a PR, or ask an agent to. Keep each take under 30 s.
+4. Scan for speech before committing (macOS): `swiftc -O ml/scripts/sound_windows.swift -o /tmp/sound_windows`,
+   then `/tmp/sound_windows <file.wav>`. Cut any window with speech confidence 0.5 or more; anything full of
+   conversation goes to `audio/private/` instead. Provenance for each clip goes in `audio/ours/RECORDINGS.md`.
+5. Commit `ml/audio/ours/` on a branch and open a PR, or ask an agent to. Keep each take under 30 s.
 
 ## Scripts
 | Script | Does |
@@ -31,6 +35,7 @@ Every clip is 16 kHz mono 16-bit WAV. Licences and sources for every file: `audi
 | `uv run ml/scripts/fetch_esc50.py [--per-class 6]` | Downloads ESC-50 background clips and rewrites their section of `SOURCES.md` |
 | `uv run ml/scripts/make_synthetic_handling.py` | Regenerates the placeholder handling clips (seeded) |
 | `python3 ml/scripts/import_recordings.py` | Converts `audio/inbox/` into `audio/ours/` (macOS `afconvert`, or `ffmpeg`) |
+| `ml/scripts/sound_windows.swift` | Apple sound classifier over a file in windows: top label and speech confidence per window (macOS) |
 | `ELEVENLABS_API_KEY=... python3 ml/scripts/generate_elevenlabs_sfx.py` | Generates extra clips with ElevenLabs Sound Effects; untested until the key exists |
 
 Training data mixtures, runs and checkpoints are generated from this library and stay out of git.
