@@ -6,6 +6,7 @@ import {
   linkWakeUps,
   NEVER_CAUSED_BY,
   RANDOM_WINDOW_COUNT,
+  SAY_SIMULATED,
 } from "@kip/shared/domain";
 import { nightTimeline, nightUpload } from "@kip/shared/night";
 import nightTimelineFixture from "../../../../../packages/shared/src/night/fixtures/night-timeline.json";
@@ -26,7 +27,7 @@ import {
   wakeLine,
 } from "./copy";
 import { demoAttribution, demoEvents, demoWindow } from "./data/demo";
-import { fractionAlong, marksFromAttribution } from "./marks";
+import { epochSeconds, fractionAlong, marksFromAttribution } from "./marks";
 
 /** Same FNV-1a mix as the server's `attributionSeed`, so the baseline matches forNight. */
 function attributionSeed(nightId: string): number {
@@ -41,18 +42,17 @@ function attributionSeed(nightId: string): number {
 const timeline = nightTimeline.parse(nightTimelineFixture);
 const upload = nightUpload.parse(nightUploadFixture);
 
-function sentences(): string[] {
-  const summary = attributionSummaryText(demoAttribution);
-  const marks = marksFromAttribution(demoAttribution, demoEvents);
-  const example = attributionSummaryText({
-    night: toAttributionView([{ wakeUps: 4, followedSpike: 3 }]),
-    randomWindowRate: 0.1,
-  });
-  const linked = attributionSummaryText({
-    night: toAttributionView([{ wakeUps: 1, followedSpike: 1 }]),
-    randomWindowRate: 0,
-  });
-  return [
+/** One wake-up 90 seconds after the siren, so the linked lines render too. */
+const linkedNight = {
+  wakeUps: [
+    { t: 1794619110, source: "stage" as const, linkedEventId: "clip-2" },
+    { t: 1794628800, source: "heartRate" as const, linkedEventId: null },
+  ],
+};
+
+/** Every line the screen, the summary and the marks render, for the demo night and a linked one. */
+function renderedLines(): string[] {
+  const lines = [
     TITLE,
     METHOD,
     TRACK_CAPTION,
@@ -61,13 +61,28 @@ function sentences(): string[] {
     LOAD_ERROR,
     TRY_AGAIN,
     SIMULATED_NIGHT,
-    summary,
-    example,
-    linked,
-    ...marks.wakeUps.map((wake) => wakeLine(wake)),
-    clock(Date.parse(demoWindow.startedAt) / 1000),
-    clock(Date.parse(demoWindow.endedAt) / 1000),
+    attributionSummaryText(demoAttribution),
+    attributionSummaryText({
+      night: toAttributionView([{ wakeUps: 4, followedSpike: 3 }]),
+      randomWindowRate: 0.1,
+    }),
+    attributionSummaryText({
+      night: toAttributionView([{ wakeUps: 1, followedSpike: 1 }]),
+      randomWindowRate: 0,
+    }),
+    clock(epochSeconds(demoWindow.startedAt)),
+    clock(epochSeconds(demoWindow.endedAt)),
   ];
+  for (const result of [demoAttribution, linkedNight]) {
+    const marks = marksFromAttribution(result, demoEvents);
+    const followed = marks.wakeUps.filter((wake) => wake.linkedEventId !== null).length;
+    lines.push(
+      trackLabel(marks.wakeUps.length, followed),
+      ...marks.wakeUps.map((wake) => wakeLine(wake)),
+      ...marks.spikes.map((spike) => spikeLine(spike.t)),
+    );
+  }
+  return lines;
 }
 
 describe("attribution summary", () => {
@@ -104,11 +119,17 @@ describe("attribution summary", () => {
     );
   });
 
-  test("visible sentences never say caused by", () => {
-    for (const line of sentences()) {
-      expect(line.includes("caused by")).toBe(false);
-      expect(bannedWording(line, "cause")).toEqual([]);
+  test("no rendered line uses a Never-say phrase from docs/DOMAIN.md", () => {
+    const lines = renderedLines();
+    expect(lines).toContain("01:18 Wake-up, followed a spike");
+    expect(lines).toContain("Spike at 01:17");
+    for (const line of lines) {
+      expect(bannedWording(line)).toEqual([]);
     }
+  });
+
+  test("the captured demo night is labelled simulated", () => {
+    expect(SIMULATED_NIGHT.toLowerCase()).toContain(SAY_SIMULATED);
   });
 });
 
