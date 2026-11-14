@@ -171,3 +171,18 @@ or more) are cut from committed clips; recordings that are mostly conversation g
 **Consequences:** The committed handling set is smaller (about 3 minutes). The data pipeline must cope
 with room tone being absent on a fresh clone, for example by taking the noise floor from each take's
 quiet start and end.
+
+## 2026-11-14: Web maps use Mapbox GL JS
+**Context:** The web dashboard needs a basemap that stays readable under city, works and stay
+layers, with selection, clustering and camera changes. The first shell used MapLibre and
+OpenStreetMap raster tiles on both web and iOS.
+**Decision:** `Map.web.tsx` renders with Mapbox GL JS and the restrained `light-v11` style. The
+public token comes from `EXPO_PUBLIC_MAPBOX_TOKEN` (a `pk.` token, URL-restricted in the Mapbox
+console, never committed). Feature code draws GeoJSON points, lines and polygons through `lib/map`
+and does not import Mapbox or MapLibre. iOS stays on MapLibre with OpenStreetMap raster tiles until
+a native Mapbox migration. Observatory, Street Manager and OpenStreetMap remain Kip's data sources;
+the basemap is only the canvas. The map does not request device location to show Newcastle, and
+Mapbox attribution stays visible.
+**Consequences:** The web export shows Newcastle tiles only when the public token is set. A missing
+token shows a message naming `EXPO_PUBLIC_MAPBOX_TOKEN` instead of a blank map. The phone build does
+not gain a Mapbox native SDK. Secret Mapbox tokens (`sk.`) stay out of the app.

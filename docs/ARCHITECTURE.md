@@ -56,8 +56,10 @@ flowchart TB
   In live demo mode it streams dB samples, and the web build subscribes to them.
 - The worker pulls Observatory readings and OpenStreetMap venues every 5 minutes. The API receives
   Street Manager permits as they're pushed.
-- **The API is the only thing that calls Gemini, ElevenLabs and Solana**, so keys live in one
-  place. The app (iOS or web) never holds third-party keys.
+- **The API is the only thing that calls Gemini, ElevenLabs and Solana**, so those secret keys live
+  in one place. The web map holds one public Mapbox token (`EXPO_PUBLIC_MAPBOX_TOKEN`). It is a
+  `pk.` token restricted to the dashboard's origins, not a secret `sk.` token, and it is the only
+  client credential.
 - Every timestamped value goes in Tiger. MongoDB holds one summary document per night plus users,
   hotels, sensors, works and scores.
 
@@ -69,7 +71,7 @@ Bun is the package manager and workspace tool everywhere, and the server runtime
 | App | React Native + TypeScript on Expo (SDK current at kick-off) with a dev client, Expo Router, TanStack Query + tRPC client | One codebase, two targets: iOS (the phone on the nightstand) and web (the demo dashboard). Needs an Apple developer account and the HealthKit entitlement |
 | HealthKit | `@kingstinct/react-native-healthkit` with its Expo config plugin | Reads the Watch's sleep stages, heart rate, HRV and respiratory rate after the night ends |
 | Audio | Local Expo Module `kip-audio` (Swift): AVAudioRecorder metering at 1 Hz, 10 s spike clips, on-device speech check (SoundAnalysis built-in classifier), background audio mode | No JS library does all of this reliably while locked; one small native module does |
-| Map | MapLibre with OpenStreetMap tiles: `@maplibre/maplibre-react-native` on iOS, `maplibre-gl` on web, behind one `MapView` component split by `.native.tsx` / `.web.tsx` | |
+| Map | Web: Mapbox GL JS (`mapbox-gl`, style `light-v11`) in `Map.web.tsx`. iOS: MapLibre (`@maplibre/maplibre-react-native`) with OpenStreetMap raster tiles in `Map.native.tsx`. Both sit behind `lib/map`. Feature code passes GeoJSON points, lines and polygons, plus selection, clustering and camera changes, and does not import either SDK. | Public web token `EXPO_PUBLIC_MAPBOX_TOKEN`. Observatory, Street Manager and OpenStreetMap stay Kip's data sources. The basemap is only the canvas. |
 | watchOS (stretch) | Native SwiftUI watch target: haptics, "something woke me", briefing playback | Only if Watch signing works in the first 2 hours |
 | API | TypeScript, tRPC v11 on Hono (`@hono/trpc-server`), Zod, SuperJSON | tRPC for every JSON call and the live subscription (SSE). Plain Hono routes only for binary clip upload, the Street Manager SNS endpoint, health check and the web build |
 | Worker | TypeScript, node-cron, same image as the API | Runs each feature's jobs |
@@ -119,8 +121,9 @@ apps/
       lib/
         trpc.ts                   tRPC client, links, base URL
         ui/                       shared primitives (Button, Card, Text, theme)
-        map/                      Map.native.tsx, Map.web.tsx (TypeScript resolves the native one via
-                                  `moduleSuffixes`; Metro picks per platform)
+        map/                      Map.native.tsx (MapLibre + OSM tiles), Map.web.tsx (Mapbox GL JS).
+                                  types.ts is the SDK-free interface. TypeScript resolves the native
+                                  file via `moduleSuffixes`; Metro picks per platform.
         user-id.ts                anonymous ID sent as `x-kip-user`, persisted on first launch
     modules/
       kip-audio/                  local Expo Module (Swift + TS bindings)
@@ -309,12 +312,14 @@ into each new workspace via `.worktreeinclude`. For a plain git worktree, copy `
 | `SOLANA_RPC_URL`, `SOLANA_KEYPAIR` | API | Mainnet RPC; a small funded keypair used only for memos |
 | `STREET_MANAGER_TOPIC_ARN` | API | Street Manager open data registration (register in hour one) |
 | `EXPO_PUBLIC_API_URL` | App | `https://<ip>.sslip.io`, or the local server in development. Not a secret |
+| `EXPO_PUBLIC_MAPBOX_TOKEN` | App, web map | Mapbox public token (`pk.`). Restrict it to the dashboard origins. Not a secret. Never commit a real token. iOS does not read it |
 | `VULTR_API_KEY` | Terraform | Vultr account (MLH credit) |
 | `MONGODB_ATLAS_PUBLIC_KEY`, `MONGODB_ATLAS_PRIVATE_KEY` | Terraform | Atlas org API key |
 | Tiger Cloud provider credentials | Terraform | Tiger Cloud console; names per the provider docs |
 | `TF_VAR_admin_ip`, `TF_VAR_image`, `TF_VAR_registry_user`, `TF_VAR_registry_password`, `TF_VAR_mongo_uri`, `TF_VAR_tiger_uri`, `TF_VAR_app_env` | Terraform | See `infra/terraform.tfvars.example`; `app_env` carries the API keys above to the server |
 
-Only `EXPO_PUBLIC_*` variables reach the app, and they end up in the bundle: never put a key there.
+Only `EXPO_PUBLIC_*` variables reach the app, and they end up in the bundle: never put a secret
+key there. `EXPO_PUBLIC_MAPBOX_TOKEN` is a public `pk.` token, not a secret.
 
 ## Deploy
 Either of us deploys. The demo runs from tag `demo-v1`.
