@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_012eVoKTVftdW4er1vSp3ZTe",
+  "agent_id": "a21f626616dbfc92a",
+  "subagent_type": "general-purpose",
+  "task_description": "Implement issue #21",
+  "token_usage": {
+    "input_tokens": 40,
+    "cache_creation_tokens": 49382,
+    "cache_read_tokens": 901175,
+    "output_tokens": 13891,
+    "api_call_count": 20
+  },
+  "started_at": "2026-11-14T15:50:46.353215Z",
+  "completed_at": "2026-11-14T15:53:31.421193Z"
+}
