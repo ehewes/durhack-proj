@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "f2f63b25265d",
+  "strategy": "manual-commit",
+  "branch": "docs/event-times-devnet",
+  "checkpoints_count": 9,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/f2/f63b25265d/0/metadata.json",
+      "transcript": "/f2/f63b25265d/0/full.jsonl",
+      "compact_transcript": "/f2/f63b25265d/0/transcript.jsonl",
+      "content_hash": "/f2/f63b25265d/0/content_hash.txt",
+      "prompt": "/f2/f63b25265d/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 66,
+    "cache_creation_tokens": 142284,
+    "cache_read_tokens": 3087447,
+    "output_tokens": 16969,
+    "api_call_count": 26,
+    "subagent_tokens": {
+      "input_tokens": 12,
+      "cache_creation_tokens": 4076,
+      "cache_read_tokens": 219727,
+      "output_tokens": 1206,
+      "api_call_count": 6
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 46,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 18,
+      "key_context": 28,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
