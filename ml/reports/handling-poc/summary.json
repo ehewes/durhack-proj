@@ -1,0 +1,56 @@
+{
+ "run": "20261114-162140",
+ "si_sdr_improvement_db": {
+  "model": 2.62,
+  "gate": -3.9
+ },
+ "energy_removed_db": {
+  "model_handling": 8.52,
+  "model_background": 0.04,
+  "gate_handling": 1.18,
+  "gate_background": 5.51
+ },
+ "detection": {
+  "precision": 0.845,
+  "recall": 0.925,
+  "f1": 0.883
+ },
+ "mixtures": 150,
+ "mixture_example_si_sdr_db": {
+  "input": -4.25,
+  "model": -1.61,
+  "gate": -11.53
+ },
+ "real_takes": {
+  "venue_pickup_01": {
+   "seconds": 8.8,
+   "handling_s": 0.46,
+   "flagged_events": 5,
+   "flagged_s": 0.53,
+   "precision": 0.85,
+   "recall": 0.98,
+   "removed_on_handling_db": 3.1,
+   "removed_elsewhere_db": 0.0
+  },
+  "venue_pocket_02": {
+   "seconds": 19.3,
+   "handling_s": 6.93,
+   "flagged_events": 22,
+   "flagged_s": 10.57,
+   "precision": 0.64,
+   "recall": 0.98,
+   "removed_on_handling_db": 0.5,
+   "removed_elsewhere_db": 0.4
+  },
+  "venue_sleeve_03": {
+   "seconds": 4.2,
+   "handling_s": 0.0,
+   "flagged_events": 1,
+   "flagged_s": 0.04,
+   "precision": 0.0,
+   "recall": 0.0,
+   "removed_on_handling_db": null,
+   "removed_elsewhere_db": 0.1
+  }
+ }
+}
