@@ -1,0 +1,5 @@
+{
+ "venue_floor_db": -25.92,
+ "what": "90th percentile 10 ms frame energy (dBFS) of the private venue room tone; frames of our venue takes must beat it by 3 dB to count as handling noise",
+ "source": "ml/audio/private/venue_roomtone_01.wav (not committed)"
+}
