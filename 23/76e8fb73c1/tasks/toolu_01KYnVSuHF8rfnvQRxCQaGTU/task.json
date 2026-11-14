@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01KYnVSuHF8rfnvQRxCQaGTU",
+  "agent_id": "a533e12776a5e35e2",
+  "subagent_type": "general-purpose",
+  "task_description": "Finish issue 43 wake-up marks",
+  "token_usage": {
+    "input_tokens": 202,
+    "cache_creation_tokens": 216778,
+    "cache_read_tokens": 14035246,
+    "output_tokens": 97936,
+    "api_call_count": 99
+  },
+  "started_at": "2026-11-14T18:38:06.780731Z",
+  "completed_at": "2026-11-14T18:56:14.794671Z"
+}
