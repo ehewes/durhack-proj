@@ -43,3 +43,97 @@ start higher.
 the new repo.
 **Consequences:** The submission has no pre-event history. Pre-kick-off agent sessions are closed
 and fresh ones started. The README discloses the framework as pre-event tooling.
+
+## 2026-11-14: Kip is the project
+**Context:** The plan "Kip: Sleep, Noise and the City" (Nick, 2026-11-14) covers product, business
+model, stack, build plan and pitch.
+**Decision:** Build Kip. Product in `docs/SPEC.md`, business in `docs/BUSINESS.md`, science and
+wording rules in `docs/DOMAIN.md`, stack and contracts in `docs/ARCHITECTURE.md`.
+**Consequences:** Every agent follows `docs/DOMAIN.md` for anything it computes or shows.
+
+## 2026-11-14: The API is the only caller of third-party services
+**Context:** Gemini, ElevenLabs and Solana need secret keys; the app (iOS and web) is a client.
+**Decision:** Only the API calls Gemini, ElevenLabs and Solana. Clients call the API.
+**Consequences:** Keys live in one place. Clip labelling and briefings need a network round trip.
+
+## 2026-11-14: Tiger for time series, MongoDB for documents and geo
+**Context:** Kip has dense timestamped data (1 Hz noise, sensor readings, vitals) and geo
+documents (hotels, sensors, works). Both are sponsor tracks.
+**Decision:** Every timestamped value goes in Tiger; MongoDB holds users, one summary per night,
+hotels, sensors, works, venues and scores. If the event limits us to one sponsor track, enter
+MongoDB: move the time series into MongoDB time series collections and make hotel ranking the
+centrepiece.
+**Consequences:** Two stores to provision and delete from. User deletion must cover both.
+
+## 2026-11-14: Read Watch data through HealthKit, not a Watch app
+**Context:** An all-night workout session drains 40% to 100% of a Watch battery, and Watch app
+signing is a known time sink.
+**Decision:** The iPhone reads the Watch's own sleep tracking from HealthKit after the night ends.
+A watchOS app is a stretch, abandoned if signing doesn't work by hour 2.
+**Consequences:** Sleep stages arrive only after the session ends, so the live demo uses the
+phone alone.
+
+## 2026-11-14: Claim links, not causes; label estimates
+**Context:** One night has 2 to 6 wake-ups, phone dB is uncalibrated, and the WHO curve is for
+long-term road traffic at the facade, not kerbside sensors.
+**Decision:** Show counts against a random-window baseline, relative dB, and an "indicative" city
+map. Follow the wording table in `docs/DOMAIN.md`.
+**Consequences:** Weaker-sounding claims that survive judge questions.
+
+## 2026-11-14: Placeholder booking links for the demo
+**Context:** Affiliate approval takes weeks; Booking.com cut small affiliates in 2025.
+**Decision:** Hotels come from OpenStreetMap with placeholder booking links. Apply to a network
+anyway and don't quote a commission rate until confirmed.
+**Consequences:** Revenue is shown as the model, not as live bookings.
+
+## 2026-11-14: Solana mainnet with the Memo program only
+**Context:** We want cheap public timestamps a council can check without trusting Kip.
+**Decision:** Hash each night's log and write it to mainnet with the Memo program. No Anchor, no
+custom program.
+**Consequences:** No toolchain setup; a fraction of a penny per night. It proves when a log
+existed, not that it's true, and we say so.
+
+## 2026-11-14: Bun workspaces; one server package and image
+**Context:** The API and worker share clients, schemas and database code, and the plan wants one
+Docker image.
+**Decision:** Bun is the package manager for the whole repo and the server runtime.
+`apps/server` holds both entrypoints (`main.api.ts`, `main.worker.ts`) and builds with the Expo
+web export into one image.
+**Consequences:** One build and deploy, one lockfile. Never hand-merge `bun.lock`.
+
+## 2026-11-14: React Native on Expo for both the phone and the dashboard
+**Context:** The team's strongest language is TypeScript, and the demo needs an iPhone app and a
+browser dashboard.
+**Decision:** One Expo app (dev client, Expo Router) builds iOS and web. HealthKit through
+`@kingstinct/react-native-healthkit`; background metering, spike clips and the speech check in a
+small local Expo Module (`kip-audio`, Swift). Replaces the plan's SwiftUI app and React/Vite
+dashboard.
+**Consequences:** One UI codebase and shared types. The native audio module is the riskiest
+piece: build and test it on a device first. Maps need a `.native`/`.web` split. A watchOS app
+becomes a separate native target, so it stays a stretch.
+
+## 2026-11-14: tRPC on Hono for the API
+**Context:** App and server are both TypeScript, and several agents change API shapes in parallel.
+**Decision:** tRPC v11 mounted on Hono. Every JSON call and the live subscription go through
+tRPC; plain Hono routes only for binary clip upload, the Street Manager SNS endpoint, health and
+the web build.
+**Consequences:** End-to-end types with no codegen; a server change that breaks the app fails
+typecheck. Non-TypeScript clients (SNS) still get plain HTTP.
+
+## 2026-11-14: File tree by feature, then by layer
+**Context:** Up to ~10 agents work at once. A layer-first tree (`routes/`, `services/`,
+`screens/`) puts every task in the same folders.
+**Decision:** Each feature (`city`, `night`, `attribution`, `labels`, `briefing`, `evidence`,
+`stays`, `works`, `live`, `account`) owns a folder in `apps/mobile/src/features/`,
+`apps/server/src/features/` and `packages/shared/src/`. Lanes are features. Registries are
+written once in M0 with every feature stubbed; shared code changes through `platform` issues.
+**Consequences:** Parallel issues touch disjoint paths. Cross-feature calls go through a feature's
+`index.ts`. The rules are in `docs/ARCHITECTURE.md`.
+
+## 2026-11-14: Both of us own everything
+**Context:** The template gave Ellis `main`, deploys and the freeze, and gave each human lanes.
+With two people working across the whole stack, that split only adds hand-offs.
+**Decision:** No split ownership. Either of us can merge any PR, deploy, call the freeze and tag
+`demo-v1`. Lanes stay, but only to keep parallel agents on disjoint paths.
+**Consequences:** No waiting on a specific person. Say in chat before merging contracts, deploy
+config or anything after the freeze, so we don't both do it.
