@@ -46,7 +46,9 @@ describe("api", () => {
     const caller = createCallerFactory(appRouter)({
       userId: "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
     });
-    await expect(caller.account.me()).rejects.toMatchObject({ code: "NOT_IMPLEMENTED" });
+    await expect(
+      caller.evidence.report({ nightId: "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d" }),
+    ).rejects.toMatchObject({ code: "NOT_IMPLEMENTED" });
   });
 
   test("user procedures need the x-kip-user header", async () => {
