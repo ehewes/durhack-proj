@@ -13,8 +13,8 @@ import Mapbox, {
   type SymbolLayerStyle,
 } from "@rnmapbox/maps";
 import { type ComponentProps, useEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
-import { Text, useColors } from "@/lib/ui";
+import { StyleSheet } from "react-native";
+import { MissingMapToken } from "./MissingMapToken";
 import {
   cameraTracker,
   featuresToCollections,
@@ -168,31 +168,16 @@ function NativeMap({
   );
 }
 
-function MissingToken({ style }: Pick<MapProps, "style">) {
-  const colors = useColors();
-  return (
-    <View
-      style={[
-        styles.map,
-        styles.missing,
-        { backgroundColor: colors.surface, borderColor: colors.border },
-        style,
-      ]}
-    >
-      <Text>{MISSING_MOBILE_MAPBOX_TOKEN_MESSAGE}</Text>
-    </View>
-  );
-}
-
 /**
  * iPhone map: the Mapbox Maps SDK through @rnmapbox/maps, drawing the web map's layers on the
  * same light style. Device location is not requested. The Mapbox logo and attribution stay on.
  */
 export function MapView(props: MapProps) {
-  return token ? <NativeMap {...props} /> : <MissingToken style={props.style} />;
+  return token ? (
+    <NativeMap {...props} />
+  ) : (
+    <MissingMapToken message={MISSING_MOBILE_MAPBOX_TOKEN_MESSAGE} style={props.style} />
+  );
 }
 
-const styles = StyleSheet.create({
-  map: { flex: 1, minHeight: 240 },
-  missing: { borderWidth: 1, padding: 16, justifyContent: "center" },
-});
+const styles = StyleSheet.create({ map: { flex: 1, minHeight: 240 } });
