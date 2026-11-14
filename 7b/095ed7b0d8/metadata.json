@@ -1,0 +1,58 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "7b095ed7b0d8",
+  "strategy": "manual-commit",
+  "branch": "ehewes/85-87-handling-poc",
+  "checkpoints_count": 5,
+  "files_touched": [
+    "ml/reports/handling-poc/REPORT.md",
+    "ml/reports/handling-poc/audio/mixture_gate.wav",
+    "ml/reports/handling-poc/audio/mixture_input.wav",
+    "ml/reports/handling-poc/audio/mixture_kip.wav",
+    "ml/reports/handling-poc/audio/mixture_true_background.wav",
+    "ml/reports/handling-poc/audio/venue_pickup_01_input.wav",
+    "ml/reports/handling-poc/audio/venue_pickup_01_kip.wav",
+    "ml/reports/handling-poc/audio/venue_pocket_02_input.wav",
+    "ml/reports/handling-poc/audio/venue_pocket_02_kip.wav",
+    "ml/reports/handling-poc/audio/venue_sleeve_03_input.wav",
+    "ml/reports/handling-poc/audio/venue_sleeve_03_kip.wav",
+    "ml/reports/handling-poc/mixture_spectrograms.png",
+    "ml/reports/handling-poc/mixture_waveforms.png",
+    "ml/reports/handling-poc/real_venue_pickup_01.png",
+    "ml/reports/handling-poc/real_venue_pocket_02.png",
+    "ml/reports/handling-poc/real_venue_sleeve_03.png",
+    "ml/reports/handling-poc/summary.json",
+    "ml/reports/handling-poc/suppression.png",
+    "ml/reports/handling-poc/training.png"
+  ],
+  "sessions": [
+    {
+      "metadata": "/7b/095ed7b0d8/0/metadata.json",
+      "transcript": "/7b/095ed7b0d8/0/full.jsonl",
+      "compact_transcript": "/7b/095ed7b0d8/0/transcript.jsonl",
+      "content_hash": "/7b/095ed7b0d8/0/content_hash.txt",
+      "prompt": "/7b/095ed7b0d8/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 32,
+    "cache_creation_tokens": 36327,
+    "cache_read_tokens": 11360492,
+    "output_tokens": 33427,
+    "api_call_count": 15
+  },
+  "redaction": {
+    "replacements": 29,
+    "layers": {
+      "betterleaks": 7,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 2,
+      "credentialed_uri": 1,
+      "entropy": 2,
+      "key_context": 20,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
