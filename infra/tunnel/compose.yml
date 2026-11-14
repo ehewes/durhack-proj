@@ -8,8 +8,8 @@
 # other stacks on it are untouched.
 name: kip
 
+# Docker keeps container logs forever by default.
 x-logging: &logging
-  # Docker keeps container logs forever by default.
   driver: json-file
   options:
     max-size: "10m"
