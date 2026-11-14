@@ -3,7 +3,7 @@
   "checkpoint_id": "afacd7982eb2",
   "strategy": "manual-commit",
   "branch": "ehewes/70-consent-onboarding",
-  "checkpoints_count": 1,
+  "checkpoints_count": 3,
   "files_touched": [
     "apps/mobile/src/features/account/account.test.ts",
     "apps/mobile/src/features/account/cache.ts",
@@ -17,6 +17,13 @@
       "transcript": "/af/acd7982eb2/0/full.jsonl",
       "content_hash": "/af/acd7982eb2/0/content_hash.txt",
       "prompt": "/af/acd7982eb2/0/prompt.txt"
+    },
+    {
+      "metadata": "/af/acd7982eb2/1/metadata.json",
+      "transcript": "/af/acd7982eb2/1/full.jsonl",
+      "compact_transcript": "/af/acd7982eb2/1/transcript.jsonl",
+      "content_hash": "/af/acd7982eb2/1/content_hash.txt",
+      "prompt": "/af/acd7982eb2/1/prompt.txt"
     }
   ],
   "token_usage": {
@@ -24,10 +31,17 @@
     "cache_creation_tokens": 0,
     "cache_read_tokens": 0,
     "output_tokens": 0,
-    "api_call_count": 0
+    "api_call_count": 0,
+    "subagent_tokens": {
+      "input_tokens": 42,
+      "cache_creation_tokens": 44148,
+      "cache_read_tokens": 6480317,
+      "output_tokens": 34551,
+      "api_call_count": 21
+    }
   },
   "redaction": {
-    "replacements": 0,
+    "replacements": 4,
     "layers": {
       "betterleaks": 0,
       "connection_string": 0,
@@ -35,7 +49,7 @@
       "credential_value": 0,
       "credentialed_uri": 0,
       "entropy": 0,
-      "key_context": 0,
+      "key_context": 4,
       "provider_token": 0,
       "shell_stdin": 0
     }
