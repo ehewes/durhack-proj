@@ -20,4 +20,20 @@ repo.
   `./hq board`.
 
 ## Running the project
-TBD at the event: install, env vars, run, deploy URL.
+Kip is a Bun monorepo: an Expo app (`apps/mobile`, iOS and web), a Hono + tRPC server
+(`apps/server`, API and worker) and shared domain code (`packages/shared`). Details in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+```bash
+bun install
+cp .env.example .env        # local defaults; never commit .env
+bun run db:up               # TimescaleDB + MongoDB in Docker
+bun run dev:api             # http://localhost:3000; migrates on boot, skips any database not configured
+bun run dev:worker          # cron jobs
+bun run dev:app             # Expo: press w for web, or use a dev-client build on iPhone
+./hq check                  # lint, typecheck, tests (what CI runs)
+```
+
+The iPhone app needs a dev-client build (`cd apps/mobile && bun run ios`) because of its native
+modules; Expo Go won't load it. Deploy: `infra/` (Terraform) and the `Dockerfile`, see
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#deploy).

@@ -18,9 +18,48 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
       - name: hq unit tests
         run: python -m unittest discover -s tools/hq/tests -v
       - name: Project setup (hq.json "setup")
         run: ./hq setup --ci
-      - name: Project checks (hq.json "check")
+      - name: "Project checks (hq.json check: lint, typecheck, tests)"
         run: ./hq check
+
+  terraform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.13"
+          # The default wrapper breaks `terraform console` reading piped stdin
+          terraform_wrapper: false
+      - run: terraform fmt -check -diff
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate
+      - name: Render cloud-init with sample values and parse the YAML
+        timeout-minutes: 2
+        run: |
+          python3 -m pip install --quiet pyyaml
+          ./scripts/check-cloud-init.sh
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the image (API, worker and web build)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

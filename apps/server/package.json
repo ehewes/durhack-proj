@@ -1,0 +1,30 @@
+{
+  "name": "@kip/server",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./trpc/router": "./src/trpc/router.ts"
+  },
+  "scripts": {
+    "dev:api": "bun --watch src/main.api.ts",
+    "dev:worker": "bun --watch src/main.worker.ts",
+    "typecheck": "tsc -p .",
+    "migrate": "bun src/db/migrate.ts",
+    "indexes": "bun src/db/indexes.ts"
+  },
+  "dependencies": {
+    "@hono/trpc-server": "^0.4.2",
+    "@kip/shared": "workspace:*",
+    "@trpc/server": "^11.28.2",
+    "hono": "^4.13.18",
+    "mongodb": "^7.9.0",
+    "node-cron": "^4.6.0",
+    "postgres": "^4.1.1",
+    "superjson": "^2.2.6",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "typescript": "~6.0.3"
+  }
+}

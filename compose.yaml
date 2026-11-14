@@ -1,0 +1,26 @@
+# Local development databases. Production uses Tiger Cloud and MongoDB Atlas.
+services:
+  tiger:
+    image: timescale/timescaledb:latest-pg17
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kip
+    ports: ["5432:5432"]
+    volumes: [tiger:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      retries: 30
+
+  mongo:
+    image: mongo:8
+    ports: ["27017:27017"]
+    volumes: [mongo:/data/db]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 2s
+      retries: 30
+
+volumes:
+  tiger:
+  mongo:

@@ -1,0 +1,12 @@
+# Copy to terraform.tfvars (git-ignored). Secrets can also come from TF_VAR_* env vars.
+admin_ip          = "203.0.113.10"
+atlas_project_id  = "..."
+image             = "lhr.vultrcr.com/kip/kip:latest"
+registry_user     = "..."
+registry_password = "..."
+mongo_uri         = "mongodb+srv://..."
+tiger_uri         = "postgres://..."
+app_env = {
+  GEMINI_API_KEY     = "..."
+  ELEVENLABS_API_KEY = "..."
+}

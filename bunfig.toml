@@ -1,0 +1,3 @@
+[install]
+# Expo's Metro bundler expects a hoisted node_modules
+linker = "hoisted"

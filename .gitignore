@@ -14,6 +14,24 @@ __pycache__/
 .venv/
 node_modules/
 
+# Builds and generated files
+dist/
+.expo/
+expo-env.d.ts
+*.tsbuildinfo
+apps/mobile/ios/
+apps/mobile/android/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# Source folders named lib/ are code, even if a global gitignore says otherwise
+!**/src/lib/
+
 # ML: raw data, runs and checkpoints stay out of git (the exported model is committed)
 ml/data/raw/
 ml/data/mixtures/

@@ -1,0 +1,50 @@
+#cloud-config
+package_update: true
+packages:
+  - docker.io
+  - docker-compose-v2
+
+write_files:
+  - path: /opt/kip/.env
+    permissions: "0600"
+    content: |
+      MONGO_URI=${mongo_uri}
+      TIGER_URI=${tiger_uri}
+%{ for key, value in app_env ~}
+      ${key}=${value}
+%{ endfor ~}
+  - path: /opt/kip/Caddyfile
+    content: |
+      {$KIP_HOST} {
+        reverse_proxy api:8080
+      }
+  - path: /opt/kip/compose.yaml
+    content: |
+      services:
+        api:
+          image: ${image}
+          env_file: .env
+          restart: unless-stopped
+        worker:
+          image: ${image}
+          command: ["bun", "apps/server/src/main.worker.ts"]
+          env_file: .env
+          restart: unless-stopped
+        caddy:
+          image: caddy:2
+          ports: ["80:80", "443:443"]
+          environment:
+            KIP_HOST: $${KIP_HOST}
+          volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile:ro
+            - caddy_data:/data
+          restart: unless-stopped
+      volumes:
+        caddy_data:
+
+runcmd:
+  - |
+    IP=$(curl -sf http://169.254.169.254/v1/interfaces/0/ipv4/address || hostname -I | awk '{print $1}')
+    echo "KIP_HOST=$(echo "$IP" | tr . -).sslip.io" >> /opt/kip/.env
+  - echo '${registry_password}' | docker login ${registry_host} -u '${registry_user}' --password-stdin
+  - cd /opt/kip && docker compose up -d

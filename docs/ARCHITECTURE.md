@@ -69,7 +69,7 @@ Bun is the package manager and workspace tool everywhere, and the server runtime
 | App | React Native + TypeScript on Expo (SDK current at kick-off) with a dev client, Expo Router, TanStack Query + tRPC client | One codebase, two targets: iOS (the phone on the nightstand) and web (the demo dashboard). Needs an Apple developer account and the HealthKit entitlement |
 | HealthKit | `@kingstinct/react-native-healthkit` with its Expo config plugin | Reads the Watch's sleep stages, heart rate, HRV and respiratory rate after the night ends |
 | Audio | Local Expo Module `kip-audio` (Swift): AVAudioRecorder metering at 1 Hz, 10 s spike clips, on-device speech check (SoundAnalysis built-in classifier), background audio mode | No JS library does all of this reliably while locked; one small native module does |
-| Map | MapLibre with OpenStreetMap tiles: `@maplibre/maplibre-react-native` on iOS, `maplibre-gl` on web, behind one `Map` component split by `.native.tsx` / `.web.tsx` | |
+| Map | MapLibre with OpenStreetMap tiles: `@maplibre/maplibre-react-native` on iOS, `maplibre-gl` on web, behind one `MapView` component split by `.native.tsx` / `.web.tsx` | |
 | watchOS (stretch) | Native SwiftUI watch target: haptics, "something woke me", briefing playback | Only if Watch signing works in the first 2 hours |
 | API | TypeScript, tRPC v11 on Hono (`@hono/trpc-server`), Zod, SuperJSON | tRPC for every JSON call and the live subscription (SSE). Plain Hono routes only for binary clip upload, the Street Manager SNS endpoint, health check and the web build |
 | Worker | TypeScript, node-cron, same image as the API | Runs each feature's jobs |
@@ -80,12 +80,17 @@ Bun is the package manager and workspace tool everywhere, and the server runtime
 | Chain | Solana mainnet, Memo program only (no Anchor) | A memo costs a fraction of a penny |
 | Hosting | Vultr Cloud Compute (London), Vultr Container Registry, Caddy with an `<ip>.sslip.io` hostname | iOS requires HTTPS; no domain needed |
 | Infra | Terraform: `vultr/vultr`, `mongodb/mongodbatlas` (IP access list), Tiger Cloud provider; cloud-init via `templatefile()` | One command rebuilds the stack |
-| Quality | Biome (lint + format), `tsc -b` (typecheck), `bun test` | `./hq check` runs these once M0 adds them to `hq.json` |
+| Quality | Biome (lint + format), `tsc` per package (typecheck; not `tsc -b`, whose declaration checks reject the tRPC client types), `bun test` | `./hq check` runs all three; CI runs them plus Terraform and Docker builds |
 | Process | Entire in the repo from the first commit | Records every agent session |
 | ML | Python 3.11+, PyTorch, `uv`; trained on a Lium GPU pod; exported to ONNX and run in the API with ONNX Runtime | Our own small model that filters phone-handling noise out of spike clips. Not in `./hq check`: `ml/` runs `uv run pytest` |
 
-`./hq check` runs the `check` commands in `hq.json`. Keep it under ~2 min.
-`./hq setup` runs the `setup` commands (`bun install`). Both are empty until M0 adds code.
+`./hq check` runs the `check` commands in `hq.json`: `bun run lint`, `bun run typecheck`,
+`bun run test`. Keep it under ~2 min. `./hq setup` runs `bun install --frozen-lockfile`.
+
+CI (`.github/workflows/ci.yml`) runs on every PR and push to `main`, in three jobs:
+`checks` (hq unit tests, then `./hq setup --ci` and `./hq check`), `terraform` (`fmt -check`,
+`init -backend=false`, `validate` in `infra/`) and `docker` (builds the image, no push).
+TypeScript is pinned to ~6.0.3, the version Expo SDK 58 expects.
 
 ## File tree
 The tree is split **by feature first, then by layer**, so several agents can build different
@@ -114,13 +119,16 @@ apps/
       lib/
         trpc.ts                   tRPC client, links, base URL
         ui/                       shared primitives (Button, Card, Text, theme)
-        map/                      Map.native.tsx, Map.web.tsx
+        map/                      Map.native.tsx, Map.web.tsx (TypeScript resolves the native one via
+                                  `moduleSuffixes`; Metro picks per platform)
+        user-id.ts                anonymous ID sent as `x-kip-user`, persisted on first launch
     modules/
       kip-audio/                  local Expo Module (Swift + TS bindings)
     app.config.ts                 plugins, permission strings, background modes
   server/                         one package, one Docker image, two entrypoints
     src/
-      main.api.ts                 Hono app: /trpc, /upload/clip, /sns/street-manager, /health, web build
+      app.ts                      Hono app: /health, /trpc, each feature's plain routes, web build
+      main.api.ts                 connects, migrates, ensures indexes, serves app.ts
       main.worker.ts              registers every feature's jobs with node-cron
       env.ts                      Zod-validated environment
       trpc/
@@ -131,15 +139,17 @@ apps/
           router.ts               tRPC procedures. Thin: validate, call the service
           service.ts              business logic; the only thing other features may call
           repo.ts                 this feature's Tiger and Mongo queries
-          jobs.ts                 optional cron jobs, exported as a list
+          jobs.ts                 optional cron jobs (`Job[]`), re-exported as `<feature>Jobs`
           http.ts                 optional plain Hono routes (upload, SNS)
           *.test.ts               colocated tests
-          index.ts                exports router, jobs, and the service functions others may use
+          index.ts                exports `<feature>Router`, `<feature>Jobs`, optional `<feature>Http`,
+                                  and the service functions others may use
       integrations/               one client per external API: gemini.ts, elevenlabs.ts,
                                   solana.ts, observatory.ts, overpass.ts, street-manager.ts
       db/
         tiger.ts, mongo.ts        clients; retry on boot
-        migrations/               SQL, one file per change, timestamp-prefixed
+        migrations/               SQL, one file per change, timestamp-prefixed; applied on API boot
+        migrate.ts                migration runner (`bun run db:migrate`); checks TimescaleDB is installed
         indexes.ts                Mongo collections and indexes
 packages/
   shared/                         pure TypeScript, no IO; used by app and server
@@ -147,7 +157,8 @@ packages/
       <feature>/                  Zod schemas and types for that feature's inputs and outputs
       domain/                     WHO curve, Lnight, construction hours, attribution maths,
                                   score weights, wording strings, each with tests
-infra/                            Terraform, cloud-init.yaml.tftpl, Caddyfile
+infra/                            Terraform, cloud-init.yaml.tftpl (writes the Caddyfile and compose)
+compose.yaml                      local TimescaleDB and MongoDB for development
 ml/                               handling-noise filter: data scripts, model, training, ONNX export (Python, uv)
   audio/                          committed audio library, 16 kHz mono WAV: ours/, online/, synthetic/, generated/ (licences in SOURCES.md)
   models/handling-v1.onnx         the exported model the API loads (small, committed)
@@ -200,7 +211,7 @@ disjoint paths. Each lane covers that feature's folder in `apps/mobile/src/featu
 | Lane | Dirs |
 |---|---|
 | `city`, `night`, `attribution`, `labels`, `briefing`, `evidence`, `stays`, `works`, `live`, `account` | `*/features/<lane>/`, `packages/shared/src/<lane>/` |
-| `platform` | `apps/mobile/app/`, `apps/mobile/src/lib/`, `apps/mobile/modules/`, `apps/mobile/app.config.ts`, `apps/server/src/{trpc,integrations,db}/`, `apps/server/src/main.*.ts`, `apps/server/src/env.ts`, `packages/shared/src/domain/` |
+| `platform` | `apps/mobile/app/`, `apps/mobile/src/lib/`, `apps/mobile/modules/`, `apps/mobile/app.config.ts`, `apps/server/src/*.ts` (`app.ts`, `main.*.ts`, `env.ts`, `jobs.ts`, `http.ts`, `retry.ts`), `apps/server/src/{trpc,integrations,db}/`, `packages/shared/src/domain/`, root config (`package.json`, `biome.json`, `tsconfig.base.json`, `compose.yaml`), `.github/workflows/` |
 | `infra` | `infra/`, `Dockerfile` |
 | `demo` | `docs/demo/` (pitch, Devpost, demo clips, Entire evidence) |
 | `ml` | `ml/` (Python: data, training, export; raw data and checkpoints stay out of git) |
@@ -301,7 +312,7 @@ into each new workspace via `.worktreeinclude`. For a plain git worktree, copy `
 | `VULTR_API_KEY` | Terraform | Vultr account (MLH credit) |
 | `MONGODB_ATLAS_PUBLIC_KEY`, `MONGODB_ATLAS_PRIVATE_KEY` | Terraform | Atlas org API key |
 | Tiger Cloud provider credentials | Terraform | Tiger Cloud console; names per the provider docs |
-| `TF_VAR_admin_ip` | Terraform | Your public IP, for SSH |
+| `TF_VAR_admin_ip`, `TF_VAR_image`, `TF_VAR_registry_user`, `TF_VAR_registry_password`, `TF_VAR_mongo_uri`, `TF_VAR_tiger_uri`, `TF_VAR_app_env` | Terraform | See `infra/terraform.tfvars.example`; `app_env` carries the API keys above to the server |
 
 Only `EXPO_PUBLIC_*` variables reach the app, and they end up in the bundle: never put a key there.
 
@@ -311,12 +322,17 @@ Either of us deploys. The demo runs from tag `demo-v1`.
   only; 80 and 443 open for Caddy), a `vc2-2c-4gb` Ubuntu 24.04 instance in `lhr`, and the Atlas IP
   access list for the instance's IP. Keys come from variables, never the repo.
 - The `Dockerfile` builds the server and `expo export --platform web` into one image; the API
-  serves the web build.
-- cloud-init installs Docker and Caddy, builds an `<ip>.sslip.io` hostname from instance
-  metadata, then pulls and runs the image twice (`main.api.ts` and `main.worker.ts`).
+  serves the web build on port 8080 (`docker run -p 8080:8080 kip`). Without database URIs it
+  still boots, serving `/health`, the web build and the stubs. Steps: `infra/README.md`.
+- cloud-init installs Docker, writes `/opt/kip/.env`, a Caddyfile and a compose file, derives an
+  `<ip>.sslip.io` hostname from instance metadata, logs in to the registry, then runs the API,
+  the worker (same image, `main.worker.ts`) and Caddy.
+- Ship a new image: `docker build -t <image> . && docker push <image>`, then on the server
+  `cd /opt/kip && docker compose pull && docker compose up -d`.
 - The API retries its database connections on boot, because the Atlas access list is applied
-  after the instance exists.
+  after the instance exists. It then applies pending Tiger migrations and Mongo indexes.
 - The iOS app is a dev-client build installed on the demo phone; it is not deployed by Terraform.
 - Demo: `terraform apply -replace=vultr_instance.api` rebuilds only the server; data stays put.
-- To confirm against provider docs before relying on them: the Vultr region, the registry plan,
-  and the registry `urn` attribute.
+- To confirm against provider docs before relying on them: the Vultr region and the registry
+  plan. The image reference and registry credentials are variables, so nothing depends on the
+  registry's `urn` attribute.
