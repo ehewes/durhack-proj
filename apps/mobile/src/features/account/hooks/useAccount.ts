@@ -59,7 +59,12 @@ export function useFinishOnboarding() {
     mutationFn: (answers: { consent: ConsentChoices; profile: TravellerProfile | null }) =>
       saveOnboarding(
         {
-          setProfile: (input) => client.account.setProfile.mutate(input),
+          setProfile: async (input) => {
+            const view = await client.account.setProfile.mutate(input);
+            // If the consent write then fails, onboarding shows the profile that is stored.
+            await cache.write(view);
+            return view;
+          },
           setConsent: (input) => client.account.setConsent.mutate(input),
         },
         answers,

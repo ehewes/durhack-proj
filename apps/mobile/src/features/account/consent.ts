@@ -85,7 +85,8 @@ export type OnboardingWrites = {
 
 /**
  * Saves onboarding. The profile goes first and consent last, because `consentUpdatedAt` is what
- * ends onboarding: if the profile write fails, the user is still asked, and nothing is half done.
+ * ends onboarding. If the consent write fails, the user stays in onboarding with the profile
+ * already stored, and Finish saves both again.
  */
 export async function saveOnboarding(
   writes: OnboardingWrites,

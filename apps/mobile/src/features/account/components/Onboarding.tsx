@@ -29,7 +29,9 @@ import { ProfileQuestion } from "./ProfileQuestion";
 export function Onboarding({ savedProfile }: { savedProfile: TravellerProfile | null }) {
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<ConsentDraft>(EMPTY_DRAFT);
-  const [profile, setProfile] = useState<TravellerProfile | null>(savedProfile);
+  const [picked, setPicked] = useState<TravellerProfile | null>(null);
+  // A profile stored by an earlier, unfinished attempt shows as chosen until the user picks.
+  const profile = picked ?? savedProfile;
   const finish = useFinishOnboarding();
   const deleted = useLastDeletion();
   const current = ONBOARDING_STEPS[step] ?? "profile";
@@ -61,7 +63,7 @@ export function Onboarding({ savedProfile }: { savedProfile: TravellerProfile | 
             <Heading>{PROFILE_TITLE}</Heading>
             <Text>{PROFILE_QUESTION}</Text>
             <Text variant="caption">{PROFILE_INTRO}</Text>
-            <ProfileQuestion value={profile} onChange={setProfile} disabled={busy} />
+            <ProfileQuestion value={profile} onChange={setPicked} disabled={busy} />
           </Card>
           {busy ? <Text variant="caption">{SAVING}</Text> : null}
           {finish.isError ? <Text>{SAVE_ERROR}</Text> : null}
@@ -70,12 +72,15 @@ export function Onboarding({ savedProfile }: { savedProfile: TravellerProfile | 
             onPress={() => save(profile)}
             disabled={busy || !choices || !profile}
           />
-          <Button
-            label={SKIP_PROFILE}
-            variant="secondary"
-            onPress={() => save(null)}
-            disabled={busy || !choices}
-          />
+          {/* There is no way to clear a stored profile, so a stored one cannot be skipped. */}
+          {savedProfile === null ? (
+            <Button
+              label={SKIP_PROFILE}
+              variant="secondary"
+              onPress={() => save(null)}
+              disabled={busy || !choices}
+            />
+          ) : null}
         </>
       ) : (
         <ConsentQuestion
