@@ -1,0 +1,60 @@
+{
+  "Readings": [
+    {
+      "Sensor_Name": "PER_AIRMON_MESH1822245",
+      "Variable": "Max Sound",
+      "Value": 83.9,
+      "Timestamp": "2026-11-14T12:01:00",
+      "Flagged": false
+    },
+    {
+      "Sensor_Name": "PER_AIRMON_MESH1822245",
+      "Variable": "Sound",
+      "Value": 81.7,
+      "Timestamp": "2026-11-14T12:01:00",
+      "Flagged": false
+    },
+    {
+      "Sensor_Name": "PER_AIRMON_MESH1822245",
+      "Variable": "Max Sound",
+      "Value": 85.9,
+      "Timestamp": "2026-11-14T12:02:00",
+      "Flagged": false
+    },
+    {
+      "Sensor_Name": "PER_AIRMON_MESH1822245",
+      "Variable": "Sound",
+      "Value": 83.7,
+      "Timestamp": "2026-11-14T12:02:00",
+      "Flagged": false
+    },
+    {
+      "Sensor_Name": "PER_AIRMON_MESH1822245",
+      "Variable": "Max Sound",
+      "Value": 90.5,
+      "Timestamp": "2026-11-14T12:03:00",
+      "Flagged": false
+    }
+  ],
+  "Sensors": {
+    "PER_AIRMON_MESH1822245": {
+      "Sensor_Name": "PER_AIRMON_MESH1822245",
+      "Location_WKT": "POINT(-1.559245 54.996419)",
+      "Sensor_Centroid_Longitude": -1.559245,
+      "Ground_Height_Above_Sea_Level": 44.0,
+      "Sensor_Centroid_Latitude": 54.996419,
+      "Sensor_Height_Above_Ground": 2.0,
+      "Broker_Name": "aq_mesh_api",
+      "Raw_ID": "80410"
+    }
+  },
+  "Start": "2026-11-14T12:00:00Z",
+  "End": "2026-11-14T12:05:00Z",
+  "Pagination": {
+    "Total": 8,
+    "Limit": 5,
+    "Offset": 0,
+    "Next": "http://uoweb3.ncl.ac.uk/sensors/PER_AIRMON_MESH1822245/data/json?start=2026-11-14T12%3A00%3A00Z&end=2026-11-14T12%3A05%3A00Z&variables=Max+Sound&limit=5&offset=5",
+    "Previous": null
+  }
+}
