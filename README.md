@@ -14,6 +14,7 @@ repo.
 - Humans: [docs/PLAYBOOK.md](docs/PLAYBOOK.md) (kick-off checklist, dispatching agents, onboarding).
 - Agents: [AGENTS.md](AGENTS.md) and the skills in [.agents/skills](.agents/skills).
 - Hack context: [docs/hack/BRIEF.md](docs/hack/BRIEF.md), [docs/SPEC.md](docs/SPEC.md),
+  [docs/BUSINESS.md](docs/BUSINESS.md), [docs/DOMAIN.md](docs/DOMAIN.md),
   [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/DECISIONS.md](docs/DECISIONS.md).
 - First run in a clone: `entire enable`, then `./hq setup` (Windows: `hq.cmd setup`), then
   `./hq board`.

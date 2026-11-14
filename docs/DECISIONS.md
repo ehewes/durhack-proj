@@ -43,3 +43,60 @@ start higher.
 the new repo.
 **Consequences:** The submission has no pre-event history. Pre-kick-off agent sessions are closed
 and fresh ones started. The README discloses the framework as pre-event tooling.
+
+## 2026-11-14: Kip is the project
+**Context:** The plan "Kip: Sleep, Noise and the City" (Nick, 2026-11-14) covers product, business
+model, stack, build plan and pitch.
+**Decision:** Build Kip. Product in `docs/SPEC.md`, business in `docs/BUSINESS.md`, science and
+wording rules in `docs/DOMAIN.md`, stack and contracts in `docs/ARCHITECTURE.md`.
+**Consequences:** Every agent follows `docs/DOMAIN.md` for anything it computes or shows.
+
+## 2026-11-14: The API is the only caller of third-party services
+**Context:** Gemini, ElevenLabs and Solana need secret keys; the iOS app and dashboard are clients.
+**Decision:** Only the API calls Gemini, ElevenLabs and Solana. Clients call the API.
+**Consequences:** Keys live in one place. Clip labelling and briefings need a network round trip.
+
+## 2026-11-14: Tiger for time series, MongoDB for documents and geo
+**Context:** Kip has dense timestamped data (1 Hz noise, sensor readings, vitals) and geo
+documents (hotels, sensors, works). Both are sponsor tracks.
+**Decision:** Every timestamped value goes in Tiger; MongoDB holds users, one summary per night,
+hotels, sensors, works, venues and scores. If the event limits us to one sponsor track, enter
+MongoDB: move the time series into MongoDB time series collections and make hotel ranking the
+centrepiece.
+**Consequences:** Two stores to provision and delete from. User deletion must cover both.
+
+## 2026-11-14: Read Watch data through HealthKit, not a Watch app
+**Context:** An all-night workout session drains 40% to 100% of a Watch battery, and Watch app
+signing is a known time sink.
+**Decision:** The iPhone reads the Watch's own sleep tracking from HealthKit after the night ends.
+A watchOS app is a stretch, abandoned if signing doesn't work by hour 2.
+**Consequences:** Sleep stages arrive only after the session ends, so the live demo uses the
+phone alone.
+
+## 2026-11-14: Claim links, not causes; label estimates
+**Context:** One night has 2 to 6 wake-ups, phone dB is uncalibrated, and the WHO curve is for
+long-term road traffic at the facade, not kerbside sensors.
+**Decision:** Show counts against a random-window baseline, relative dB, and an "indicative" city
+map. Follow the wording table in `docs/DOMAIN.md`.
+**Consequences:** Weaker-sounding claims that survive judge questions.
+
+## 2026-11-14: Placeholder booking links for the demo
+**Context:** Affiliate approval takes weeks; Booking.com cut small affiliates in 2025.
+**Decision:** Hotels come from OpenStreetMap with placeholder booking links. Apply to a network
+anyway and don't quote a commission rate until confirmed.
+**Consequences:** Revenue is shown as the model, not as live bookings.
+
+## 2026-11-14: Solana mainnet with the Memo program only
+**Context:** We want cheap public timestamps a council can check without trusting Kip.
+**Decision:** Hash each night's log and write it to mainnet with the Memo program. No Anchor, no
+custom program.
+**Consequences:** No toolchain setup; a fraction of a penny per night. It proves when a log
+existed, not that it's true, and we say so.
+
+## 2026-11-14: One server package and image, on Bun
+**Context:** The API and worker share clients, schemas and database code, and the plan wants one
+Docker image.
+**Decision:** `apps/server` holds both entrypoints (`src/api`, `src/worker`) and builds with the
+dashboard into one image. Bun is the runtime and package manager; Hono, Zod and node-cron run on it.
+**Consequences:** One build and deploy. Lanes split `apps/server/src` by directory to keep
+parallel issues disjoint.
