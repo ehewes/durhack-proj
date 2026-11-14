@@ -1,0 +1,21 @@
+{
+  "Type": "Notification",
+  "MessageId": "4f0d8a0e-6b1c-4d2a-8e7f-222222222222",
+  "TopicArn": "arn:aws:sns:eu-west-2:287813576808:prod-activity-topic",
+  "Message": "{\"event_reference\":529771,\"event_type\":\"ACTIVITY_CREATED\",\"object_data\":{\"activity_reference_number\":\"ARN-5990-85775436\",\"usrn\":\"8401426\",\"street_name\":\"Fake Street\",\"town\":\"London\",\"area_name\":\"MARYLEBONE HIGH STREET\",\"road_category\":\"4\",\"activity_coordinates\":\"LINESTRING(501251.53 222574.64,501305.92 222506.65)\",\"activity_name\":\"London Marathon\",\"activity_type\":\"event\",\"activity_type_details\":\"Activity type details\",\"start_date\":\"2020-06-10T00:00:00.000Z\",\"start_time\":\"2020-06-10T14:30:00.000Z\",\"end_date\":\"2020-06-11T00:00:00.000Z\",\"end_time\":\"2020-06-11T09:00:00.000Z\",\"activity_location_type\":\"Cycleway, Footpath\",\"activity_location_description\":\"Description of activity location\",\"traffic_management_type\":\"road_closure\",\"traffic_management_required\":\"Yes\",\"collaborative_working\":\"Yes\",\"cancelled\":\"Yes\",\"highway_authority\":\"CITY OF WESTMINSTER\",\"highway_authority_swa_code\":\"5990\"},\"event_time\":\"2020-06-04T08:00:00.000Z\",\"object_type\":\"ACTIVITY\",\"object_reference\":\"ARN-5990-85775436\",\"version\":1}",
+  "Timestamp": "2020-06-24T14:22:01.847Z",
+  "SignatureVersion": "1",
+  "Signature": "UNSIGNED",
+  "SigningCertURL": "https://sns.eu-west-2.amazonaws.com/SimpleNotificationService-a86cb10b4e1f29c941702d737128f7b6.pem",
+  "UnsubscribeURL": "https://sns.eu-west-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-west-2:287813576808:prod-permit-topic:simulated",
+  "MessageAttributes": {
+    "area": {
+      "Type": "String",
+      "Value": "MARYLEBONE HIGH STREET"
+    },
+    "ha_org": {
+      "Type": "String",
+      "Value": "5990"
+    }
+  }
+}

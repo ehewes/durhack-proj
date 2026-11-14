@@ -1,0 +1,12 @@
+{
+  "Type": "UnsubscribeConfirmation",
+  "MessageId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "Token": "simulated-unsubscribe-token",
+  "TopicArn": "arn:aws:sns:eu-west-2:287813576808:prod-permit-topic",
+  "Message": "You have chosen to deactivate subscription arn:aws:sns:eu-west-2:287813576808:prod-permit-topic.",
+  "SubscribeURL": "https://sns.eu-west-2.amazonaws.com/?Action=ConfirmSubscription&TopicArn=arn:aws:sns:eu-west-2:287813576808:prod-permit-topic&Token=simulated-confirmation-token",
+  "Timestamp": "2026-11-14T15:06:41.581Z",
+  "SignatureVersion": "1",
+  "Signature": "UNSIGNED",
+  "SigningCertURL": "https://sns.eu-west-2.amazonaws.com/SimpleNotificationService-a86cb10b4e1f29c941702d737128f7b6.pem"
+}
