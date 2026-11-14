@@ -1,0 +1,73 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "920520861164",
+  "session_id": "cca87822-d8b6-4e74-ac0c-a20bf9880340",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-14T15:33:17.218057Z",
+  "branch": "worktree-agent-a18e1f18bfdcbcdfb",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "apps/mobile/src/features/night/components/NightTimelineChart.tsx",
+    "apps/mobile/src/features/night/components/NoiseLine.tsx",
+    "apps/mobile/src/features/night/components/StageBand.tsx",
+    "apps/mobile/src/features/night/components/WakeUpRow.tsx",
+    "apps/mobile/src/features/night/components/geometry.ts",
+    "apps/mobile/src/features/night/components/index.ts",
+    "apps/mobile/src/features/night/data/fixture.ts",
+    "apps/mobile/src/features/night/index.ts",
+    "apps/mobile/src/features/night/screens/NightScreen.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "753029c1a558",
+  "checkpoint_transcript_start": 62,
+  "transcript_lines_at_start": 62,
+  "compact_transcript_start": 8,
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 8062,
+    "cache_read_tokens": 194621,
+    "output_tokens": 2549,
+    "api_call_count": 4,
+    "subagent_tokens": {
+      "input_tokens": 42,
+      "cache_creation_tokens": 28364,
+      "cache_read_tokens": 1103296,
+      "output_tokens": 13264,
+      "api_call_count": 20
+    },
+    "subagent_tokens_complete": true
+  },
+  "session_token_usage": {
+    "input_tokens": 20,
+    "cache_creation_tokens": 53783,
+    "cache_read_tokens": 268002,
+    "output_tokens": 5522,
+    "api_call_count": 7,
+    "subagent_tokens": {
+      "input_tokens": 144,
+      "cache_creation_tokens": 238099,
+      "cache_read_tokens": 2899339,
+      "output_tokens": 51823,
+      "api_call_count": 71
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 1,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 5
+  }
+}
