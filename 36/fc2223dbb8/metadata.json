@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "36fc2223dbb8",
+  "strategy": "manual-commit",
+  "branch": "ehewes/cursor-failed-conductor-worktree",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/server/src/features/briefing/briefing.test.ts",
+    "apps/server/src/features/briefing/cache.ts",
+    "apps/server/src/features/briefing/http.ts",
+    "apps/server/src/features/briefing/service.ts",
+    "packages/shared/src/briefing/schema.test.ts",
+    "packages/shared/src/briefing/schema.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/36/fc2223dbb8/0/metadata.json",
+      "transcript": "/36/fc2223dbb8/0/full.jsonl",
+      "compact_transcript": "/36/fc2223dbb8/0/transcript.jsonl",
+      "content_hash": "/36/fc2223dbb8/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2,
+    "cache_creation_tokens": 2521,
+    "cache_read_tokens": 190724,
+    "output_tokens": 801,
+    "api_call_count": 1
+  },
+  "redaction": {
+    "replacements": 1,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}

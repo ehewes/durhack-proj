@@ -1,0 +1,124 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "36fc2223dbb8",
+  "session_id": "5956363b-d67f-42fa-9375-f7295fff282a",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-14T18:46:44.048749Z",
+  "branch": "ehewes/cursor-failed-conductor-worktree",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/server/src/features/briefing/briefing.test.ts",
+    "apps/server/src/features/briefing/cache.ts",
+    "apps/server/src/features/briefing/http.ts",
+    "apps/server/src/features/briefing/service.ts",
+    "packages/shared/src/briefing/schema.test.ts",
+    "packages/shared/src/briefing/schema.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "ac9b9346d10e",
+  "checkpoint_transcript_start": 592,
+  "transcript_lines_at_start": 592,
+  "compact_transcript_start": 82,
+  "token_usage": {
+    "input_tokens": 2,
+    "cache_creation_tokens": 2521,
+    "cache_read_tokens": 190724,
+    "output_tokens": 801,
+    "api_call_count": 1
+  },
+  "session_token_usage": {
+    "input_tokens": 134,
+    "cache_creation_tokens": 179312,
+    "cache_read_tokens": 7878323,
+    "output_tokens": 76951,
+    "api_call_count": 65,
+    "subagent_tokens": {
+      "input_tokens": 102,
+      "cache_creation_tokens": 143103,
+      "cache_read_tokens": 4633201,
+      "output_tokens": 41364,
+      "api_call_count": 49
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 1,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_01WMNQm1NgmXCnq6fjBvJfUa",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "hq-work"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "ac9b9346d10e",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 159,
+        "end": 160,
+        "entry_ids": [
+          "b1804397-4db5-4189-96ac-54915daba920"
+        ],
+        "tool_use_id": "toolu_01WMNQm1NgmXCnq6fjBvJfUa"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01WMNQm1NgmXCnq6fjBvJfUa"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: hq-work",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "claude-skill-toolu_01NCcsfs4exorQKCLJHKGd2t",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "commit-message"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "ac9b9346d10e",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 569,
+        "end": 570,
+        "entry_ids": [
+          "f4fc737e-c231-4fb0-a44c-5eed4533fdb8"
+        ],
+        "tool_use_id": "toolu_01NCcsfs4exorQKCLJHKGd2t"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01NCcsfs4exorQKCLJHKGd2t"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: commit-message",
+        "default_collapsed": true
+      }
+    }
+  ]
+}
