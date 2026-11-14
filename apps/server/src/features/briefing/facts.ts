@@ -18,13 +18,17 @@ export type BriefingEventFact = {
   sound: string;
   time: string;
   outsideRecommendedHours: boolean;
-  wakeUpsThatFollowedIt: number;
+  /** Null when wake-ups are unknown. */
+  wakeUpsThatFollowedIt: number | null;
 };
 
-/** Counts, labels and out-of-hours flags. No handling events and no levels. */
+/**
+ * Counts, labels and out-of-hours flags. No handling events and no levels.
+ * Wake-up counts are null without health data: unknown, not zero.
+ */
 export type BriefingFacts = {
-  wakeUps: number;
-  wakeUpsThatFollowedANoiseEvent: number;
+  wakeUps: number | null;
+  wakeUpsThatFollowedANoiseEvent: number | null;
   events: BriefingEventFact[];
 };
 
@@ -63,13 +67,13 @@ export function briefingFacts(
       sound: SPOKEN_SOUND[event.label],
       time: briefingClock(event.t),
       outsideRecommendedHours: event.outsideRecommendedHours === true,
-      wakeUpsThatFollowedIt: followed.get(event.id) ?? 0,
+      wakeUpsThatFollowedIt: attribution ? (followed.get(event.id) ?? 0) : null,
     });
   }
 
   return {
-    wakeUps: attribution?.wakeUps.length ?? 0,
-    wakeUpsThatFollowedANoiseEvent: attribution?.followedSpike ?? 0,
+    wakeUps: attribution ? attribution.wakeUps.length : null,
+    wakeUpsThatFollowedANoiseEvent: attribution ? attribution.followedSpike : null,
     events,
   };
 }

@@ -15,7 +15,7 @@ import nightUploadFixture from "../../../../../packages/shared/src/night/fixture
 import { createCallerFactory, router } from "../../trpc/init";
 import { NightConsentError, type NightRecord, NightStorageError } from "../night";
 import { createBriefingCache } from "./cache";
-import { fallbackBriefing } from "./compose";
+import { briefingPrompt, fallbackBriefing } from "./compose";
 import { briefingClock, briefingFacts } from "./facts";
 import { createBriefingHttp } from "./http";
 import { loadFeatureModule } from "./load";
@@ -169,6 +169,48 @@ describe("briefing facts", () => {
     expect(briefingViolations(text)).toEqual([]);
     expect(text).toContain(OUTSIDE_HOURS_WORDING);
     expect(text.toLowerCase()).not.toContain("handling");
+  });
+
+  test("without health data, wake-ups are unknown rather than zero", () => {
+    const facts = briefingFacts(fixtureRecord(), null);
+    expect(facts.wakeUps).toBeNull();
+    expect(facts.wakeUpsThatFollowedANoiseEvent).toBeNull();
+    expect(facts.events.map((event) => event.wakeUpsThatFollowedIt)).toEqual([
+      null,
+      null,
+      null,
+      null,
+    ]);
+
+    const prompt = briefingPrompt(facts);
+    expect(prompt).toContain("Do not mention wake-ups or sleep.");
+    expect(prompt).not.toContain("Two wake-ups");
+
+    const inHours = {
+      ...facts,
+      events: facts.events.filter((event) => !event.outsideRecommendedHours),
+    };
+    expect(fallbackBriefing(inHours)).toBe(
+      "Kip heard traffic at 23:52, a siren at 01:17 and snoring at 03:05.",
+    );
+    expect(fallbackBriefing({ ...facts, events: [] })).toBe("No noise was labelled last night.");
+    const many = Array.from({ length: 12 }, () => inHours.events).flat();
+    const counted = fallbackBriefing({ ...facts, events: many });
+    expect(counted).toBe("36 noise events were labelled last night.");
+    for (const text of [fallbackBriefing(inHours), counted]) {
+      expect(text.toLowerCase()).not.toContain("wake");
+    }
+  });
+
+  test("the prompt suggests only the cause and hours phrases", () => {
+    const record = fixtureRecord();
+    const prompt = briefingPrompt(briefingFacts(record, attributionOf(record)));
+    expect(prompt).toContain(OUTSIDE_HOURS_WORDING);
+    expect(prompt).toContain("Two wake-ups followed drilling at 06:41");
+    const prefer = prompt.split("\n").find((line) => line.startsWith("Prefer these phrases"));
+    expect(prefer).toBe(
+      `Prefer these phrases when they fit: linked to; followed; ${OUTSIDE_HOURS_WORDING}.`,
+    );
   });
 });
 
