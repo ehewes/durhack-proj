@@ -33,7 +33,18 @@ describe("api", () => {
       "stays",
       "works",
     ]);
-    expect(createCallerFactory(appRouter)({ userId: null })).toBeDefined();
+  });
+
+  test("stub procedures answer NOT_IMPLEMENTED (HTTP 501)", async () => {
+    const res = await app.request("/trpc/city.sensors");
+    expect(res.status).toBe(501);
+    const caller = createCallerFactory(appRouter)({ userId: "u1" });
+    await expect(caller.account.me()).rejects.toMatchObject({ code: "NOT_IMPLEMENTED" });
+  });
+
+  test("user procedures need the x-kip-user header", async () => {
+    const caller = createCallerFactory(appRouter)({ userId: null });
+    await expect(caller.night.list()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
 });
 

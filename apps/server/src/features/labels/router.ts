@@ -1,3 +1,7 @@
-import { router } from "../../trpc/init";
+import { z } from "zod";
+import { notImplemented, router, userProcedure } from "../../trpc/init";
 
-export const labelsRouter = router({});
+// Stubs from docs/ARCHITECTURE.md (tRPC routers). The `labels` feature fills them in.
+export const labelsRouter = router({
+  forNight: userProcedure.input(z.object({ nightId: z.uuid() })).query(() => notImplemented()),
+});

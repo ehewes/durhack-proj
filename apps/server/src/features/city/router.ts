@@ -1,3 +1,6 @@
-import { router } from "../../trpc/init";
+import { notImplemented, publicProcedure, router } from "../../trpc/init";
 
-export const cityRouter = router({});
+// Stubs from docs/ARCHITECTURE.md (tRPC routers). The `city` feature fills them in.
+export const cityRouter = router({
+  sensors: publicProcedure.query(() => notImplemented()),
+});

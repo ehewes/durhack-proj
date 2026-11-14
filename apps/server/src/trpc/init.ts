@@ -16,6 +16,11 @@ export const router = t.router;
 export const createCallerFactory = t.createCallerFactory;
 export const publicProcedure = t.procedure;
 
+/** Stub body for procedures a feature issue hasn't built yet. */
+export function notImplemented(): never {
+  throw new TRPCError({ code: "NOT_IMPLEMENTED", message: "Not built yet" });
+}
+
 /** Procedures that need a user ID. */
 export const userProcedure = t.procedure.use(({ ctx, next }) => {
   if (!ctx.userId) throw new TRPCError({ code: "UNAUTHORIZED", message: "Missing x-kip-user" });

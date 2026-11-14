@@ -1,4 +1,2 @@
-import type { Job } from "../../jobs";
-
+export { jobs as cityJobs } from "./jobs";
 export { cityRouter } from "./router";
-export const cityJobs: Job[] = [];
