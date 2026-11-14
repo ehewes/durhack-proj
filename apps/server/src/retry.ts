@@ -1,16 +1,34 @@
-/** Retries `fn` with a fixed delay. The API boots before Atlas allows its IP, so this matters. */
+export type RetryOptions = {
+  attempts?: number;
+  /** First delay; doubles each attempt up to maxDelayMs */
+  baseDelayMs?: number;
+  maxDelayMs?: number;
+  sleep?: (ms: number) => Promise<void>;
+};
+
+/**
+ * Retries `fn` with exponential backoff. The API boots before Atlas allows its IP, so this
+ * matters. Logs only the label and attempt, never the error, which can contain a URI.
+ */
 export async function retry<T>(
   label: string,
   fn: () => Promise<T>,
-  { attempts = 30, delayMs = 2000 } = {},
+  {
+    attempts = 12,
+    baseDelayMs = 500,
+    maxDelayMs = 10_000,
+    sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  }: RetryOptions = {},
 ): Promise<T> {
   for (let attempt = 1; ; attempt++) {
     try {
       return await fn();
     } catch (error) {
-      if (attempt >= attempts) throw error;
-      console.warn(`${label}: attempt ${attempt} failed, retrying in ${delayMs}ms`);
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      if (attempt >= attempts)
+        throw new Error(`${label}: gave up after ${attempts} attempts`, { cause: error });
+      const delay = Math.min(baseDelayMs * 2 ** (attempt - 1), maxDelayMs);
+      console.warn(`${label}: attempt ${attempt} failed, retrying in ${delay}ms`);
+      await sleep(delay);
     }
   }
 }

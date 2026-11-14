@@ -15,7 +15,8 @@
     "dev:worker": "bun --env-file=.env --filter @kip/server dev:worker",
     "dev:app": "bun --env-file=.env --filter @kip/mobile start",
     "db:up": "docker compose up -d --wait",
-    "db:migrate": "bun --env-file=.env --filter @kip/server db:migrate"
+    "db:migrate": "bun --env-file=.env --filter @kip/server migrate",
+    "db:indexes": "bun --env-file=.env --filter @kip/server indexes"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.7",

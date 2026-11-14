@@ -1,6 +1,7 @@
 import cron from "node-cron";
 import { connectMongo } from "./db/mongo";
 import { connectTiger } from "./db/tiger";
+import { env } from "./env";
 import { accountJobs } from "./features/account";
 import { attributionJobs } from "./features/attribution";
 import { briefingJobs } from "./features/briefing";
@@ -27,7 +28,9 @@ const jobs: Job[] = [
   ...accountJobs,
 ];
 
-await Promise.all([connectMongo(), connectTiger()]);
+const { MONGO_URI, TIGER_URI } = env();
+if (TIGER_URI) await connectTiger();
+if (MONGO_URI) await connectMongo();
 
 for (const job of jobs) {
   cron.schedule(

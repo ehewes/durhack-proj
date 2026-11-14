@@ -3,13 +3,14 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./trpc": "./src/trpc/router.ts"
+    "./trpc/router": "./src/trpc/router.ts"
   },
   "scripts": {
     "dev:api": "bun --watch src/main.api.ts",
     "dev:worker": "bun --watch src/main.worker.ts",
-    "db:migrate": "bun src/db/migrate.ts",
-    "typecheck": "tsc -p ."
+    "typecheck": "tsc -p .",
+    "migrate": "bun src/db/migrate.ts",
+    "indexes": "bun src/db/indexes.ts"
   },
   "dependencies": {
     "@hono/trpc-server": "^0.4.2",

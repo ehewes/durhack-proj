@@ -1,11 +1,11 @@
 import { type Db, MongoClient } from "mongodb";
-import { env } from "../env";
+import { requireEnv } from "../env";
 import { retry } from "../retry";
 
 let client: MongoClient | undefined;
 
 export function mongo(): Db {
-  client ??= new MongoClient(env().MONGO_URI);
+  client ??= new MongoClient(requireEnv("MONGO_URI"));
   return client.db();
 }
 

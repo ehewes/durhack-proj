@@ -1,11 +1,11 @@
 import postgres from "postgres";
-import { env } from "../env";
+import { requireEnv } from "../env";
 import { retry } from "../retry";
 
 let client: postgres.Sql | undefined;
 
 export function tiger(): postgres.Sql {
-  client ??= postgres(env().TIGER_URI, { onnotice: () => {} });
+  client ??= postgres(requireEnv("TIGER_URI"), { onnotice: () => {} });
   return client;
 }
 
