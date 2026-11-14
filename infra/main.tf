@@ -33,6 +33,14 @@ resource "vultr_firewall_rule" "web" {
   port              = each.value
 }
 
+# Survives `terraform apply -replace=vultr_instance.api`, so the sslip.io URL baked into the
+# iOS build keeps working
+resource "vultr_reserved_ip" "api" {
+  label   = "kip-api"
+  region  = var.region
+  ip_type = "v4"
+}
+
 resource "vultr_instance" "api" {
   label             = "kip-api"
   region            = var.region
@@ -40,6 +48,7 @@ resource "vultr_instance" "api" {
   os_id             = 2284 # Ubuntu 24.04
   ssh_key_ids       = [vultr_ssh_key.team.id]
   firewall_group_id = vultr_firewall_group.api.id
+  reserved_ip_id    = vultr_reserved_ip.api.id
 
   # Installs Docker, writes .env and compose.yaml, derives an <ip>.sslip.io hostname for Caddy,
   # then pulls and runs the API, the worker and Caddy.
@@ -56,6 +65,6 @@ resource "vultr_instance" "api" {
 
 resource "mongodbatlas_project_ip_access_list" "api" {
   project_id = var.atlas_project_id
-  ip_address = vultr_instance.api.main_ip
+  ip_address = vultr_reserved_ip.api.subnet
   comment    = "kip-api"
 }

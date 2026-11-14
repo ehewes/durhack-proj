@@ -10,7 +10,8 @@ passed in as a URI. Architecture and the deploy flow: `docs/ARCHITECTURE.md` ("D
 | `vultr_ssh_key.team` | From `ssh_public_key_path` (default `~/.ssh/id_ed25519.pub`) |
 | `vultr_container_registry.kip` | Private, plan `start_up`, in `region` |
 | `vultr_firewall_group.api` + rules | 22 from `admin_ip` only; 80 and 443 open for Caddy |
-| `vultr_instance.api` | `vc2-2c-4gb`, Ubuntu 24.04 (`os_id` 2284), in `lhr` |
+| `vultr_reserved_ip.api` | Fixed IPv4, so the API URL survives `-replace` |
+| `vultr_instance.api` | `vc2-2c-4gb`, Ubuntu 24.04 (`os_id` 2284), in `lhr`, on the reserved IP |
 | `mongodbatlas_project_ip_access_list.api` | Allows the instance's IP into Atlas |
 
 `cloud-init.yaml.tftpl` installs Docker, writes `/opt/kip/.env`, a Caddyfile and a compose file,
@@ -31,6 +32,7 @@ worker and Caddy. Outputs: `api_ip`, `api_url`, `registry_urn`.
    docker push <registry_urn>/kip:latest
    ```
    Set `image = "<registry_urn>/kip:latest"` and the registry credentials in `terraform.tfvars`.
+   Check the template renders: `cd infra && ./scripts/check-cloud-init.sh` (needs Python YAML).
 4. `terraform -chdir=infra apply`. Give cloud-init a few minutes, then open `api_url`.
 
 ## Ship a new build
@@ -44,8 +46,9 @@ ssh root@$(terraform -chdir=infra output -raw api_ip) 'cd /opt/kip && docker com
 terraform -chdir=infra plan
 terraform -chdir=infra apply -replace=vultr_instance.api
 ```
-This replaces only the instance. Data lives in Atlas and Tiger Cloud, so it stays put; the Atlas
-access entry follows the new IP, and the API retries its database connections until it lands.
+This replaces only the instance. It comes back on the same reserved IP, so `api_url` and the iOS
+build keep working, and the Atlas access entry stays valid. Data lives in Atlas and Tiger Cloud,
+so it stays put; the API retries its database connections while the server boots.
 
 ## Still to confirm with a real key
 - `region = "lhr"` and the `start_up` registry plan: `vultr-cli regions list`,

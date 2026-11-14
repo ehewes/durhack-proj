@@ -1,9 +1,9 @@
 output "api_ip" {
-  value = vultr_instance.api.main_ip
+  value = vultr_reserved_ip.api.subnet
 }
 
 output "api_url" {
-  value = "https://${replace(vultr_instance.api.main_ip, ".", "-")}.sslip.io"
+  value = "https://${replace(vultr_reserved_ip.api.subnet, ".", "-")}.sslip.io"
 }
 
 output "registry_urn" {

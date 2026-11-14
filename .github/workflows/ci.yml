@@ -42,6 +42,8 @@ jobs:
       - run: terraform fmt -check -diff
       - run: terraform init -backend=false -input=false
       - run: terraform validate
+      - name: Render cloud-init with sample values and parse the YAML
+        run: ./scripts/check-cloud-init.sh
 
   docker:
     runs-on: ubuntu-latest

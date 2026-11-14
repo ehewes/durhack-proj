@@ -32,6 +32,8 @@ COPY package.json tsconfig.base.json ./
 COPY packages/shared packages/shared
 COPY apps/server apps/server
 COPY --from=web /app/apps/mobile/dist web
+# The handling-noise filter the API loads (#90); ml/ itself stays out of the image
+COPY ml/models ml/models
 USER bun
 EXPOSE 8080
 CMD ["bun", "apps/server/src/main.api.ts"]
