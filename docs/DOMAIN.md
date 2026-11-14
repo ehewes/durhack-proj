@@ -41,7 +41,12 @@ these must follow this file. Constants live in `packages/shared/src/domain/`, no
   data.
 
 ## Noise classification
-- Labels: `construction`, `traffic`, `siren`, `snoring`, `other`, plus `uncertain`.
+- Labels: `construction`, `traffic`, `siren`, `snoring`, `other`, plus `uncertain` and `handling`.
+- **Handling noise** is the phone itself: rubbing on a sleeve, a pocket, a pillow or bedsheets.
+  Kip's own small model (trained by us, see `ml/`) runs on each spike clip before Gemini. A clip
+  that is mostly handling noise is labelled `handling`; otherwise the model's cleaned audio goes on
+  to labelling. `handling` events are never linked to wake-ups and never appear in a briefing.
+- Clips travel as 16 kHz mono 16-bit WAV, so the server needs no audio decoder.
 - Gemini (paid-tier key) labels each clip, with JSON output. ElevenLabs Scribe audio-event tags
   give a second opinion. Where they disagree, the event is `uncertain`. This stops a user's own
   snoring being blamed on the building site.

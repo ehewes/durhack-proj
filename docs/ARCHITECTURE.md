@@ -82,6 +82,7 @@ Bun is the package manager and workspace tool everywhere, and the server runtime
 | Infra | Terraform: `vultr/vultr`, `mongodb/mongodbatlas` (IP access list), Tiger Cloud provider; cloud-init via `templatefile()` | One command rebuilds the stack |
 | Quality | Biome (lint + format), `tsc` per package (typecheck; not `tsc -b`, whose declaration checks reject the tRPC client types), `bun test` | `./hq check` runs all three; CI runs them plus Terraform and Docker builds |
 | Process | Entire in the repo from the first commit | Records every agent session |
+| ML | Python 3.11+, PyTorch, `uv`; trained on a Lium GPU pod; exported to ONNX and run in the API with ONNX Runtime | Our own small model that filters phone-handling noise out of spike clips. Not in `./hq check`: `ml/` runs `uv run pytest` |
 
 `./hq check` runs the `check` commands in `hq.json`: `bun run lint`, `bun run typecheck`,
 `bun run test`. Keep it under ~2 min. `./hq setup` runs `bun install --frozen-lockfile`.
@@ -158,6 +159,8 @@ packages/
                                   score weights, wording strings, each with tests
 infra/                            Terraform, cloud-init.yaml.tftpl (writes the Caddyfile and compose)
 compose.yaml                      local TimescaleDB and MongoDB for development
+ml/                               handling-noise filter: data scripts, model, training, ONNX export (Python, uv)
+  models/handling-v1.onnx         the exported model the API loads (small, committed)
 Dockerfile                        builds server + Expo web export into one image
 ```
 
@@ -210,6 +213,7 @@ disjoint paths. Each lane covers that feature's folder in `apps/mobile/src/featu
 | `platform` | `apps/mobile/app/`, `apps/mobile/src/lib/`, `apps/mobile/modules/`, `apps/mobile/app.config.ts`, `apps/server/src/*.ts` (`app.ts`, `main.*.ts`, `env.ts`, `jobs.ts`, `http.ts`, `retry.ts`), `apps/server/src/{trpc,integrations,db}/`, `packages/shared/src/domain/`, root config (`package.json`, `biome.json`, `tsconfig.base.json`, `compose.yaml`), `.github/workflows/` |
 | `infra` | `infra/`, `Dockerfile` |
 | `demo` | `docs/demo/` (pitch, Devpost, demo clips, Entire evidence) |
+| `ml` | `ml/` (Python: data, training, export; raw data and checkpoints stay out of git) |
 
 ## Contracts
 Merge in M0, before anyone branches. Agree the night upload schema in the first 30 minutes so
@@ -224,6 +228,8 @@ recording and server work never block each other.
 | `kip-audio` JS API | `apps/mobile/modules/kip-audio/index.ts` | `platform` |
 | Tiger schema | `apps/server/src/db/migrations/` | the feature in the file name |
 | Mongo collections and indexes | `apps/server/src/db/indexes.ts` | `platform` |
+| Handling-filter model I/O: 16 kHz mono float32 PCM in; cleaned PCM and a per-frame handling probability out | `ml/README.md`, `ml/models/` | `ml` |
+| Spike clip format: 16 kHz mono 16-bit WAV | `apps/mobile/modules/kip-audio/index.ts` | `platform` |
 
 ### Night upload (draft, settle at M0)
 ```ts

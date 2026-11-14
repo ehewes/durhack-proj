@@ -99,6 +99,11 @@
       "paths": [
         "docs/demo/"
       ]
+    },
+    "ml": {
+      "paths": [
+        "ml/"
+      ]
     }
   },
   "check": [

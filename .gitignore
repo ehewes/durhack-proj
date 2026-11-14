@@ -31,3 +31,10 @@ apps/mobile/android/
 
 # Source folders named lib/ are code, even if a global gitignore says otherwise
 !**/src/lib/
+
+# ML: raw data, runs and checkpoints stay out of git (the exported model is committed)
+ml/data/raw/
+ml/data/mixtures/
+ml/runs/
+ml/checkpoints/
+*.pt
