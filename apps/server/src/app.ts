@@ -2,6 +2,7 @@ import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
+import { briefingHttp } from "./features/briefing";
 import { labelsHttp } from "./features/labels";
 import { worksHttp } from "./features/works";
 import { createContext } from "./trpc/init";
@@ -22,6 +23,7 @@ export function createApp({ webDist }: { webDist?: string } = {}): Hono {
   );
 
   // Plain routes, one line per feature that has them. Written in M0.
+  briefingHttp(app);
   labelsHttp(app);
   worksHttp(app);
 
