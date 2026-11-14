@@ -4,11 +4,19 @@ Rules for every coding agent in this repo: Claude Code, Codex and Cursor. Short 
 
 ## Context
 - `docs/hack/BRIEF.md`: event, prizes, deadlines.
-- `docs/SPEC.md`: what we build, the demo path.
-- `docs/ARCHITECTURE.md`: stack, lanes, contracts.
+- `docs/SPEC.md`: what we build (Kip), the demo path.
+- `docs/BUSINESS.md`: business model, Quiet Stay Score, profiles, judge answers.
+- `docs/DOMAIN.md`: WHO curve, attribution, construction hours, privacy, wording rules.
+- `docs/ARCHITECTURE.md`: stack, lanes, contracts, data stores, env vars.
 - `docs/DECISIONS.md`: decisions so far.
 
 Read only what your issue needs.
+
+## Product rules
+- Anything Kip computes, labels or shows follows `docs/DOMAIN.md`, including its wording table:
+  "linked to", never "caused by"; city figures are "indicative".
+- Only the API calls Gemini, ElevenLabs and Solana. No third-party keys in the app or dashboard.
+- No raw audio at rest, no health values in logs, simulated data always labelled.
 
 ## The loop
 One issue = one agent = one worktree/branch = one PR. Humans assign issues. Never pick your own.

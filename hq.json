@@ -1,6 +1,46 @@
 {
   "default_branch": "main",
-  "lanes": {},
+  "lanes": {
+    "ios": {
+      "owner": "both",
+      "paths": [
+        "apps/ios/"
+      ]
+    },
+    "api": {
+      "owner": "both",
+      "paths": [
+        "apps/server/src/api/",
+        "apps/server/src/services/"
+      ]
+    },
+    "worker": {
+      "owner": "both",
+      "paths": [
+        "apps/server/src/worker/",
+        "apps/server/src/db/"
+      ]
+    },
+    "web": {
+      "owner": "both",
+      "paths": [
+        "apps/dashboard/"
+      ]
+    },
+    "infra": {
+      "owner": "both",
+      "paths": [
+        "infra/",
+        "Dockerfile"
+      ]
+    },
+    "shared": {
+      "owner": "both",
+      "paths": [
+        "packages/shared/"
+      ]
+    }
+  },
   "check": [],
   "setup": [],
   "stale_minutes": 60
