@@ -195,3 +195,17 @@ so the city map uses sensors near the venue and demo step 4 uses a night exporte
 "Tiger for time series, MongoDB for documents and geo". Still open: the event length and start
 time, and what the "35" in the team's notes means. Both keep their assumptions in `docs/SPEC.md`.
 **Consequences:** Follow the MongoDB fallback in that entry. Do not build on the "35".
+
+## 2026-11-14: Serve the demo at kip.edenmatrix.xyz through a Cloudflare tunnel
+**Context:** The iPhone build and the stage browser need one stable HTTPS URL now. Ellis's shared
+Docker host already runs several stacks, each behind its own token-based Cloudflare tunnel on
+`edenmatrix.xyz`. The Vultr path (#74) still needs keys, a registry and a Terraform apply.
+**Decision:** Run the API, the worker and a `cloudflared` as compose project `kip` on that host
+(`infra/tunnel/`). Tunnel `kip` routes `kip.edenmatrix.xyz` to `http://api:8080`. The image is
+built on the host from the committed tree, and settings live only in the host's `/opt/kip/.env`.
+Terraform on Vultr stays as the alternative.
+**Consequences:** No open ports, certificates or registry, and `EXPO_PUBLIC_API_URL` for the iOS
+build is `https://kip.edenmatrix.xyz`. Atlas must allow the host's IP by hand, because Terraform
+only adds Vultr's. The live server rebuild in the demo (`terraform apply -replace`) applies only
+to the Vultr path. Deploying needs ssh access to the host. The tunnel token never goes in a
+prompt or the repo, because Entire pushes session transcripts.

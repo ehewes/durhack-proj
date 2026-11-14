@@ -1,0 +1,27 @@
+# Kip's own Cloudflare tunnel ("kip"). It is token-based: the route
+# kip.edenmatrix.xyz -> http://api:8080 lives in the Zero Trust dashboard, not here.
+# An override file, as in the host's other stacks, so the stack also runs without it.
+services:
+  cloudflared:
+    # Pinned to the version the host's other stacks run.
+    image: cloudflare/cloudflared:2026.10.7
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?CLOUDFLARE_TUNNEL_TOKEN is not set (see infra/README.md)}
+    # Outbound only, so no ports. The image already runs as the distroless nonroot user.
+    user: "65532:65532"
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 128m
+    depends_on:
+      api:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

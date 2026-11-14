@@ -1,0 +1,84 @@
+# Kip on a shared Docker host, behind its own Cloudflare tunnel (compose.tunnel.yml).
+# Run from /opt/kip, where remote-deploy.sh installs this directory's files as deploy/:
+#   docker compose --env-file .env -f deploy/compose.yml -f deploy/compose.tunnel.yml <command>
+# `--env-file .env` is not optional: without it compose looks for .env next to this file, and
+# every server setting below silently stays unset.
+#
+# No service publishes a port. The only way in is the tunnel, so the host's firewall and the
+# other stacks on it are untouched.
+name: kip
+
+# Docker keeps container logs forever by default.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+# Only what the server reads (apps/server/src/env.ts and integrations/). A bare name takes its
+# value from --env-file; one missing there stays unset in the container instead of becoming "".
+x-server-env: &server-env
+  - MONGO_URI
+  - TIGER_URI
+  - GEMINI_API_KEY
+  - GEMINI_MODEL
+  - GEMINI_TIMEOUT_MS
+  - GEMINI_RETRY_DELAY_MS
+  - ELEVENLABS_API_KEY
+  - ELEVENLABS_VOICE_ID
+  - ELEVENLABS_TIMEOUT_MS
+  - SOLANA_RPC_URL
+  - SOLANA_KEYPAIR
+  - STREET_MANAGER_TOPIC_ARN
+
+services:
+  api:
+    # Built on the host by remote-deploy.sh from the repo's Dockerfile. Each build also keeps
+    # its commit tag, so a rollback is a retag (infra/README.md).
+    image: kip/server:live
+    pull_policy: never
+    restart: unless-stopped
+    init: true
+    expose:
+      - "8080"
+    environment: *server-env
+    healthcheck:
+      test:
+        - CMD
+        - bun
+        - -e
+        - "fetch('http://127.0.0.1:8080/health').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      # Covers the database retries on boot: apps/server/src/retry.ts gives up after about 90 s.
+      start_period: 120s
+      start_interval: 2s
+    stop_grace_period: 10s
+    cpus: 2.0
+    mem_limit: 1g
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging: *logging
+
+  worker:
+    image: kip/server:live
+    pull_policy: never
+    restart: unless-stopped
+    init: true
+    command: ["bun", "apps/server/src/main.worker.ts"]
+    environment: *server-env
+    # The API applies the Tiger migrations before it reports healthy; the jobs write to them.
+    depends_on:
+      api:
+        condition: service_healthy
+    stop_grace_period: 10s
+    cpus: 0.5
+    mem_limit: 512m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging: *logging
