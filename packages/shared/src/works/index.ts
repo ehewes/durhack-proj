@@ -62,7 +62,7 @@ const clock = z.object({
 });
 
 /**
- * One Street Manager permit, as stored in MongoDB `works` and returned by `works.near`.
+ * One Street Manager permit, as stored in MongoDB `works`. `works.near` returns `worksNearItem`.
  * `simulated` is true only for labelled sample data, never for a live SNS permit.
  */
 export const workRecord = z.object({
@@ -179,7 +179,10 @@ export const worksNearItem = z.object({
 
 export type WorksNearItem = z.infer<typeof worksNearItem>;
 
-/** Permits found near the point but left off the map, by why. */
+/**
+ * Permits the repository returned but that have no usable geometry, by why. The MongoDB
+ * `$near` lookup only matches indexed geometry, so this is a floor, not a full count.
+ */
 export const worksNearOmitted = z.object({
   absentGeometry: z.number().int().nonnegative(),
   malformedGeometry: z.number().int().nonnegative(),

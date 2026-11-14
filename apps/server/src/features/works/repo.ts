@@ -51,7 +51,13 @@ export function distanceToWork(lat: number, lon: number, work: { geometry: WorkG
     const [workLon, workLat] = geometry.coordinates;
     return Math.hypot(...localMetres(workLat, workLon, lat, lon));
   }
-  if (geometry.type === "Polygon" && insideRing(lat, lon, geometry.coordinates[0])) return 0;
+  if (
+    geometry.type === "Polygon" &&
+    insideRing(lat, lon, geometry.coordinates[0]) &&
+    !geometry.coordinates.slice(1).some((hole) => insideRing(lat, lon, hole))
+  ) {
+    return 0;
+  }
   const lines = geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates;
   let best = Number.POSITIVE_INFINITY;
   for (const line of lines) {
