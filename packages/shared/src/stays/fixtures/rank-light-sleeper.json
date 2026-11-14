@@ -1,0 +1,897 @@
+{
+  "profile": "lightSleeper",
+  "checkIn": "2026-11-20",
+  "checkOut": "2026-11-22",
+  "hotels": [
+    {
+      "hotelId": "osm-node-1010",
+      "name": "Bigg Market Hotel",
+      "location": {
+        "lat": 54.97,
+        "lng": -1.614
+      },
+      "pricePerNightGbp": 140,
+      "score": 81,
+      "breakdown": {
+        "noise": {
+          "value": 85,
+          "weight": 0.55,
+          "points": 46.8
+        },
+        "roadworks": {
+          "value": 80,
+          "weight": 0.2,
+          "points": 16
+        },
+        "airQuality": {
+          "value": 65,
+          "weight": 0.1,
+          "points": 6.5
+        },
+        "realNights": {
+          "value": 80,
+          "weight": 0.15,
+          "points": 12
+        },
+        "nightlife": {
+          "value": 30,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-110",
+            "distanceM": 280
+          },
+          {
+            "id": "obs-210",
+            "distanceM": 400
+          }
+        ],
+        "permits": [],
+        "realNights": {
+          "count": 6,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1010",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1014",
+      "name": "Chinatown Guesthouse",
+      "location": {
+        "lat": 54.986,
+        "lng": -1.608
+      },
+      "pricePerNightGbp": 118,
+      "score": 75,
+      "breakdown": {
+        "noise": {
+          "value": 73,
+          "weight": 0.55,
+          "points": 40.2
+        },
+        "roadworks": {
+          "value": 82,
+          "weight": 0.2,
+          "points": 16.4
+        },
+        "airQuality": {
+          "value": 91,
+          "weight": 0.1,
+          "points": 9.1
+        },
+        "realNights": {
+          "value": 64,
+          "weight": 0.15,
+          "points": 9.6
+        },
+        "nightlife": {
+          "value": 19,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-114",
+            "distanceM": 360
+          },
+          {
+            "id": "obs-214",
+            "distanceM": 500
+          }
+        ],
+        "permits": [],
+        "realNights": {
+          "count": 9,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1014",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1001",
+      "name": "Grey Street Hotel",
+      "location": {
+        "lat": 54.974,
+        "lng": -1.614
+      },
+      "pricePerNightGbp": 77,
+      "score": 72,
+      "breakdown": {
+        "noise": {
+          "value": 72,
+          "weight": 0.55,
+          "points": 39.6
+        },
+        "roadworks": {
+          "value": 93,
+          "weight": 0.2,
+          "points": 18.6
+        },
+        "airQuality": {
+          "value": 74,
+          "weight": 0.1,
+          "points": 7.4
+        },
+        "realNights": {
+          "value": 41,
+          "weight": 0.15,
+          "points": 6.1
+        },
+        "nightlife": {
+          "value": 76,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-101",
+            "distanceM": 100
+          },
+          {
+            "id": "obs-201",
+            "distanceM": 175
+          }
+        ],
+        "permits": [],
+        "realNights": {
+          "count": 6,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1001",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1008",
+      "name": "Gateshead Riverside",
+      "location": {
+        "lat": 54.982,
+        "lng": -1.608
+      },
+      "pricePerNightGbp": 106,
+      "score": 72,
+      "breakdown": {
+        "noise": {
+          "value": 91,
+          "weight": 0.55,
+          "points": 50.1
+        },
+        "roadworks": {
+          "value": 44,
+          "weight": 0.2,
+          "points": 8.8
+        },
+        "airQuality": {
+          "value": 52,
+          "weight": 0.1,
+          "points": 5.2
+        },
+        "realNights": {
+          "value": 50,
+          "weight": 0.15,
+          "points": 7.5
+        },
+        "nightlife": {
+          "value": 78,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-108",
+            "distanceM": 240
+          },
+          {
+            "id": "obs-208",
+            "distanceM": 350
+          }
+        ],
+        "permits": [],
+        "realNights": {
+          "count": 0,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1008",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1005",
+      "name": "Toon Townhouse",
+      "location": {
+        "lat": 54.97,
+        "lng": -1.608
+      },
+      "pricePerNightGbp": 145,
+      "score": 70,
+      "breakdown": {
+        "noise": {
+          "value": 60,
+          "weight": 0.55,
+          "points": 33
+        },
+        "roadworks": {
+          "value": 95,
+          "weight": 0.2,
+          "points": 19
+        },
+        "airQuality": {
+          "value": 55,
+          "weight": 0.1,
+          "points": 5.5
+        },
+        "realNights": {
+          "value": 85,
+          "weight": 0.15,
+          "points": 12.8
+        },
+        "nightlife": {
+          "value": 65,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-105",
+            "distanceM": 180
+          },
+          {
+            "id": "obs-205",
+            "distanceM": 275
+          }
+        ],
+        "permits": [],
+        "realNights": {
+          "count": 9,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1005",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1012",
+      "name": "Heaton House",
+      "location": {
+        "lat": 54.978,
+        "lng": -1.62
+      },
+      "pricePerNightGbp": 84,
+      "score": 68,
+      "breakdown": {
+        "noise": {
+          "value": 79,
+          "weight": 0.55,
+          "points": 43.5
+        },
+        "roadworks": {
+          "value": 46,
+          "weight": 0.2,
+          "points": 9.2
+        },
+        "airQuality": {
+          "value": 78,
+          "weight": 0.1,
+          "points": 7.8
+        },
+        "realNights": {
+          "value": 50,
+          "weight": 0.15,
+          "points": 7.5
+        },
+        "nightlife": {
+          "value": 67,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-112",
+            "distanceM": 320
+          },
+          {
+            "id": "obs-212",
+            "distanceM": 450
+          }
+        ],
+        "permits": [
+          {
+            "ref": "SM-2026-4012",
+            "distanceM": 150,
+            "overlapsStay": true,
+            "nightWork": true
+          }
+        ],
+        "realNights": {
+          "count": 0,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1012",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1003",
+      "name": "Jesmond Lodge",
+      "location": {
+        "lat": 54.982,
+        "lng": -1.62
+      },
+      "pricePerNightGbp": 111,
+      "score": 66,
+      "breakdown": {
+        "noise": {
+          "value": 66,
+          "weight": 0.55,
+          "points": 36.3
+        },
+        "roadworks": {
+          "value": 59,
+          "weight": 0.2,
+          "points": 11.8
+        },
+        "airQuality": {
+          "value": 87,
+          "weight": 0.1,
+          "points": 8.7
+        },
+        "realNights": {
+          "value": 63,
+          "weight": 0.15,
+          "points": 9.5
+        },
+        "nightlife": {
+          "value": 28,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-103",
+            "distanceM": 140
+          },
+          {
+            "id": "obs-203",
+            "distanceM": 225
+          }
+        ],
+        "permits": [
+          {
+            "ref": "SM-2026-4003",
+            "distanceM": 105,
+            "overlapsStay": true,
+            "nightWork": false
+          }
+        ],
+        "realNights": {
+          "count": 3,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1003",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1009",
+      "name": "Eldon Square Stay",
+      "location": {
+        "lat": 54.986,
+        "lng": -1.62
+      },
+      "pricePerNightGbp": 123,
+      "score": 64,
+      "breakdown": {
+        "noise": {
+          "value": 48,
+          "weight": 0.55,
+          "points": 26.4
+        },
+        "roadworks": {
+          "value": 97,
+          "weight": 0.2,
+          "points": 19.4
+        },
+        "airQuality": {
+          "value": 81,
+          "weight": 0.1,
+          "points": 8.1
+        },
+        "realNights": {
+          "value": 69,
+          "weight": 0.15,
+          "points": 10.4
+        },
+        "nightlife": {
+          "value": 54,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-109",
+            "distanceM": 260
+          },
+          {
+            "id": "obs-209",
+            "distanceM": 375
+          }
+        ],
+        "permits": [
+          {
+            "ref": "SM-2026-4009",
+            "distanceM": 135,
+            "overlapsStay": true,
+            "nightWork": false
+          }
+        ],
+        "realNights": {
+          "count": 3,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1009",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1007",
+      "name": "Haymarket Suites",
+      "location": {
+        "lat": 54.978,
+        "lng": -1.614
+      },
+      "pricePerNightGbp": 89,
+      "score": 56,
+      "breakdown": {
+        "noise": {
+          "value": 54,
+          "weight": 0.55,
+          "points": 29.7
+        },
+        "roadworks": {
+          "value": 61,
+          "weight": 0.2,
+          "points": 12.2
+        },
+        "airQuality": {
+          "value": 68,
+          "weight": 0.1,
+          "points": 6.8
+        },
+        "realNights": {
+          "value": 47,
+          "weight": 0.15,
+          "points": 7.1
+        },
+        "nightlife": {
+          "value": 17,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-107",
+            "distanceM": 220
+          },
+          {
+            "id": "obs-207",
+            "distanceM": 325
+          }
+        ],
+        "permits": [],
+        "realNights": {
+          "count": 6,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1007",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1013",
+      "name": "Tyne Bridge Hotel",
+      "location": {
+        "lat": 54.982,
+        "lng": -1.614
+      },
+      "pricePerNightGbp": 101,
+      "score": 54,
+      "breakdown": {
+        "noise": {
+          "value": 36,
+          "weight": 0.55,
+          "points": 19.8
+        },
+        "roadworks": {
+          "value": 99,
+          "weight": 0.2,
+          "points": 19.8
+        },
+        "airQuality": {
+          "value": 62,
+          "weight": 0.1,
+          "points": 6.2
+        },
+        "realNights": {
+          "value": 53,
+          "weight": 0.15,
+          "points": 8
+        },
+        "nightlife": {
+          "value": 43,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-113",
+            "distanceM": 340
+          },
+          {
+            "id": "obs-213",
+            "distanceM": 475
+          }
+        ],
+        "permits": [],
+        "realNights": {
+          "count": 6,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1013",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1011",
+      "name": "Leazes Park Inn",
+      "location": {
+        "lat": 54.974,
+        "lng": -1.608
+      },
+      "pricePerNightGbp": 67,
+      "score": 50,
+      "breakdown": {
+        "noise": {
+          "value": 42,
+          "weight": 0.55,
+          "points": 23.1
+        },
+        "roadworks": {
+          "value": 63,
+          "weight": 0.2,
+          "points": 12.6
+        },
+        "airQuality": {
+          "value": 94,
+          "weight": 0.1,
+          "points": 9.4
+        },
+        "realNights": {
+          "value": 31,
+          "weight": 0.15,
+          "points": 4.6
+        },
+        "nightlife": {
+          "value": 91,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-111",
+            "distanceM": 300
+          },
+          {
+            "id": "obs-211",
+            "distanceM": 425
+          }
+        ],
+        "permits": [],
+        "realNights": {
+          "count": 9,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1011",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1002",
+      "name": "Central Station Inn",
+      "location": {
+        "lat": 54.978,
+        "lng": -1.608
+      },
+      "pricePerNightGbp": 94,
+      "score": 45,
+      "breakdown": {
+        "noise": {
+          "value": 29,
+          "weight": 0.55,
+          "points": 16
+        },
+        "roadworks": {
+          "value": 76,
+          "weight": 0.2,
+          "points": 15.2
+        },
+        "airQuality": {
+          "value": 58,
+          "weight": 0.1,
+          "points": 5.8
+        },
+        "realNights": {
+          "value": 52,
+          "weight": 0.15,
+          "points": 7.8
+        },
+        "nightlife": {
+          "value": 52,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-102",
+            "distanceM": 120
+          },
+          {
+            "id": "obs-202",
+            "distanceM": 200
+          }
+        ],
+        "permits": [],
+        "realNights": {
+          "count": 9,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1002",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1000",
+      "name": "Quayside Rooms",
+      "location": {
+        "lat": 54.97,
+        "lng": -1.62
+      },
+      "pricePerNightGbp": 60,
+      "score": 44,
+      "breakdown": {
+        "noise": {
+          "value": 35,
+          "weight": 0.55,
+          "points": 19.3
+        },
+        "roadworks": {
+          "value": 40,
+          "weight": 0.2,
+          "points": 8
+        },
+        "airQuality": {
+          "value": 90,
+          "weight": 0.1,
+          "points": 9
+        },
+        "realNights": {
+          "value": 50,
+          "weight": 0.15,
+          "points": 7.5
+        },
+        "nightlife": {
+          "value": 15,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-100",
+            "distanceM": 80
+          },
+          {
+            "id": "obs-200",
+            "distanceM": 150
+          }
+        ],
+        "permits": [
+          {
+            "ref": "SM-2026-4000",
+            "distanceM": 90,
+            "overlapsStay": true,
+            "nightWork": true
+          }
+        ],
+        "realNights": {
+          "count": 0,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1000",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1006",
+      "name": "Castle Garth Hotel",
+      "location": {
+        "lat": 54.974,
+        "lng": -1.62
+      },
+      "pricePerNightGbp": 72,
+      "score": 39,
+      "breakdown": {
+        "noise": {
+          "value": 17,
+          "weight": 0.55,
+          "points": 9.4
+        },
+        "roadworks": {
+          "value": 78,
+          "weight": 0.2,
+          "points": 15.6
+        },
+        "airQuality": {
+          "value": 84,
+          "weight": 0.1,
+          "points": 8.4
+        },
+        "realNights": {
+          "value": 36,
+          "weight": 0.15,
+          "points": 5.4
+        },
+        "nightlife": {
+          "value": 41,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-106",
+            "distanceM": 200
+          },
+          {
+            "id": "obs-206",
+            "distanceM": 300
+          }
+        ],
+        "permits": [
+          {
+            "ref": "SM-2026-4006",
+            "distanceM": 120,
+            "overlapsStay": true,
+            "nightWork": true
+          }
+        ],
+        "realNights": {
+          "count": 3,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1006",
+      "simulated": true
+    },
+    {
+      "hotelId": "osm-node-1004",
+      "name": "Ouseburn Loft",
+      "location": {
+        "lat": 54.986,
+        "lng": -1.614
+      },
+      "pricePerNightGbp": 128,
+      "score": 36,
+      "breakdown": {
+        "noise": {
+          "value": 23,
+          "weight": 0.55,
+          "points": 12.7
+        },
+        "roadworks": {
+          "value": 42,
+          "weight": 0.2,
+          "points": 8.4
+        },
+        "airQuality": {
+          "value": 71,
+          "weight": 0.1,
+          "points": 7.1
+        },
+        "realNights": {
+          "value": 50,
+          "weight": 0.15,
+          "points": 7.5
+        },
+        "nightlife": {
+          "value": 89,
+          "weight": 0,
+          "points": 0
+        }
+      },
+      "sources": {
+        "sensors": [
+          {
+            "id": "obs-104",
+            "distanceM": 160
+          },
+          {
+            "id": "obs-204",
+            "distanceM": 250
+          }
+        ],
+        "permits": [],
+        "realNights": {
+          "count": 0,
+          "simulated": true
+        }
+      },
+      "estimate": true,
+      "bookingUrl": "https://example.com/book/osm-node-1004",
+      "simulated": true
+    }
+  ]
+}
