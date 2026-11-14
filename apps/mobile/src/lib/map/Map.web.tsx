@@ -21,6 +21,7 @@ import {
   mapboxToken,
   mapOverlayLayers,
   NEWCASTLE,
+  pointPosition,
   pointSource,
   shapeSource,
 } from "./style";
@@ -98,23 +99,13 @@ function applyOverlays(
   return pending.cluster;
 }
 
-function clusterCenter(
-  geometry: { type?: string; coordinates?: unknown } | null | undefined,
-): MapPosition | null {
-  if (geometry?.type !== "Point" || !Array.isArray(geometry.coordinates)) return null;
-  const lng = geometry.coordinates[0];
-  const lat = geometry.coordinates[1];
-  if (typeof lng !== "number" || typeof lat !== "number") return null;
-  return [lng, lat];
-}
-
 function expandCluster(
   map: MapboxMap,
   clusterId: number,
   geometry: { type?: string; coordinates?: unknown },
 ) {
   const source = map.getSource(MAP_SOURCE.points);
-  const center = clusterCenter(geometry);
+  const center = pointPosition(geometry);
   if (source?.type !== "geojson" || !center) return;
   source.getClusterExpansionZoom(clusterId, (error, zoom) => {
     if (error || zoom == null) return;
