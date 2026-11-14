@@ -1,0 +1,7 @@
+{
+  "default_branch": "main",
+  "lanes": {},
+  "check": [],
+  "setup": [],
+  "stale_minutes": 60
+}

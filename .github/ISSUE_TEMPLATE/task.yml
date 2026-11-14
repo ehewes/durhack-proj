@@ -1,0 +1,51 @@
+name: Task
+description: One task for one agent and one PR.
+labels: ["status:ready"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        One issue = one agent = one PR. Add labels `P0`/`P1`/`P2`, `size:S` or `size:M` (L: split it), `type:*`, `lane:*` and a milestone.
+        If Blocked by is not `none`, swap `status:ready` for `status:blocked`.
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: One or two sentences. What the product can do when this is done.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Checkable statements, one per line.
+      placeholder: |
+        - [ ] ...
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Files/dirs this issue may touch.
+  - type: textarea
+    id: do-not-touch
+    attributes:
+      label: Do not touch
+      description: Files/dirs that belong to other issues or lanes.
+  - type: input
+    id: blocked-by
+    attributes:
+      label: Blocked by
+      description: "Open issues this depends on, e.g. `#12, #14`, or `none`."
+      value: none
+  - type: textarea
+    id: verify
+    attributes:
+      label: Verify
+      description: Commands or manual steps that prove it works.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Links, hints, anything else.
