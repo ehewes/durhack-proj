@@ -64,3 +64,8 @@ Entire records every session and pushes transcripts with your commits.
 - No AI attribution or co-author trailers. The `Entire-Checkpoint` trailer is added
   automatically and must stay.
 - No em dashes.
+
+<!-- entire-agent:begin -->
+Read .entire/agent-guide.md for this repository's workflow, source inspection, and verification guidance.
+@.entire/agent-guide.md
+<!-- entire-agent:end -->
