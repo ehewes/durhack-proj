@@ -212,7 +212,9 @@ describe("native map model", () => {
 
   test("reports only real camera moves and never echoes props back", () => {
     const camera = cameraTracker({ center: NEWCASTLE, zoom: 13 });
-    expect(camera.idle(NEWCASTLE, 13)).toBe(null);
+    // The first settle is where the map opened, a few metres off the request on a real device.
+    expect(camera.idle([-1.61314, 54.973141], 13)).toBe(null);
+    expect(camera.idle([-1.61314, 54.973141], 13)).toBe(null);
     expect(camera.idle([-1.5, 55], 11)).toEqual({ center: [-1.5, 55], zoom: 11 });
     expect(camera.idle([-1.5, 55], 11)).toBe(null);
     expect(camera.idle([Number.NaN, 55], 11)).toBe(null);
@@ -224,6 +226,14 @@ describe("native map model", () => {
       zoom: 12,
     });
     expect(camera.request({ center: NEWCASTLE, zoom: 12 })).toBe(null);
+  });
+
+  test("a camera asked for before the map settles still moves it", () => {
+    const camera = cameraTracker({ center: NEWCASTLE, zoom: 13 });
+    expect(camera.request({ center: [-1.5, 55], zoom: 11 })).toEqual({
+      center: [-1.5, 55],
+      zoom: 11,
+    });
   });
 });
 

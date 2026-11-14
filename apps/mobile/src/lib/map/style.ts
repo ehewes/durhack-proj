@@ -369,25 +369,27 @@ export type CameraTracker = {
 };
 
 /**
- * Camera bookkeeping for the native map. The native SDK goes idle after tiles and overlay
- * updates too, so only real moves are reported, like web `moveend`. The map moves only when the
- * caller asks for a new camera, so echoing a reported camera back as props is a no-op.
+ * Camera bookkeeping for the native map. The native SDK goes idle after loading, tiles and
+ * overlay updates too, so only real moves are reported, like web `moveend`: the first settle is
+ * where the map opened, not a move. The map moves only when the caller asks for a new camera, so
+ * echoing a reported camera back as props is a no-op.
  */
 export function cameraTracker(initial: MapCamera): CameraTracker {
-  let shown = initial;
+  let shown: MapCamera | null = null;
   let requested = initial;
   return {
     idle(center, zoom) {
       if (!isPosition(center) || !Number.isFinite(zoom)) return null;
       const next: MapCamera = { center: [center[0], center[1]], zoom };
-      if (sameCamera(shown, next)) return null;
+      const opened = shown === null;
+      if (shown && sameCamera(shown, next)) return null;
       shown = next;
-      return next;
+      return opened ? null : next;
     },
     request(next) {
       if (sameCamera(requested, next)) return null;
       requested = next;
-      return sameCamera(shown, next) ? null : next;
+      return shown && sameCamera(shown, next) ? null : next;
     },
   };
 }
