@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "2aa3e463152f",
+  "strategy": "manual-commit",
+  "branch": "ehewes/70-consent-onboarding",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/mobile/src/features/account/components/Choice.tsx",
+    "apps/mobile/src/features/account/components/ConsentGate.tsx",
+    "apps/mobile/src/features/account/components/ConsentQuestion.tsx",
+    "apps/mobile/src/features/account/components/Heading.tsx",
+    "apps/mobile/src/features/account/components/Onboarding.tsx",
+    "apps/mobile/src/features/account/components/ProfileQuestion.tsx",
+    "apps/mobile/src/features/account/hooks/useAccount.ts",
+    "apps/mobile/src/features/account/index.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/2a/a3e463152f/0/metadata.json",
+      "transcript": "/2a/a3e463152f/0/full.jsonl",
+      "compact_transcript": "/2a/a3e463152f/0/transcript.jsonl",
+      "content_hash": "/2a/a3e463152f/0/content_hash.txt",
+      "prompt": "/2a/a3e463152f/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 3726,
+    "cache_read_tokens": 700690,
+    "output_tokens": 1746,
+    "api_call_count": 2,
+    "subagent_tokens": {
+      "input_tokens": 14,
+      "cache_creation_tokens": 5282,
+      "cache_read_tokens": 1586491,
+      "output_tokens": 5278,
+      "api_call_count": 7
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 4,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 4,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}

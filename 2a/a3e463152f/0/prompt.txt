@@ -1,0 +1,56 @@
+make sure the issue is marked if its done
+
+---
+
+please go through the issues pull all up to date and then make sure u store to context that u hae to always update the tickets but then evaluate dont think too hard over some of the issuese that you can take using like the other flags to ensure no one else is using them or entire then we can work on some seperate areas i want like 3 agents working on them all at once
+
+---
+
+i didnt ask u to bring any tickets reality up to date i js asked u to go through the tickets
+
+---
+
+<task-notification>
+<task-id>a0d3e2876f812f029</task-id>
+<tool-use-id>toolu_01X3dmpiRuPZNUvKCtDKYzZc</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-oslo/4a9f6dc5-fe85-47ec-abde-6f9d440d834b/tasks/a0d3e2876f812f029.output</output-file>
+<status>completed</status>
+<summary>Agent "Build issue 67 permit sample" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I opened PR #139 for issue #67 and stopped there: nothing is merged and `./hq ship` was not run. `./hq check` passes and CI's `checks` and `terraform` jobs pass; `docker` was still pending when I stopped.
+
+- **PR:** https://github.com/ehewes/durhack-proj/pull/139 (closes #67, Entire trail #49 linked)
+- **Branch:** `ehewes/67-recorded-permits`
+- **Worktree:** `/Users/ellishewes/conductor/repos/durhack-proj/.claude/worktrees/agent-a0d3e2876f812f029`
+
+`./hq check` tail:
+```
+✓ bun run lint (0.3s)
+✓ bun run typecheck (5.8s)
+✓ bun run test (1.4s)
+✓ 3/3 checks passed
+```
+
+**What it does:** `bun run seed:works` loads the sample through the same step that stores a live SNS permit. I pulled that step out of the SNS handler; its responses are unchanged. Every seeded permit is stored with `simulated: true`. The integrations sample file is read, never edited.
+
+**Demo hotel:** Grey Street Hotel (OSM `node/2470415681`) gets the works penalty on the nights of 20 and 21 November 2026 (check-in 20th, check-out 22nd).
+- None of the 22 sample permits has night work on those dates, so I added one simulated permit, `9000451000023-01`. It is a road closure on Grey Street, 15.5 m from the hotel, from 22:00 on 20 Nov to 06:00 on 22 Nov.
+- A test finds the hotel in the Overpass fixture and reads the stay dates from the Quiet Stays fixture. It checks that `works.near` returns this permit as night work on both nights. I broke that test on purpose four ways and each one made it fail.
+- Run through the shared score, this permit takes the hotel's roadworks value to 0.
+
+**Follow-up:** #138 (needs-human). `docs/BUSINESS.md` tells judges "the permits are real", which is false if the demo runs on this simulated fallback. #76 copies that table into the pitch, so it should be fixed first.
+
+**Risks:**
+- **Outside Scope:** I added exactly one line to `apps/server/package.json`: `"seed:works": "bun src/features/works/seed.ts"`. Root `package.json` is untouched, so running it from the root needs a platform issue. For now use `bun --env-file=.env --filter @kip/server seed:works`, because inside `apps/server` Bun doesn't load the root `.env`.
+- **"Marked as recorded":** I took this to mean `simulated: true`. The sample file says it is "Not a recorded Street Manager feed", and `simulated` is the only label the works contract has. I ticked all three acceptance boxes and explained this in an evidence comment on #67.
+- **Demo dates:** the demo permit is tied to the Quiet Stays dates. If the stays fixtures move the stay, the test fails and the permit's times must move with it.
+- **Leftover data:** seeded permits stay in Mongo after the live feed starts. `db.works.deleteMany({ simulated: true })` removes exactly them.
+- **Ranking:** nothing ranks the hotel until #62 (load hotels) and #63 (ranking) land. The permit is a single point, so #63's planned 200 m lookup will match it.
+- **Missing key:** without `MONGO_URI` the script now stops at once with a clear message, instead of retrying for about 75 s.
+
+**Left for a human with `.env` (the keyed Verify step):**
+1. Run `bun --env-file=.env --filter @kip/server seed:works`. Expect "23 inserted … 10 have night work scheduled".
+2. Start the API with `bun run dev:api`, then run the `curl` in the PR's Risks section, which queries `works.near` at the hotel for 20 to 21 Nov. Expect `9000451000023-01` back. I tested that exact URL against the app with an in-memory store.</result>
+<usage><subagent_tokens>228017</subagent_tokens><tool_uses>126</tool_uses><duration_ms>1194145</duration_ms></usage>
+<worktree><worktreePath>/Users/ellishewes/conductor/repos/durhack-proj/.claude/worktrees/agent-a0d3e2876f812f029</worktreePath><worktreeBranch>worktree-agent-a0d3e2876f812f029</worktreeBranch></worktree>
+</task-notification>
