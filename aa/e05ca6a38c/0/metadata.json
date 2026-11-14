@@ -1,0 +1,71 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "aae05ca6a38c",
+  "session_id": "cca87822-d8b6-4e74-ac0c-a20bf9880340",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-14T15:32:05.039984Z",
+  "branch": "worktree-agent-a8c8416c7e81d1aa1",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/mobile/modules/kip-audio/expo-module.config.json",
+    "apps/mobile/modules/kip-audio/index.ts",
+    "apps/mobile/modules/kip-audio/ios/KipAudio.podspec",
+    "apps/mobile/modules/kip-audio/ios/KipAudioModule.swift",
+    "apps/mobile/modules/kip-audio/src/KipAudioModule.ts",
+    "apps/mobile/modules/kip-audio/src/KipAudioModule.web.ts",
+    "apps/mobile/modules/kip-audio/src/types.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "154d9738c769",
+  "checkpoint_transcript_start": 61,
+  "transcript_lines_at_start": 61,
+  "compact_transcript_start": 8,
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0,
+    "subagent_tokens": {
+      "input_tokens": 18,
+      "cache_creation_tokens": 4842,
+      "cache_read_tokens": 412670,
+      "output_tokens": 8653,
+      "api_call_count": 9
+    },
+    "subagent_tokens_complete": true
+  },
+  "session_token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 45721,
+    "cache_read_tokens": 73381,
+    "output_tokens": 2973,
+    "api_call_count": 3,
+    "subagent_tokens": {
+      "input_tokens": 100,
+      "cache_creation_tokens": 209044,
+      "cache_read_tokens": 1748051,
+      "output_tokens": 38108,
+      "api_call_count": 50
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 1,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 1
+  }
+}
