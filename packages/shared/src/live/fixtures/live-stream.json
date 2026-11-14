@@ -1,0 +1,15 @@
+[
+  { "type": "sample", "sample": { "t": 1763100000, "db": 31.2 } },
+  { "type": "sample", "sample": { "t": 1763100001, "db": 31.8 } },
+  { "type": "sample", "sample": { "t": 1763100002, "db": 52.4 } },
+  {
+    "type": "event",
+    "event": {
+      "spike": { "t": 1763100002, "peakDb": 52.4, "baselineDb": 31.5 },
+      "label": "construction",
+      "outsideRecommendedHours": true,
+      "briefingAudioUrl": "https://kip.example/briefings/live-1.mp3"
+    }
+  },
+  { "type": "sample", "sample": { "t": 1763100003, "db": 33.0 } }
+]
