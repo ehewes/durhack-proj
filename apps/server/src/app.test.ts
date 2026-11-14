@@ -3,7 +3,7 @@ import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createApp } from "./app";
-import { createCallerFactory } from "./trpc/init";
+import { createCallerFactory, createContext } from "./trpc/init";
 import { appRouter } from "./trpc/router";
 
 describe("api", () => {
@@ -38,7 +38,9 @@ describe("api", () => {
   test("stub procedures answer NOT_IMPLEMENTED (HTTP 501)", async () => {
     const res = await app.request("/trpc/city.sensors");
     expect(res.status).toBe(501);
-    const caller = createCallerFactory(appRouter)({ userId: "u1" });
+    const caller = createCallerFactory(appRouter)({
+      userId: "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+    });
     await expect(caller.account.me()).rejects.toMatchObject({ code: "NOT_IMPLEMENTED" });
   });
 
@@ -59,4 +61,13 @@ describe("web build", () => {
       expect(await res.text()).toContain("<title>Kip</title>");
     }
   });
+});
+
+test("x-kip-user must be a UUID", () => {
+  const ctx = (value: string) =>
+    createContext({ req: new Request("http://x", { headers: { "x-kip-user": value } }) });
+  expect(ctx("not-a-uuid").userId).toBeNull();
+  expect(ctx("9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d").userId).toBe(
+    "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+  );
 });

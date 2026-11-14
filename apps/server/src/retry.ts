@@ -23,9 +23,11 @@ export async function retry<T>(
   for (let attempt = 1; ; attempt++) {
     try {
       return await fn();
-    } catch (error) {
-      if (attempt >= attempts)
-        throw new Error(`${label}: gave up after ${attempts} attempts`, { cause: error });
+    } catch {
+      if (attempt >= attempts) {
+        // Deliberately drop the driver error: its message can contain a connection URI
+        throw new Error(`${label}: gave up after ${attempts} attempts`);
+      }
       const delay = Math.min(baseDelayMs * 2 ** (attempt - 1), maxDelayMs);
       console.warn(`${label}: attempt ${attempt} failed, retrying in ${delay}ms`);
       await sleep(delay);

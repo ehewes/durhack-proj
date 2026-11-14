@@ -16,6 +16,6 @@ test("the example file parses", async () => {
   const pairs = text
     .split("\n")
     .filter((line) => line && !line.startsWith("#"))
-    .map((line) => line.split("=", 2) as [string, string]);
+    .map((line) => [line.slice(0, line.indexOf("=")), line.slice(line.indexOf("=") + 1)]);
   expect(() => parseEnv(Object.fromEntries(pairs))).not.toThrow();
 });

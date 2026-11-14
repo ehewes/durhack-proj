@@ -18,8 +18,12 @@ function fakeSql({ applied = [] as string[], timescale = true } = {}) {
     executed.push(query);
     return [];
   };
-  sql.begin = async (fn) => fn(sql);
-  return { sql, executed, recorded };
+  let transactions = 0;
+  sql.begin = async (fn) => {
+    transactions++;
+    return fn(sql);
+  };
+  return { sql, executed, recorded, transactions: () => transactions };
 }
 
 const files: MigrationFile[] = [
@@ -42,6 +46,17 @@ describe("migrate", () => {
     const { sql, executed } = fakeSql({ applied: ["202611141200_platform_timescaledb.sql"] });
     expect(await migrate(sql, files)).toEqual(["202611141300_city_readings.sql"]);
     expect(executed).toEqual(["create table b();"]);
+  });
+
+  test("runs kip:no-transaction files outside a transaction", async () => {
+    const { sql, executed, transactions } = fakeSql();
+    const cagg = {
+      name: "202611141400_city_lnight_cagg.sql",
+      sql: "-- kip:no-transaction\ncreate materialized view x;",
+    };
+    await migrate(sql, [cagg]);
+    expect(executed).toEqual([cagg.sql]);
+    expect(transactions()).toBe(0);
   });
 
   test("fails when TimescaleDB is missing", async () => {

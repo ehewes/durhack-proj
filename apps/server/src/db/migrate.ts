@@ -10,6 +10,8 @@ export type SqlClient = {
 
 export type MigrationFile = { name: string; sql: string };
 
+export const NO_TRANSACTION = "-- kip:no-transaction";
+
 export const MIGRATIONS_DIR = join(import.meta.dir, "migrations");
 
 export async function readMigrations(dir = MIGRATIONS_DIR): Promise<MigrationFile[]> {
@@ -23,6 +25,10 @@ export async function readMigrations(dir = MIGRATIONS_DIR): Promise<MigrationFil
  * Applies migrations in filename order, once each, recording them in `_migrations`.
  * Name new files YYYYMMDDHHMM_<feature>_<what>.sql so parallel branches never collide.
  * Fails if TimescaleDB isn't installed afterwards: every hypertable depends on it.
+ *
+ * Each file runs in a transaction, except files whose first line is `-- kip:no-transaction`.
+ * Use that for statements TimescaleDB refuses inside one, such as creating a continuous
+ * aggregate WITH DATA; keep such files to a single idempotent statement.
  */
 export async function migrate(sql: SqlClient, files: MigrationFile[]): Promise<string[]> {
   await sql`create table if not exists _migrations (name text primary key, applied_at timestamptz not null default now())`;
@@ -31,10 +37,15 @@ export async function migrate(sql: SqlClient, files: MigrationFile[]): Promise<s
   const applied: string[] = [];
   for (const file of [...files].sort((a, b) => a.name.localeCompare(b.name))) {
     if (done.has(file.name)) continue;
-    await sql.begin(async (tx) => {
-      await tx.unsafe(file.sql);
-      await tx`insert into _migrations (name) values (${file.name})`;
-    });
+    if (file.sql.trimStart().startsWith(NO_TRANSACTION)) {
+      await sql.unsafe(file.sql);
+      await sql`insert into _migrations (name) values (${file.name})`;
+    } else {
+      await sql.begin(async (tx) => {
+        await tx.unsafe(file.sql);
+        await tx`insert into _migrations (name) values (${file.name})`;
+      });
+    }
     applied.push(file.name);
   }
   const ext = await sql<
