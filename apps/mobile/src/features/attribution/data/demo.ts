@@ -8,8 +8,8 @@ import { attributionForNightOutput } from "@kip/shared/attribution";
  * that upload reports 2 stage wake-ups and no links: the siren (clip-2) and
  * the construction spike (clip-4) sit on the awake-stage starts, outside the
  * 60 to 120 second window. randomWindowRate is 0.011 (11 of 1000 windows).
- * The timeline fixture needs those spikes moved 60 to 120 seconds earlier
- * (night lane). Until then, this screen shows this result.
+ * #135 lines the two fixtures up. Recapture this result once it lands; the
+ * attribution test compares it with the fixtures.
  */
 export const DEMO_NIGHT_ID = "4f7b1c5e-1d2a-4c3b-9e8f-0a1b2c3d4e5f";
 
