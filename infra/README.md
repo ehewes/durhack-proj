@@ -1,10 +1,81 @@
 # Infra
 
-Terraform for Kip's server: a Vultr instance in London behind Caddy, its firewall, a private
-container registry, and the MongoDB Atlas access entry for the instance's IP. Tiger Cloud is
-passed in as a URI. Architecture and the deploy flow: `docs/ARCHITECTURE.md` ("Deploy").
+Two ways to run Kip's server, both from the one `Dockerfile` image:
+- **Cloudflare tunnel** (`tunnel/`): the live deploy at `https://kip.edenmatrix.xyz`, a compose
+  stack on a shared Docker host.
+- **Terraform on Vultr** (the rest of this folder): a Vultr instance in London behind Caddy, its
+  firewall, a private container registry, and the MongoDB Atlas access entry for the instance's
+  IP. Tiger Cloud is passed in as a URI.
 
-## What it creates
+Architecture and the deploy flow: `docs/ARCHITECTURE.md` ("Deploy").
+
+## Cloudflare tunnel: kip.edenmatrix.xyz
+The API (which also serves the web build), the worker and Kip's own `cloudflared` run as compose
+project `kip` on the shared Docker host (`ehewesagents`, Debian, amd64). No service publishes a
+port: `cloudflared` dials out to Cloudflare, and Cloudflare ends TLS.
+
+```mermaid
+flowchart LR
+  phone["iPhone app"] --> edge["Cloudflare<br/>kip.edenmatrix.xyz"]
+  browser["Dashboard browser"] --> edge
+  edge -- "tunnel kip" --> cloudflared
+  subgraph host["Docker host: /opt/kip, compose project kip"]
+    cloudflared --> api["api :8080<br/>tRPC, plain routes, web build"]
+    worker["worker<br/>cron jobs"]
+  end
+  api --> stores[("Atlas, Tiger Cloud")]
+  worker --> stores
+```
+
+| Piece | Where |
+|---|---|
+| Tunnel `kip`, remotely managed | Zero Trust, Networks, Tunnels. Route `kip.edenmatrix.xyz` to `http://api:8080`, then `http_status:404` |
+| DNS | Proxied CNAME `kip.edenmatrix.xyz` to `<tunnel id>.cfargotunnel.com` |
+| Compose files | `tunnel/compose.yml` (api, worker) and `tunnel/compose.tunnel.yml` (cloudflared), installed as `/opt/kip/deploy/` |
+| Settings | `/opt/kip/.env` on the host only, mode 600: `CLOUDFLARE_TUNNEL_TOKEN` and the server variables |
+| Image | `kip/server:<commit>`, built on the host. `kip/server:live` is the one that runs |
+
+### Ship a build
+```bash
+infra/tunnel/deploy.sh             # HEAD, or a ref: infra/tunnel/deploy.sh demo-v1
+```
+It ships the committed tree over ssh (`git archive`, so uncommitted changes stay behind), builds
+the image on the host, restarts the stack with `docker compose up --wait`, checks `/health` and
+the web build from inside the API container, then checks `https://kip.edenmatrix.xyz/health`
+through Cloudflare. `DEPLOY_HOST` overrides the ssh host (default `ehewesagents`). The ssh user
+needs Docker and must own `/opt/kip`.
+
+### Settings and secrets
+On the host, edit `/opt/kip/.env`. It lists every server variable, commented out. Then rerun
+`deploy.sh`, or apply it in place:
+```bash
+cd /opt/kip
+c="docker compose --env-file .env -f deploy/compose.yml -f deploy/compose.tunnel.yml"
+$c up -d
+```
+Each container gets only what it reads: `cloudflared` the tunnel token, the API and the worker
+the names in `compose.yml`'s `x-server-env` list. A new server variable goes in that list too.
+Before setting `MONGO_URI`, allow the host's public IPv4 in the Atlas access list (Terraform does
+this only for Vultr), and in Tiger Cloud if its allow list is on. Otherwise the API gives up after
+its connection retries and restarts in a loop.
+
+### Logs, rollback, stop
+With `c` set as above, from `/opt/kip`:
+- Status and logs: `$c ps`, `$c logs -f api`, `$c logs cloudflared`.
+- Roll back: `docker images kip/server` lists the kept builds (live, current, previous). Run
+  `docker tag kip/server:<previous commit> kip/server:live && $c up -d`.
+- Stop serving: `$c down`. The tunnel then shows as down and the hostname answers with a
+  Cloudflare error page.
+
+### Recreate the tunnel
+If the token leaks or the tunnel is deleted: create a remotely managed tunnel named `kip` in Zero
+Trust, give it the public hostname `kip.edenmatrix.xyz` with service `http://api:8080`, write its
+token to `/opt/kip/.env` as `CLOUDFLARE_TUNNEL_TOKEN`, then `$c up -d cloudflared`. Never paste the
+token into a prompt, an issue or the repo: Entire pushes session transcripts.
+
+## Terraform on Vultr
+
+### What it creates
 | Resource | Notes |
 |---|---|
 | `vultr_ssh_key.team` | From `ssh_public_key_path` (default `~/.ssh/id_ed25519.pub`) |
@@ -18,7 +89,7 @@ passed in as a URI. Architecture and the deploy flow: `docs/ARCHITECTURE.md` ("D
 derives `<ip>.sslip.io` from instance metadata, logs in to the registry and starts the API, the
 worker and Caddy. Outputs: `api_ip`, `api_url`, `registry_urn`.
 
-## First apply
+### First apply
 1. Credentials in your shell (from 1Password or the MLH emails, never committed):
    `VULTR_API_KEY`, `MONGODB_ATLAS_PUBLIC_KEY`, `MONGODB_ATLAS_PRIVATE_KEY`.
 2. `cp terraform.tfvars.example terraform.tfvars` and fill it in (git-ignored).
@@ -35,13 +106,13 @@ worker and Caddy. Outputs: `api_ip`, `api_url`, `registry_urn`.
    Check the template renders: `cd infra && ./scripts/check-cloud-init.sh` (needs Python YAML).
 4. `terraform -chdir=infra apply`. Give cloud-init a few minutes, then open `api_url`.
 
-## Ship a new build
+### Ship a new build
 ```bash
 docker build --platform linux/amd64 -t <registry_urn>/kip:latest . && docker push <registry_urn>/kip:latest
 ssh root@$(terraform -chdir=infra output -raw api_ip) 'cd /opt/kip && docker compose pull && docker compose up -d'
 ```
 
-## Rebuild the server live (demo)
+### Rebuild the server live (demo)
 ```bash
 terraform -chdir=infra plan
 terraform -chdir=infra apply -replace=vultr_instance.api
@@ -50,7 +121,7 @@ This replaces only the instance. It comes back on the same reserved IP, so `api_
 build keep working, and the Atlas access entry stays valid. Data lives in Atlas and Tiger Cloud,
 so it stays put; the API retries its database connections while the server boots.
 
-## Still to confirm with a real key
+### Still to confirm with a real key
 - `region = "lhr"` and the `start_up` registry plan: `vultr-cli regions list`,
   `vultr-cli container-registry plans` (checked against the provider schema only).
 - `urn` and `root_user` exist on `vultr_container_registry` (provider 2.33 schema). `urn` is used

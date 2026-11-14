@@ -5,9 +5,10 @@ issue. Product context: `docs/SPEC.md`. Science and wording rules: `docs/DOMAIN.
 
 ## Overview
 One Expo app builds both the iPhone app and the web dashboard used on stage. One TypeScript server
-image runs two processes, the API (tRPC on Hono) and the ingest worker, on a Vultr instance in
-London behind Caddy for HTTPS. Terraform provisions the instance, its firewall, the container
-registry and the database access rules.
+image runs two processes, the API (tRPC on Hono) and the ingest worker. The live deploy runs them
+on a shared Docker host behind Kip's own Cloudflare tunnel, at `https://kip.edenmatrix.xyz`.
+Terraform can instead provision a Vultr instance in London behind Caddy, with its firewall, the
+container registry and the database access rules.
 
 ```mermaid
 flowchart TB
@@ -22,8 +23,8 @@ flowchart TB
     sm["Street Manager"]
   end
 
-  subgraph vultr["Vultr, London (Terraform)"]
-    api["API<br/>Hono + tRPC, Caddy HTTPS,<br/>SNS route, serves web build"]
+  subgraph server["Docker host behind a Cloudflare tunnel<br/>(or Vultr through Terraform)"]
+    api["API<br/>Hono + tRPC, kip.edenmatrix.xyz,<br/>SNS route, serves web build"]
     worker["Ingest worker<br/>node-cron, every 5 min"]
   end
 
@@ -80,7 +81,7 @@ Bun is the package manager and workspace tool everywhere, and the server runtime
 | AI | Gemini API on a paid-tier key, JSON output | Free-tier keys aren't allowed for UK-facing apps |
 | Voice | ElevenLabs TTS (briefing), Scribe (second classifier), Sound Effects (demo clip) | |
 | Chain | Solana mainnet, Memo program only (no Anchor) | A memo costs a fraction of a penny |
-| Hosting | Vultr Cloud Compute (London), Vultr Container Registry, Caddy with an `<ip>.sslip.io` hostname | iOS requires HTTPS; no domain needed |
+| Hosting | Live: a shared Docker host behind Kip's own Cloudflare tunnel at `kip.edenmatrix.xyz` (`infra/tunnel/`). Alternative: Vultr Cloud Compute (London), Vultr Container Registry, Caddy with an `<ip>.sslip.io` hostname | iOS requires HTTPS. Cloudflare ends TLS, so the host opens no ports |
 | Infra | Terraform: `vultr/vultr`, `mongodb/mongodbatlas` (IP access list), Tiger Cloud provider; cloud-init via `templatefile()` | One command rebuilds the stack |
 | Quality | Biome (lint + format), `tsc` per package (typecheck; not `tsc -b`, whose declaration checks reject the tRPC client types), `bun test` | `./hq check` runs all three; CI runs them plus Terraform and Docker builds |
 | Process | Entire in the repo from the first commit | Records every agent session |
@@ -161,6 +162,7 @@ packages/
       domain/                     WHO curve, Lnight, construction hours, attribution maths,
                                   score weights, wording strings, each with tests
 infra/                            Terraform, cloud-init.yaml.tftpl (writes the Caddyfile and compose)
+  tunnel/                         the live deploy: compose files and scripts for the tunnel host
 compose.yaml                      local TimescaleDB and MongoDB for development
 ml/                               handling-noise filter: data scripts, model, training, ONNX export (Python, uv)
   audio/                          committed audio library, 16 kHz mono WAV: ours/, online/, synthetic/, generated/ (licences in SOURCES.md)
@@ -311,8 +313,9 @@ into each new workspace via `.worktreeinclude`. For a plain git worktree, copy `
 | `ELEVENLABS_API_KEY` | API | ElevenLabs (MLH promo code) |
 | `SOLANA_RPC_URL`, `SOLANA_KEYPAIR` | API | Mainnet RPC; a small funded keypair used only for memos |
 | `STREET_MANAGER_TOPIC_ARN` | API | Street Manager open data registration (register in hour one) |
-| `EXPO_PUBLIC_API_URL` | App | `https://<ip>.sslip.io`, or the local server in development. Not a secret |
+| `EXPO_PUBLIC_API_URL` | App | `https://kip.edenmatrix.xyz` (the live deploy), `https://<ip>.sslip.io` on Vultr, or the local server in development. Not a secret |
 | `EXPO_PUBLIC_MAPBOX_TOKEN` | App, web map | Mapbox public token (`pk.`). Restrict it to the dashboard origins. Not a secret. Never commit a real token. iOS does not read it |
+| `CLOUDFLARE_TUNNEL_TOKEN` | `cloudflared` on the tunnel host | Zero Trust, tunnel `kip`. Lives only in the host's `/opt/kip/.env`, never in the repo or a prompt |
 | `VULTR_API_KEY` | Terraform | Vultr account (MLH credit) |
 | `MONGODB_ATLAS_PUBLIC_KEY`, `MONGODB_ATLAS_PRIVATE_KEY` | Terraform | Atlas org API key |
 | Tiger Cloud provider credentials | Terraform | Tiger Cloud console; names per the provider docs |
@@ -323,6 +326,11 @@ key there. `EXPO_PUBLIC_MAPBOX_TOKEN` is a public `pk.` token, not a secret.
 
 ## Deploy
 Either of us deploys. The demo runs from tag `demo-v1`.
+- Live: `infra/tunnel/deploy.sh [ref]` ships a commit to the shared Docker host over ssh, builds
+  the image there and restarts the API, the worker and `cloudflared` (compose project `kip` in
+  `/opt/kip`, no published ports). Tunnel `kip` routes `https://kip.edenmatrix.xyz` to the API.
+  Settings, logs and rollback: `infra/README.md`.
+- The rest of this section is the Vultr alternative.
 - `infra/` holds Terraform: SSH key, private container registry, firewall (22 from `admin_ip`
   only; 80 and 443 open for Caddy), a `vc2-2c-4gb` Ubuntu 24.04 instance in `lhr`, and the Atlas IP
   access list for the instance's IP. Keys come from variables, never the repo.
