@@ -1,0 +1,25 @@
+<task-notification>
+<task-id>b70zfqlgi</task-id>
+<tool-use-id>toolu_01RaWLM6FcKGyNRJ1oWdHNkW</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-yokohama/829c4789-d388-4f09-ab14-3b824c7938d2/tasks/b70zfqlgi.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the Entire multi-agent review on the branch" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+what is left on the mapbox sid
+
+---
+
+<task-notification>
+<task-id>biht8l26y</task-id>
+<tool-use-id>toolu_01HzWzbunbSWAJnQqkonagYW</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-yokohama/829c4789-d388-4f09-ab14-3b824c7938d2/tasks/biht8l26y.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the Entire review with the general profile" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+EXPO_PUBLIC_MAPBOX_TOKEN i set this
