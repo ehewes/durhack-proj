@@ -311,7 +311,6 @@ into each new workspace via `.worktreeinclude`. For a plain git worktree, copy `
 | `ELEVENLABS_API_KEY` | API | ElevenLabs (MLH promo code) |
 | `ELEVENLABS_VOICE_ID` | API | ElevenLabs voice library: the ID of the voice that speaks the briefing. `briefing.get` fails without it |
 | `SOLANA_RPC_URL`, `SOLANA_KEYPAIR` | API | Mainnet RPC; a small funded keypair used only for memos |
-| `STREET_MANAGER_TOPIC_ARN` | API | Street Manager open data registration (register in hour one) |
 | `EXPO_PUBLIC_API_URL` | App | `https://<ip>.sslip.io`, or the local server in development. Not a secret |
 | `EXPO_PUBLIC_MAPBOX_TOKEN` | App, web map | Mapbox public token (`pk.`). Restrict it to the dashboard origins. Not a secret. Never commit a real token. iOS does not read it |
 | `VULTR_API_KEY` | Terraform | Vultr account (MLH credit) |
