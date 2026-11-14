@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>b2bzyibd2</task-id>
+<tool-use-id>toolu_01JkaFDZwjYBCh4kqfxeL9oJ</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-havana/5956363b-d67f-42fa-9375-f7295fff282a/tasks/b2bzyibd2.output</output-file>
+<status>completed</status>
+<summary>Background command "Run Entire's multi-agent review of the #52 branch" completed (exit code 0)</summary>
+</task-notification>
