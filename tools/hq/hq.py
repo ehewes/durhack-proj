@@ -1192,6 +1192,10 @@ def cmd_release(args):
     if not any(split_id(c["id"])[0] == me["login"] for c in others):
         if gh_edit("issue", n, [["--remove-assignee", "@me"]]):
             print("%s unassigned %s" % (OK, me["login"]))
+    # Drop this vendor's agent label unless another active claim still uses that vendor,
+    # so PRs (which copy agent:* labels) credit only the agents that did the work.
+    if me["agent"] in KNOWN_AGENTS and not any(split_id(c["id"])[1] == me["agent"] for c in others):
+        gh_edit("issue", n, [["--remove-label", "agent:" + me["agent"]]])
     return EXIT_OK
 
 
