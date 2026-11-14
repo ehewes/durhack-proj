@@ -15,28 +15,34 @@
   "center": true
  },
  "threshold": 0.5,
- "max_abs_diff_vs_pytorch": 4.291534423828125e-06,
+ "max_abs_diff_vs_pytorch": 8.58306884765625e-06,
+ "checkpoint": "handling-gpu.pt",
+ "parameters": 418754,
+ "config": {
+  "ch": 32,
+  "hidden": 128
+ },
  "metrics": {
-  "run": "20261114-162140",
+  "run": "gpu-3090",
   "si_sdr_improvement_db": {
-   "model": 2.62,
+   "model": 11.89,
    "gate": -3.9
   },
   "energy_removed_db": {
-   "model_handling": 8.52,
-   "model_background": 0.04,
+   "model_handling": 17.94,
+   "model_background": 0.15,
    "gate_handling": 1.18,
    "gate_background": 5.51
   },
   "detection": {
-   "precision": 0.845,
-   "recall": 0.925,
-   "f1": 0.883
+   "precision": 0.899,
+   "recall": 0.922,
+   "f1": 0.911
   },
   "mixtures": 150,
   "mixture_example_si_sdr_db": {
    "input": -4.25,
-   "model": -1.61,
+   "model": 5.24,
    "gate": -11.53
   },
   "real_takes": {
@@ -44,31 +50,31 @@
     "seconds": 8.8,
     "handling_s": 0.46,
     "flagged_events": 5,
-    "flagged_s": 0.53,
-    "precision": 0.85,
-    "recall": 0.98,
-    "removed_on_handling_db": 3.1,
-    "removed_elsewhere_db": 0.0
+    "flagged_s": 0.48,
+    "precision": 0.96,
+    "recall": 1.0,
+    "removed_on_handling_db": 27.8,
+    "removed_elsewhere_db": 0.2
    },
    "venue_pocket_02": {
     "seconds": 19.3,
     "handling_s": 6.93,
-    "flagged_events": 22,
-    "flagged_s": 10.57,
-    "precision": 0.64,
-    "recall": 0.98,
-    "removed_on_handling_db": 0.5,
+    "flagged_events": 36,
+    "flagged_s": 5.34,
+    "precision": 0.94,
+    "recall": 0.73,
+    "removed_on_handling_db": 12.5,
     "removed_elsewhere_db": 0.4
    },
    "venue_sleeve_03": {
     "seconds": 4.2,
     "handling_s": 0.0,
-    "flagged_events": 1,
-    "flagged_s": 0.04,
+    "flagged_events": 0,
+    "flagged_s": 0.01,
     "precision": 0.0,
     "recall": 0.0,
     "removed_on_handling_db": null,
-    "removed_elsewhere_db": 0.1
+    "removed_elsewhere_db": 0.0
    }
   }
  }

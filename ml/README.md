@@ -9,6 +9,13 @@ classification), `docs/ARCHITECTURE.md` (ML row, `ml` lane), `docs/DECISIONS.md`
 spectral noise gate, waveforms and spectrograms before and after, and real phone takes. GitHub renders it with every
 chart; to play the audio and run it yourself: `uv sync --group dev && uv run jupyter lab notebooks/handling_poc.ipynb`.
 
+## Results so far
+The exported model (`models/handling-poc.onnx`) is the RTX 3090 run: 0.42M parameters, 15,000 steps, trained on a Lium
+pod for $0.16. On held-out mixtures it improves SI-SDR by +11.9 dB (a spectral gate: -3.9 dB), removes 17.9 dB where
+there is handling noise and 0.15 dB elsewhere, and flags handling frames with F1 0.91. On a real held-out drop take
+it flags exactly the five drops (precision 0.96, recall 1.0) and removes them by 27.8 dB. Details: the notebook,
+`reports/handling-gpu/` and `reports/handling-poc/` (the smaller Mac-trained model).
+
 ## Proof-of-concept model (`kipml/`)
 HandlingNet: a small STFT mask model (about 0.2M parameters) that removes phone-handling noise and
 flags the frames where it happens. Training mixes handling clips into background sounds on the fly

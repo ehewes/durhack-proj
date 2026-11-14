@@ -18,6 +18,7 @@ import torch
 
 from .audio import HOP, ML_ROOT, N_BINS, N_FFT, RATE, WIN
 from .evaluate import load_model
+from .model import count_params
 
 
 def main(argv=None):
@@ -41,7 +42,9 @@ def main(argv=None):
     meta = {"model": "handling-poc", "version": 1, "input": "features = log1p(10 * |STFT|), float32 [1, T, 257]",
             "outputs": {"mask": "[1, T, 257] in 0..1", "logit": "[1, T]; sigmoid > threshold means handling noise"},
             "stft": {"rate": RATE, "n_fft": N_FFT, "hop": HOP, "win": WIN, "window": "hann", "center": True},
-            "threshold": 0.5, "max_abs_diff_vs_pytorch": diff}
+            "threshold": 0.5, "max_abs_diff_vs_pytorch": diff,
+            "checkpoint": __import__("os").path.basename(args.checkpoint), "parameters": count_params(model),
+            "config": __import__("torch").load(args.checkpoint, map_location="cpu")["config"]}
     if args.metrics:
         meta["metrics"] = json.load(open(args.metrics))
     json.dump(meta, open(args.out.replace(".onnx", ".json"), "w"), indent=1)
