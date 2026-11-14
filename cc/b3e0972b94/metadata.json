@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "ccb3e0972b94",
+  "strategy": "manual-commit",
+  "branch": "ehewes/43-wake-up-marks",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/cc/b3e0972b94/0/metadata.json",
+      "transcript": "/cc/b3e0972b94/0/full.jsonl",
+      "compact_transcript": "/cc/b3e0972b94/0/transcript.jsonl",
+      "content_hash": "/cc/b3e0972b94/0/content_hash.txt",
+      "prompt": "/cc/b3e0972b94/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 130,
+    "cache_creation_tokens": 175503,
+    "cache_read_tokens": 7498163,
+    "output_tokens": 73771,
+    "api_call_count": 63,
+    "subagent_tokens": {
+      "input_tokens": 100,
+      "cache_creation_tokens": 142897,
+      "cache_read_tokens": 4490304,
+      "output_tokens": 41098,
+      "api_call_count": 48
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 1,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
