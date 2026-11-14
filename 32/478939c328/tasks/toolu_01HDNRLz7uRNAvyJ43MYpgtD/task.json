@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01HDNRLz7uRNAvyJ43MYpgtD",
+  "agent_id": "a4368ae87bbfdc227",
+  "subagent_type": "fork",
+  "task_description": "Build issue 52 morning briefing",
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 6859,
+    "cache_read_tokens": 354788,
+    "output_tokens": 5056,
+    "api_call_count": 3
+  },
+  "started_at": "2026-11-14T18:15:34.299541Z",
+  "completed_at": "2026-11-14T18:15:43.5628Z"
+}

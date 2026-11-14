@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "32478939c328",
+  "strategy": "manual-commit",
+  "branch": "ehewes/issues-project-understanding",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/32/478939c328/0/metadata.json",
+      "transcript": "/32/478939c328/0/full.jsonl",
+      "compact_transcript": "/32/478939c328/0/transcript.jsonl",
+      "content_hash": "/32/478939c328/0/content_hash.txt",
+      "prompt": "/32/478939c328/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 38,
+    "cache_creation_tokens": 108559,
+    "cache_read_tokens": 1585456,
+    "output_tokens": 26196,
+    "api_call_count": 19,
+    "subagent_tokens": {
+      "input_tokens": 6,
+      "cache_creation_tokens": 6859,
+      "cache_read_tokens": 354788,
+      "output_tokens": 5056,
+      "api_call_count": 3
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 1,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
