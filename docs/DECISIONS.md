@@ -93,6 +93,16 @@ custom program.
 **Consequences:** No toolchain setup; a fraction of a penny per night. It proves when a log
 existed, not that it's true, and we say so.
 
+## 2026-11-14: Solana devnet for the hackathon demo, mainnet for the real app
+**Context:** Mainnet memos need a wallet funded with real SOL; devnet SOL is free from
+faucet.solana.com. The code takes any RPC URL, so the network is configuration only.
+**Decision:** The hackathon demo writes its memos to devnet. The real app, after the event, uses
+mainnet. The switch is `SOLANA_RPC_URL` and `SOLANA_KEYPAIR`; no code changes. The devnet keypair
+holds no value and is kept separate from any mainnet keypair.
+**Consequences:** Say "devnet" when showing a memo in the demo: a devnet memo is not a public
+record a council can rely on, and the explorer link needs `?cluster=devnet`. Before any real use,
+set a mainnet RPC and a funded mainnet keypair and re-run the memo check.
+
 ## 2026-11-14: Bun workspaces; one server package and image
 **Context:** The API and worker share clients, schemas and database code, and the plan wants one
 Docker image.
@@ -192,9 +202,10 @@ not gain a Mapbox native SDK. Secret Mapbox tokens (`sk.`) stay out of the app.
 **Decision:** Nobody sleeps at home in Newcastle near an Observatory noise sensor during the event,
 so the city map uses sensors near the venue and demo step 4 uses a night exported from HealthKit
 (the SPEC's stated fallback). Each team is limited to one sponsor track, so we enter MongoDB per
-"Tiger for time series, MongoDB for documents and geo". Still open: the event length and start
-time, and what the "35" in the team's notes means. Both keep their assumptions in `docs/SPEC.md`.
-**Consequences:** Follow the MongoDB fallback in that entry. Do not build on the "35".
+"Tiger for time series, MongoDB for documents and geo". The event runs 24 hours, from Sat 14 Nov 2026
+12:00 to Sun 15 Nov 2026 12:00, and the end is the code freeze. The "35" in the team's notes meant
+nothing and is dropped.
+**Consequences:** Follow the MongoDB fallback in that entry.
 
 ## 2026-11-14: Serve the demo at kip.edenmatrix.xyz through a Cloudflare tunnel
 **Context:** The iPhone build and the stage browser need one stable HTTPS URL now. Ellis's shared

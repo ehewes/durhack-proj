@@ -4,7 +4,7 @@ Event facts, deadlines and prize targets. Fill in the TBDs at kick-off.
 
 ## Event
 - DurHack 2026, an MLH member event. About 24 hours.
-- Dates: TBD. Plan assumes 24 hours from about 10am, so hours 14 to 20 fall overnight.
+- Dates: Sat 14 Nov 2026 12:00 to Sun 15 Nov 2026 12:00 (24 hours), so hours 12 to 20 fall overnight.
 - Team: Ellis and Nick. Both of us own everything; lanes in `docs/ARCHITECTURE.md` only split
   work between agents.
 - Project: **Kip**, sleep, noise and the city. See `docs/SPEC.md` and `docs/BUSINESS.md`.
@@ -13,11 +13,11 @@ Event facts, deadlines and prize targets. Fill in the TBDs at kick-off.
 ## Deadlines
 | What | When |
 |---|---|
-| Kick-off (hacking starts) | TBD |
+| Kick-off (hacking starts) | Sat 14 Nov 2026, 12:00 |
 | M0 skeleton merged and deployed | kick-off + ~2h |
 | Checkpoint: Watch works, else phone only | kick-off + 2h |
 | Checkpoint: one full night stored end to end | kick-off + 14h |
-| Code freeze (judging minus 3h), tag `demo-v1` | TBD (plan: kick-off + 20h) |
+| Code freeze, tag `demo-v1` | Sun 15 Nov 2026, 12:00 (kick-off + 24h) |
 | Submission (Devpost) | TBD |
 | Judging | TBD |
 
