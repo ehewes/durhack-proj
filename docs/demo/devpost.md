@@ -189,7 +189,7 @@ flowchart LR
   api -.-> model
 
   classDef planned stroke-dasharray: 5 4
-  class ios,solana,model planned
+  class ios,osm,solana,model planned
 ```
 
 Dashed: planned, not on `main` yet.
