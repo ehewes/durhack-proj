@@ -1,6 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { toAttributionView } from "@kip/shared/attribution";
-import { bannedWording, detectWakeUps, linkWakeUps } from "@kip/shared/domain";
+import {
+  bannedWording,
+  detectWakeUps,
+  linkWakeUps,
+  NEVER_CAUSED_BY,
+  RANDOM_WINDOW_COUNT,
+} from "@kip/shared/domain";
 import { nightTimeline, nightUpload } from "@kip/shared/night";
 import nightTimelineFixture from "../../../../../packages/shared/src/night/fixtures/night-timeline.json";
 import nightUploadFixture from "../../../../../packages/shared/src/night/fixtures/night-upload.json";
@@ -65,21 +71,20 @@ function sentences(): string[] {
 
 describe("attribution summary", () => {
   test('reads "3 of 4 wake-ups followed a spike; random moments: 1 of 10"', () => {
-    const text = attributionSummaryText({
-      night: toAttributionView([{ wakeUps: 4, followedSpike: 3 }]),
-      randomWindowRate: 0.1,
-    });
+    const night = toAttributionView([{ wakeUps: 4, followedSpike: 3 }]);
+    expect(night.text).toBe("3 of 4 wake-ups followed a spike");
+    const text = attributionSummaryText({ night, randomWindowRate: 0.1 });
     expect(text).toBe("3 of 4 wake-ups followed a spike; random moments: 1 of 10");
-    expect(bannedWording(text, "cause")).toEqual([]);
+    expect(text).not.toContain(NEVER_CAUSED_BY);
   });
 
-  test("a single wake-up stays singular, and a zero rate is 0 of 1000", () => {
+  test("a single wake-up stays singular, and a zero rate is 0 of every window drawn", () => {
     expect(
       attributionSummaryText({
         night: toAttributionView([{ wakeUps: 1, followedSpike: 1 }]),
         randomWindowRate: 0,
       }),
-    ).toBe("1 of 1 wake-up followed a spike; random moments: 0 of 1000");
+    ).toBe(`1 of 1 wake-up followed a spike; random moments: 0 of ${RANDOM_WINDOW_COUNT}`);
   });
 
   test("the random-window rate reduces, and a rate above 1 clamps", () => {
@@ -94,7 +99,7 @@ describe("attribution summary", () => {
       "0 of 2 wake-ups followed a spike; random moments: 1 of 1",
     );
     expect(attributionSummaryText({ night, randomWindowRate: Number.NaN })).toBe(
-      "0 of 2 wake-ups followed a spike; random moments: 0 of 1000",
+      `0 of 2 wake-ups followed a spike; random moments: 0 of ${RANDOM_WINDOW_COUNT}`,
     );
   });
 

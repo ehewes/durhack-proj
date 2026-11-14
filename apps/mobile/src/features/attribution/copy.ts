@@ -1,8 +1,5 @@
 import type { AttributionForNightOutput } from "@kip/shared/attribution";
-import { SAY_SIMULATED } from "@kip/shared/domain";
-
-/** `forNight` draws this many random windows. The sentence reduces that count. */
-export const RANDOM_WINDOW_DRAWS = 1000;
+import { RANDOM_WINDOW_COUNT, SAY_SIMULATED } from "@kip/shared/domain";
 
 export const TITLE = "Wake-ups";
 export const METHOD =
@@ -41,15 +38,16 @@ function gcd(a: number, b: number): number {
 }
 
 /**
- * The random-window rate as a reduced count. 0.1 is 100 of 1000, shown as 1 of 10.
+ * The random-window rate as a reduced count of the windows `forNight` draws
+ * (`RANDOM_WINDOW_COUNT`). 0.1 is 100 of 1000, shown as 1 of 10.
  * A rate of 0 stays 0 of 1000, the number of draws.
  */
 export function randomMomentCounts(rate: number): { hits: number; moments: number } {
-  if (!Number.isFinite(rate) || rate <= 0) return { hits: 0, moments: RANDOM_WINDOW_DRAWS };
-  const hits = Math.round(Math.min(1, rate) * RANDOM_WINDOW_DRAWS);
-  if (hits <= 0) return { hits: 0, moments: RANDOM_WINDOW_DRAWS };
-  const divisor = gcd(hits, RANDOM_WINDOW_DRAWS);
-  return { hits: hits / divisor, moments: RANDOM_WINDOW_DRAWS / divisor };
+  if (!Number.isFinite(rate) || rate <= 0) return { hits: 0, moments: RANDOM_WINDOW_COUNT };
+  const hits = Math.round(Math.min(1, rate) * RANDOM_WINDOW_COUNT);
+  if (hits <= 0) return { hits: 0, moments: RANDOM_WINDOW_COUNT };
+  const divisor = gcd(hits, RANDOM_WINDOW_COUNT);
+  return { hits: hits / divisor, moments: RANDOM_WINDOW_COUNT / divisor };
 }
 
 /**
