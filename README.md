@@ -8,8 +8,8 @@ planned and what is simulated.
 
 ## Pre-event tooling disclosure
 MLH judges only work done during the event. One part of this repo was prepared before DurHack
-2026: the framework we use to run coding agents in parallel. It arrived as the repo's first two
-merged pull requests (#1 and #4):
+2026: the framework we use to run coding agents in parallel. After an empty initial commit, it
+arrived as the repo's first two merged pull requests (#1 and #4):
 
 - the `hq` CLI, which runs the task queue on GitHub Issues: `tools/hq/`, `hq`, `hq.cmd`, `hq.json`;
 - agent rules, skills and hooks: `AGENTS.md`, `CLAUDE.md`, `.agents/`, `.claude/`, `.codex/`,
@@ -22,15 +22,6 @@ merged pull requests (#1 and #4):
 Kip itself was written during DurHack: everything in `apps/`, `packages/`, `ml/` and `infra/`, the
 `Dockerfile`, `compose.yaml`, and Kip's content in `docs/`. Changes to the framework files during
 the event are event work, and the git history shows them.
-
-## Quickstart
-- Humans: [docs/PLAYBOOK.md](docs/PLAYBOOK.md) (kick-off checklist, dispatching agents, onboarding).
-- Agents: [AGENTS.md](AGENTS.md) and the skills in [.agents/skills](.agents/skills).
-- Hack context: [docs/hack/BRIEF.md](docs/hack/BRIEF.md), [docs/SPEC.md](docs/SPEC.md),
-  [docs/BUSINESS.md](docs/BUSINESS.md), [docs/DOMAIN.md](docs/DOMAIN.md),
-  [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/DECISIONS.md](docs/DECISIONS.md).
-- First run in a clone: `entire enable`, then `./hq setup` (Windows: `hq.cmd setup`), then
-  `./hq board`.
 
 ## Run Kip locally
 Kip is a Bun monorepo: one Expo app for the iPhone and the web dashboard (`apps/mobile`), one
@@ -102,3 +93,12 @@ describe how, in [infra/README.md](infra/README.md) and
   Stop it, then run `bun run db:up` again.
 - The web dashboard cannot reach the API: check `EXPO_PUBLIC_API_URL` in `.env`, then restart
   `bun run dev:app`, which reads `.env` only when it starts.
+
+## Quickstart
+- Humans: [docs/PLAYBOOK.md](docs/PLAYBOOK.md) (kick-off checklist, dispatching agents, onboarding).
+- Agents: [AGENTS.md](AGENTS.md) and the skills in [.agents/skills](.agents/skills).
+- Hack context: [docs/hack/BRIEF.md](docs/hack/BRIEF.md), [docs/SPEC.md](docs/SPEC.md),
+  [docs/BUSINESS.md](docs/BUSINESS.md), [docs/DOMAIN.md](docs/DOMAIN.md),
+  [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/DECISIONS.md](docs/DECISIONS.md).
+- First run in a clone: `entire enable`, then `./hq setup` (Windows: `hq.cmd setup`), then
+  `./hq board`.
