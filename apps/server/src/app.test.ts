@@ -17,7 +17,12 @@ describe("api", () => {
 
   test("stub plain routes answer 501", async () => {
     expect((await app.request("/upload/clip", { method: "POST" })).status).toBe(501);
-    expect((await app.request("/sns/street-manager", { method: "POST" })).status).toBe(501);
+  });
+
+  test("POST /sns/street-manager rejects an empty body", async () => {
+    const res = await app.request("/sns/street-manager", { method: "POST" });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ ok: false, error: "malformed" });
   });
 
   test("every feature router is registered", () => {
