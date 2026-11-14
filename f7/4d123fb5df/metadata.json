@@ -1,0 +1,52 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "f74d123fb5df",
+  "strategy": "manual-commit",
+  "branch": "worktree-agent-a6f04aa5a748d5721",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/shared/src/stays/fixtures/rank-light-sleeper.json",
+    "packages/shared/src/stays/fixtures/rank-night-out.json",
+    "packages/shared/src/stays/index.ts",
+    "packages/shared/src/stays/schema.test.ts",
+    "packages/shared/src/stays/schema.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f7/4d123fb5df/0/metadata.json",
+      "transcript": "/f7/4d123fb5df/0/full.jsonl",
+      "compact_transcript": "/f7/4d123fb5df/0/transcript.jsonl",
+      "content_hash": "/f7/4d123fb5df/0/content_hash.txt",
+      "prompt": "/f7/4d123fb5df/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0,
+    "subagent_tokens": {
+      "input_tokens": 2,
+      "cache_creation_tokens": 691,
+      "cache_read_tokens": 47992,
+      "output_tokens": 451,
+      "api_call_count": 1
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 1,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
