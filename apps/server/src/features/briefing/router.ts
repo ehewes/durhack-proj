@@ -1,7 +1,34 @@
-import { z } from "zod";
-import { notImplemented, router, userProcedure } from "../../trpc/init";
+import { briefingGetInput, briefingGetOutput } from "@kip/shared/briefing";
+import { TRPCError } from "@trpc/server";
+import { router, userProcedure } from "../../trpc/init";
+import { NightNotFoundError, NightStorageError } from "../night";
+import {
+  BriefingAudioError,
+  BriefingNotFoundError,
+  type BriefingService,
+  getBriefing,
+} from "./service";
 
-// Stubs from docs/ARCHITECTURE.md (tRPC routers). The `briefing` feature fills them in.
-export const briefingRouter = router({
-  get: userProcedure.input(z.object({ nightId: z.uuid() })).query(() => notImplemented()),
-});
+function mapBriefingError(error: unknown): never {
+  if (error instanceof BriefingNotFoundError || error instanceof NightNotFoundError) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Night not found" });
+  }
+  if (error instanceof NightStorageError || error instanceof BriefingAudioError) {
+    throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: error.message });
+  }
+  throw error;
+}
+
+export function createBriefingRouter(svc: Pick<BriefingService, "get"> = { get: getBriefing }) {
+  return router({
+    get: userProcedure.input(briefingGetInput).query(async ({ ctx, input }) => {
+      try {
+        return briefingGetOutput.parse(await svc.get(ctx.userId, input.nightId));
+      } catch (error) {
+        mapBriefingError(error);
+      }
+    }),
+  });
+}
+
+export const briefingRouter = createBriefingRouter();
