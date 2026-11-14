@@ -3,10 +3,10 @@ import mapboxgl, {
   type Map as MapboxMap,
   type MapMouseEvent,
 } from "mapbox-gl";
-import { Text, useColors } from "@/lib/ui";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useEffect, useRef } from "react";
 import { StyleSheet, View } from "react-native";
+import { MissingMapToken } from "./MissingMapToken";
 import {
   camerasMatch,
   classifyMapHit,
@@ -218,7 +218,6 @@ export function MapView({
   onSelect,
   onCameraChange,
 }: MapProps) {
-  const colors = useColors();
   const token = mapboxToken({
     EXPO_PUBLIC_MAPBOX_TOKEN: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
   });
@@ -249,20 +248,7 @@ export function MapView({
     sessionRef.current?.setOverlays(features, cluster, selectedId);
   }, [features, cluster, selectedId]);
 
-  if (!token) {
-    return (
-      <View
-        style={[
-          styles.map,
-          styles.missing,
-          { backgroundColor: colors.surface, borderColor: colors.border },
-          style,
-        ]}
-      >
-        <Text>{MISSING_MAPBOX_TOKEN_MESSAGE}</Text>
-      </View>
-    );
-  }
+  if (!token) return <MissingMapToken message={MISSING_MAPBOX_TOKEN_MESSAGE} style={style} />;
 
   return (
     <View style={[styles.map, style]}>
@@ -271,7 +257,4 @@ export function MapView({
   );
 }
 
-const styles = StyleSheet.create({
-  map: { flex: 1, minHeight: 240 },
-  missing: { borderWidth: 1, padding: 16, justifyContent: "center" },
-});
+const styles = StyleSheet.create({ map: { flex: 1, minHeight: 240 } });

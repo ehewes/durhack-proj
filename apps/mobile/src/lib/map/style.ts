@@ -31,6 +31,10 @@ const ON_INK = "#ffffff";
 /** Text drawn over the map. The basemap stays light in dark mode, so this ink always reads. */
 export const MAP_INK = INK;
 
+/** The light canvas and edge for anything drawn in place of the map, so MAP_INK reads on it too. */
+export const MAP_CANVAS = "#f6f6f4";
+export const MAP_EDGE = "#e2e2de";
+
 const CLUSTER_RADIUS = 48;
 const CLUSTER_MAX_ZOOM = 14;
 
