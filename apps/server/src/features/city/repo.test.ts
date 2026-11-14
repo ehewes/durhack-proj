@@ -5,9 +5,13 @@ import { fileURLToPath } from "node:url";
 import type { AnyBulkWriteOperation, Collection } from "mongodb";
 import type { Sql } from "postgres";
 import {
+  completedNightWindow,
   createCityRepo,
   dedupeReadings,
   insertReadingsStatement,
+  latestCompletedNight,
+  lnight30Statement,
+  reportLnight30,
   SENSORS_COLLECTION,
   type SensorDocument,
   type SensorReadingInsert,
@@ -16,6 +20,10 @@ import {
 const migrationPath = join(
   dirname(fileURLToPath(import.meta.url)),
   "../../db/migrations/202611141545_city_sensor_readings.sql",
+);
+const lnightMigrationPath = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../db/migrations/202611142100_city_lnight_daily.sql",
 );
 
 const at = new Date("2026-11-14T14:29:00.000Z");
@@ -29,6 +37,115 @@ function row(overrides: Partial<SensorReadingInsert> = {}): SensorReadingInsert 
     ...overrides,
   };
 }
+
+function spanDays(start: string, end: string): number {
+  const ms = Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`);
+  return ms / 86_400_000 + 1;
+}
+
+describe("sensor_lnight_daily migration", () => {
+  const sql = readFileSync(lnightMigrationPath, "utf8");
+
+  test("creates the night-window continuous aggregate outside a transaction", () => {
+    expect(sql.startsWith("-- kip:no-transaction\n")).toBe(true);
+    expect(sql).toContain("create materialized view if not exists sensor_lnight_daily");
+    expect(sql).toContain("with (timescaledb.continuous, timescaledb.materialized_only = false)");
+    expect(sql).toContain("time_bucket(");
+    expect(sql).toContain("'Europe/London'");
+    expect(sql).toContain("timestamptz '2000-01-03 07:00:00+00'");
+    expect(sql).toContain("10 * log(avg(power(10, value / 10))) as lnight");
+    expect(sql).toContain("metric = 'noise_db'");
+    expect(sql).toContain("extract(hour from time at time zone 'Europe/London') >= 23");
+    expect(sql).toContain("extract(hour from time at time zone 'Europe/London') < 7");
+    expect(sql).toContain("group by bucket, sensor_id");
+    expect(sql).toContain("with no data");
+  });
+
+  test("refreshes the last 40 days every five minutes", () => {
+    expect(sql).toContain("add_continuous_aggregate_policy(");
+    expect(sql).toContain("start_offset => interval '40 days'");
+    expect(sql).toContain("end_offset => interval '1 hour'");
+    expect(sql).toContain("schedule_interval => interval '5 minutes'");
+    expect(sql).toContain("if_not_exists => true");
+    expect(sql).toContain("timezone => 'Europe/London'");
+  });
+});
+
+describe("completedNightWindow", () => {
+  test("uses the 30 completed nights ending the morning after a winter night", () => {
+    const now = new Date("2026-11-15T10:00:00.000Z");
+    expect(latestCompletedNight(now)).toBe("2026-11-14");
+    expect(completedNightWindow(now)).toEqual({ start: "2026-10-16", end: "2026-11-14" });
+    expect(spanDays("2026-10-16", "2026-11-14")).toBe(30);
+  });
+
+  test("leaves out the night still in progress, in GMT and BST", () => {
+    expect(latestCompletedNight(new Date("2026-11-15T03:00:00.000Z"))).toBe("2026-11-13");
+    expect(latestCompletedNight(new Date("2026-11-15T23:30:00.000Z"))).toBe("2026-11-14");
+    expect(latestCompletedNight(new Date("2026-07-01T22:30:00.000Z"))).toBe("2026-06-30");
+    expect(latestCompletedNight(new Date("2026-07-01T06:30:00.000Z"))).toBe("2026-06-30");
+  });
+
+  test("keeps the clock-change nights whole once they have ended", () => {
+    expect(latestCompletedNight(new Date("2026-10-25T01:30:00.000Z"))).toBe("2026-10-23");
+    expect(latestCompletedNight(new Date("2026-10-25T07:00:00.000Z"))).toBe("2026-10-24");
+    expect(latestCompletedNight(new Date("2026-03-29T05:59:00.000Z"))).toBe("2026-03-27");
+    expect(latestCompletedNight(new Date("2026-03-29T06:00:00.000Z"))).toBe("2026-03-28");
+  });
+});
+
+describe("lnight30Statement", () => {
+  test("energy-averages nightly Lnight over the completed window", () => {
+    const statement = lnight30Statement({ start: "2026-10-16", end: "2026-11-14" });
+    expect(statement.values).toEqual(["2026-10-16", "2026-11-14"]);
+    expect(statement.text).toContain("from sensor_lnight_daily");
+    expect(statement.text).toContain("(bucket at time zone 'Europe/London')::date as night");
+    expect(statement.text).toContain(
+      "10 * log(avg(power(10, lnight / 10)) filter ( where night between bounds.start_night and bounds.end_night )) as lnight_db",
+    );
+    expect(statement.text).toContain("count(*) filter (");
+    expect(statement.text).toContain("$1::date");
+    expect(statement.text).toContain("$2::date");
+    expect(statement.text).toContain("order by sensor_id");
+  });
+});
+
+describe("reportLnight30", () => {
+  const latest = new Date("2026-11-14T07:00:00.000Z");
+
+  test("reports fewer than 30 nights as not enough data", () => {
+    expect(
+      reportLnight30({ sensorId: "s", nights: 29, lnightDb: 55, latestBucket: latest }),
+    ).toEqual({
+      sensorId: "s",
+      nights: 29,
+      lnight30: null,
+      notEnoughData: true,
+      latestBucket: latest,
+    });
+    expect(
+      reportLnight30({ sensorId: "s", nights: 0, lnightDb: null, latestBucket: null }),
+    ).toEqual({
+      sensorId: "s",
+      nights: 0,
+      lnight30: null,
+      notEnoughData: true,
+      latestBucket: null,
+    });
+  });
+
+  test("keeps the energy average once 30 nights are present", () => {
+    expect(
+      reportLnight30({ sensorId: "s", nights: 30, lnightDb: 55, latestBucket: latest }),
+    ).toEqual({
+      sensorId: "s",
+      nights: 30,
+      lnight30: 55,
+      notEnoughData: false,
+      latestBucket: latest,
+    });
+  });
+});
 
 describe("sensor_readings migration", () => {
   test("creates a hypertable keyed by time, sensor and metric", () => {
@@ -114,6 +231,82 @@ describe("createCityRepo", () => {
       },
     ]);
     expect(SENSORS_COLLECTION).toBe("sensors");
+  });
+
+  test("reads the 30-night rollup and clears a short history", async () => {
+    const calls: { query: string; values: unknown[] }[] = [];
+    const latest = new Date("2026-11-14T07:00:00.000Z");
+    const sql = {
+      unsafe: async (query: string, values: unknown[] = []) => {
+        calls.push({ query, values });
+        return [
+          {
+            sensor_id: "short",
+            nights: "12",
+            lnight_db: "58.1",
+            latest_bucket: latest.toISOString(),
+          },
+          { sensor_id: "full", nights: 30, lnight_db: 55, latest_bucket: latest },
+        ];
+      },
+    };
+    const repo = createCityRepo(sql as unknown as Sql, fakeSensors().collection);
+    const reports = await repo.lnight30(new Date("2026-11-15T10:00:00.000Z"));
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.values).toEqual(["2026-10-16", "2026-11-14"]);
+    expect(calls[0]?.query).toContain("10 * log(avg(power(10, lnight / 10))");
+    expect(reports).toEqual([
+      {
+        sensorId: "short",
+        nights: 12,
+        lnight30: null,
+        notEnoughData: true,
+        latestBucket: latest,
+      },
+      {
+        sensorId: "full",
+        nights: 30,
+        lnight30: 55,
+        notEnoughData: false,
+        latestBucket: latest,
+      },
+    ]);
+  });
+
+  test("writes level fields onto existing sensors and skips an empty list", async () => {
+    const sensors = fakeSensors();
+    const repo = createCityRepo({ unsafe: async () => [] } as unknown as Sql, sensors.collection);
+    await repo.writeSensorLevels([]);
+    await repo.writeSensorLevels([
+      {
+        sensorId: "full",
+        lnight30: 55,
+        pctHighlySleepDisturbed: 6.2,
+        nights: 30,
+        outOfRange: false,
+        notEnoughData: false,
+        indicative: true,
+      },
+    ]);
+    expect(sensors.batches).toHaveLength(1);
+    expect(sensors.batches[0]).toEqual([
+      {
+        updateOne: {
+          filter: { _id: "full" },
+          update: {
+            $set: {
+              lnight30: 55,
+              pctHighlySleepDisturbed: 6.2,
+              nights: 30,
+              outOfRange: false,
+              notEnoughData: false,
+              indicative: true,
+            },
+          },
+          upsert: false,
+        },
+      },
+    ]);
   });
 });
 
