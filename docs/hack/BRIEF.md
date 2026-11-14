@@ -37,7 +37,7 @@ TBD. Copy the rubric here at the opening ceremony.
 | Best Use of Tiger Data | Stream Deck Mini | Innovative, performance-driven use of Tiger Data (PostgreSQL for real-time, time-series and analytics) | Yes: all time series; continuous aggregate for the 30-night Lnight per sensor |
 | Best Use of Vultr | Assorted prizes | Runs the hack on Vultr (cloud compute, one-click deploy, Cloud GPUs; free credits) | Yes: Compute, Container Registry and firewall, provisioned by Terraform |
 | DEV Writing Challenge | $100 | A post on DEV about what we built; picked monthly for substance, originality, storytelling and popularity | Maybe, after submission |
-| Best Use of MongoDB Atlas | M5Stack IoT Kit | The hack's data lives in MongoDB Atlas (free tier or $50 student credit) | Yes: users, nights, hotels, scores; `$geoNear` hotel ranking. First choice if limited to one track |
+| Best Use of MongoDB Atlas | M5Stack IoT Kit | The hack's data lives in MongoDB Atlas (free tier or $50 student credit) | Yes: users, nights, hotels, scores; `$geoNear` hotel ranking. First choice if limited to one track. Each team is limited to one track (confirmed 2026-11-14), so this is our entry |
 
 Promo codes and credits (ElevenLabs, Entire, Vultr, MongoDB) come from the MLH email. Never commit
 them.
@@ -58,7 +58,7 @@ Start these at kick-off; each can take hours or days.
 | Watch app signing eats hours | High | Stop at hour 2; the phone reads Watch data through HealthKit anyway |
 | HealthKit entitlement or developer account not ready | Medium | Sort it in hour one; worst case, export Health data from the Health app and import it |
 | iOS stops recording when locked | Medium | Test on the first evening; fallback is screen-on with Guided Access |
-| Nobody sleeps near an Observatory sensor | Medium | The personal night still works; the city map uses sensors near the venue |
+| Nobody sleeps near an Observatory sensor | Happened (confirmed 2026-11-14) | The personal night still works; the city map uses sensors near the venue |
 | Street Manager feed not live in time | Medium | A recorded sample of Newcastle permits |
 | Observatory sensors stale or API down | Medium | History backfilled into Tiger in hour one; pick sensors that reported in the last 24 hours |
 | Gemini paid tier not set up | Low | Enable billing in hour one |
