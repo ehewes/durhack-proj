@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "22d9cebfdc15",
+  "strategy": "manual-commit",
+  "branch": "ehewes/cloudflare-tunnel-kip.edenmatrix.xyz-setup",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "infra/tunnel/compose.tunnel.yml",
+    "infra/tunnel/compose.yml",
+    "infra/tunnel/deploy.sh",
+    "infra/tunnel/remote-deploy.sh"
+  ],
+  "sessions": [
+    {
+      "metadata": "/22/d9cebfdc15/0/metadata.json",
+      "transcript": "/22/d9cebfdc15/0/full.jsonl",
+      "compact_transcript": "/22/d9cebfdc15/0/transcript.jsonl",
+      "content_hash": "/22/d9cebfdc15/0/content_hash.txt",
+      "prompt": "/22/d9cebfdc15/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 60,
+    "cache_creation_tokens": 189534,
+    "cache_read_tokens": 3564799,
+    "output_tokens": 73382,
+    "api_call_count": 26
+  },
+  "redaction": {
+    "replacements": 22,
+    "layers": {
+      "betterleaks": 12,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 4,
+      "credentialed_uri": 2,
+      "entropy": 44,
+      "key_context": 2,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
