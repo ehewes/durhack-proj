@@ -1,0 +1,40 @@
+# ml: Kip's handling-noise filter
+
+Our own small model that removes phone-handling noise (sleeve, pocket, pillow, bedsheet rustle) from
+spike clips before Gemini labels them. Plan and contracts: `docs/DOMAIN.md` (Noise
+classification), `docs/ARCHITECTURE.md` (ML row, `ml` lane), `docs/DECISIONS.md`. Issues: #85 to #92.
+
+## Audio library
+Every clip is 16 kHz mono 16-bit WAV. Licences and sources for every file: `audio/SOURCES.md`.
+
+| Folder | What | Committed |
+|---|---|---|
+| `audio/ours/` | **Our recordings** from the demo iPhone: handling noise and room tone | yes |
+| `audio/online/background/<category>/` | Night background sounds from ESC-50 (traffic, siren, construction, aircraft, rail, snoring, breathing, weather, room, footsteps). CC BY-NC 3.0 | yes |
+| `audio/synthetic/handling/` | **Placeholder** procedural rustle, scrapes and bumps, with `labels.json` intervals, until real recordings exist | yes |
+| `audio/generated/elevenlabs/` | Extra handling and background clips from ElevenLabs Sound Effects (once a key exists) | yes |
+| `audio/inbox/` | Drop folder for raw Voice Memos files | no |
+
+## Add your recordings
+1. Record on the demo iPhone with Voice Memos (Settings, Voice Memos, Audio Quality: Lossless).
+   Background noise is fine; avoid nearby, clear conversation. At each spot record 1 to 2 minutes of
+   room tone with the phone untouched, then 20 to 30 second takes of each kind of handling.
+2. AirDrop the files to a Mac and name them `<spot>_<kind>_<nn>`: `corridor_sleeve_01.m4a`,
+   `corridor_roomtone.m4a`. Kinds: sleeve, pocket, pillow, sheet, bedsheet, hoodie, jacket, pickup,
+   bag, handling, roomtone.
+3. Put them in `ml/audio/inbox/` and run `python3 ml/scripts/import_recordings.py`.
+4. Commit `ml/audio/ours/` on a branch and open a PR, or ask an agent to. Keep each take under 30 s.
+
+## Scripts
+| Script | Does |
+|---|---|
+| `uv run ml/scripts/fetch_esc50.py [--per-class 6]` | Downloads ESC-50 background clips and rewrites their section of `SOURCES.md` |
+| `uv run ml/scripts/make_synthetic_handling.py` | Regenerates the placeholder handling clips (seeded) |
+| `python3 ml/scripts/import_recordings.py` | Converts `audio/inbox/` into `audio/ours/` (macOS `afconvert`, or `ffmpeg`) |
+| `ELEVENLABS_API_KEY=... python3 ml/scripts/generate_elevenlabs_sfx.py` | Generates extra clips with ElevenLabs Sound Effects; untested until the key exists |
+
+Training data mixtures, runs and checkpoints are generated from this library and stay out of git.
+
+## Licences
+ESC-50 is CC BY-NC 3.0: fine for this non-commercial hackathon prototype with attribution, not for
+a commercial product. Before Kip ships commercially, retrain on our own recordings and CC0 or CC BY data.

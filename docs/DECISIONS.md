@@ -150,3 +150,14 @@ the original clip.
 **Consequences:** A Python toolchain (`uv`) beside Bun, outside `./hq check`. Training data and
 checkpoints stay out of git; only the exported model is committed. The label set gains `handling`,
 which attribution and briefings ignore.
+
+## 2026-11-14: Commit a small curated audio library in `ml/audio/`
+**Context:** Both of us, and agents on any machine or a Lium pod, need the same recordings and
+downloaded clips, and Ellis wants to upload recordings straight into the repo.
+**Decision:** `ml/audio/` holds our recordings, ESC-50 background clips, placeholder synthetic
+handling noise and ElevenLabs-generated clips, all 16 kHz mono WAV with sources in
+`ml/audio/SOURCES.md`, committed to git. Keep it small (tens of MB): short takes only. Generated
+mixtures, runs and checkpoints still stay out of git. No Git LFS, because its hooks clash with
+Entire's.
+**Consequences:** Every clone carries the audio library. ESC-50 is CC BY-NC, acceptable for the
+prototype only. Raw Voice Memos files stay in the ignored `ml/audio/inbox/`.
