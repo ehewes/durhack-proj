@@ -13,3 +13,10 @@ __pycache__/
 *.pyc
 .venv/
 node_modules/
+
+# ML: raw data, runs and checkpoints stay out of git (the exported model is committed)
+ml/data/raw/
+ml/data/mixtures/
+ml/runs/
+ml/checkpoints/
+*.pt

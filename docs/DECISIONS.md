@@ -137,3 +137,16 @@ With two people working across the whole stack, that split only adds hand-offs.
 `demo-v1`. Lanes stay, but only to keep parallel agents on disjoint paths.
 **Consequences:** No waiting on a specific person. Say in chat before merging contracts, deploy
 config or anything after the freeze, so we don't both do it.
+
+## 2026-11-14: Train our own handling-noise filter on a Lium GPU pod
+**Context:** A phone on a nightstand, in a pocket or under a pillow picks up its own handling noise
+(sleeve, pocket, bedsheet rustle). Those spikes would be labelled and linked to wake-ups. We also
+want a model of our own in the pipeline, not only third-party APIs.
+**Decision:** Train a small PyTorch mask model on synthetic mixtures of handling noise and night
+sounds, on a Lium GPU pod (Vultr stays for deployment). Export it to ONNX and run it in the API on
+each spike clip before Gemini. Mostly-handling clips get the label `handling`. Clips are 16 kHz mono
+WAV. Prototype quality is acceptable: if the model underperforms, the API falls back to labelling
+the original clip.
+**Consequences:** A Python toolchain (`uv`) beside Bun, outside `./hq check`. Training data and
+checkpoints stay out of git; only the exported model is committed. The label set gains `handling`,
+which attribution and briefings ignore.
