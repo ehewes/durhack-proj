@@ -5,16 +5,10 @@ import {
   briefingAudioPath,
   briefingGetOutput,
 } from "@kip/shared/briefing";
-import { z } from "zod";
-import { speak } from "../../integrations/elevenlabs";
-import { generateJson } from "../../integrations/gemini";
-import { forNight as attributeNight } from "../attribution";
-import { getNight as loadNight, NightConsentError, type NightRecord } from "../night";
+import { NightConsentError, type NightRecord } from "../night";
 import { type BriefingCache, briefingCache } from "./cache";
 import { briefingPrompt, fallbackBriefing } from "./compose";
 import { briefingFacts } from "./facts";
-
-const draftSchema = z.object({ text: z.string() });
 
 export class BriefingNotFoundError extends Error {
   constructor() {
@@ -40,17 +34,6 @@ export type BriefingDeps = {
   speak: BriefingSpeaker;
 };
 
-async function writeWithGemini(prompt: string): Promise<{ text: string }> {
-  return generateJson(prompt, draftSchema);
-}
-
-const liveDeps: BriefingDeps = {
-  getNight: loadNight,
-  forNight: attributeNight,
-  write: writeWithGemini,
-  speak,
-};
-
 const WRITE_ATTEMPTS = 2;
 
 async function writtenBriefing(facts: ReturnType<typeof briefingFacts>, write: BriefingWriter) {
@@ -71,10 +54,7 @@ async function writtenBriefing(facts: ReturnType<typeof briefingFacts>, write: B
   return fallback;
 }
 
-export function createBriefingService(
-  deps: BriefingDeps = liveDeps,
-  cache: BriefingCache = briefingCache(),
-) {
+export function createBriefingService(deps: BriefingDeps, cache: BriefingCache = briefingCache()) {
   return {
     async get(userId: string, nightId: string): Promise<BriefingGetOutput> {
       const record = await deps.getNight(nightId);
@@ -113,7 +93,3 @@ export function createBriefingService(
 }
 
 export type BriefingService = ReturnType<typeof createBriefingService>;
-
-const live = createBriefingService();
-
-export const getBriefing = live.get;

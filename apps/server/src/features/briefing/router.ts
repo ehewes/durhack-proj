@@ -2,12 +2,13 @@ import { briefingGetInput, briefingGetOutput } from "@kip/shared/briefing";
 import { TRPCError } from "@trpc/server";
 import { router, userProcedure } from "../../trpc/init";
 import { NightNotFoundError, NightStorageError } from "../night";
-import {
-  BriefingAudioError,
-  BriefingNotFoundError,
-  type BriefingService,
-  getBriefing,
-} from "./service";
+import { loadFeatureModule } from "./load";
+import { BriefingAudioError, BriefingNotFoundError, type BriefingService } from "./service";
+
+export async function getBriefing(userId: string, nightId: string) {
+  const live = await loadFeatureModule<{ getBriefing: BriefingService["get"] }>("./live");
+  return live.getBriefing(userId, nightId);
+}
 
 function mapBriefingError(error: unknown): never {
   if (error instanceof BriefingNotFoundError || error instanceof NightNotFoundError) {

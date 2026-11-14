@@ -18,6 +18,7 @@ import { createBriefingCache } from "./cache";
 import { fallbackBriefing } from "./compose";
 import { briefingClock, briefingFacts } from "./facts";
 import { createBriefingHttp } from "./http";
+import { loadFeatureModule } from "./load";
 import { createBriefingRouter } from "./router";
 import {
   BriefingAudioError,
@@ -121,6 +122,11 @@ function setup(
 function promptsOf(write: ReturnType<typeof mock>): string[] {
   return write.mock.calls.map((call) => String(call[0]));
 }
+
+test("the voice clients load only when a briefing is asked for", async () => {
+  const live = await loadFeatureModule<{ getBriefing: unknown }>("./live");
+  expect(typeof live.getBriefing).toBe("function");
+});
 
 describe("briefing facts", () => {
   test("the fixture drilling is 06:41 and handling is left out", () => {
