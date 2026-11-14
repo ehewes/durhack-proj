@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01PZTPHN1fDBoyFzc3WjQavU",
+  "agent_id": "a2226081d34ee372e",
+  "subagent_type": "fork",
+  "task_description": "Build issue 88 ONNX export",
+  "token_usage": {
+    "input_tokens": 84,
+    "cache_creation_tokens": 92865,
+    "cache_read_tokens": 8251341,
+    "output_tokens": 68401,
+    "api_call_count": 40
+  },
+  "started_at": "2026-11-14T18:19:53.031552Z",
+  "completed_at": "2026-11-14T18:31:07.814905Z"
+}

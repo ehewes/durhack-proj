@@ -1,0 +1,64 @@
+<task-notification>
+<task-id>brme44cg4</task-id>
+<tool-use-id>toolu_01R5XKaMYDDds4rh8gQeWnFH</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-oslo/4a9f6dc5-fe85-47ec-abde-6f9d440d834b/tasks/brme44cg4.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the Entire multi-agent review on the PR branch" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a2226081d34ee372e</task-id>
+<tool-use-id>toolu_01PZTPHN1fDBoyFzc3WjQavU</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-oslo/4a9f6dc5-fe85-47ec-abde-6f9d440d834b/tasks/a2226081d34ee372e.output</output-file>
+<status>completed</status>
+<summary>Agent "Build issue 88 ONNX export" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>PR #131 for #88 is open: `handling-v1.onnx` takes raw 16 kHz audio and returns the cleaned audio plus a handling probability for each 10 ms frame. The STFT and inverse STFT are now inside the graph, so the server (#90) needs no STFT code.
+
+- **PR:** https://github.com/ehewes/durhack-proj/pull/131 (Closes #88; the issue is now `status:review`)
+- **Trail:** https://entire.com/gh/ehewes/-/trails/46, linked to the PR
+- **Worktree:** `/Users/ellishewes/conductor/repos/durhack-proj/.claude/worktrees/agent-a2226081d34ee372e`, branch `ehewes/88-handling-onnx`, claimed as `ehewes/claude/oslo-ml`
+- **Commits:**
+  - `51ae617` adds `ml/kipml/export.py`, `ml/tests/test_export.py`, `ml/models/handling-v1.onnx` and `ml/models/handling-v1.json`.
+  - `e92de06` updates `ml/README.md` and `ml/models/README.md`.
+
+**Verification**
+- **Export:** `uv run python -m kipml.export --checkpoint models/handling-poc.pt` writes a 2.4 MB, opset 17 model using only standard ONNX ops.
+- **Parity:** ONNX Runtime differs from PyTorch by at most 1.37e-6, and from `enhance()` (the training code's inference function) by at most 1.61e-6, at lengths other than the one used for export.
+- **STFT:** the in-graph STFT matches `torch.stft` to about 1.5e-5, and a mask that keeps everything returns the input to about 1e-6.
+- **Real takes:** on two held-out phone recordings the ONNX file flags the same time as the earlier proof-of-concept report: 0.48 s on the pickup take and 0.01 s on the sleeve take.
+- **Tests:** `tests/test_export.py` passes 16 of 16 and the full `uv run pytest` passes 22.
+- **`./hq check`:** lint, typecheck and test all pass (3/3). I ran `./hq setup` first, as the coordinator asked.
+- **CI:** terraform passed; checks and docker were still pending when I stopped.
+
+**Risks**
+- **Speed:** a 10-second clip takes about 79 ms on one CPU thread, against about 21 ms for the old graph that leaves the STFT to the caller. That is fine for one spike at a time; `--features-in` still writes the old graph if speed ever matters.
+- **Short input:** anything under 512 samples has to be zero-padded first. This is documented, and spike clips are 10 s.
+- **Out-of-date doc:** `ml/MODEL.md` was outside the issue's scope and still says the API computes the STFT and runs `handling-poc.onnx`. Whoever does #90 should update it.
+
+**Left for a human:** reviewing and merging the PR. Because it is size:S, I did not run `entire review` or add `review:pass`.</result>
+<usage><subagent_tokens>247133</subagent_tokens><tool_uses>43</tool_uses><duration_ms>675365</duration_ms></usage>
+<worktree><worktreePath>/Users/ellishewes/conductor/repos/durhack-proj/.claude/worktrees/agent-a2226081d34ee372e</worktreePath><worktreeBranch>worktree-agent-a2226081d34ee372e</worktreeBranch></worktree>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bqr4vlj5c</task-id>
+<tool-use-id>toolu_017pwavj6EPNmuLw6ATLmSh5</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-oslo/4a9f6dc5-fe85-47ec-abde-6f9d440d834b/tasks/bqr4vlj5c.output</output-file>
+<status>completed</status>
+<summary>Background command "Wait for the review log to show its first lines" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b1k2qbfdg</task-id>
+<tool-use-id>toolu_01NwduN3bSMvKBdcCkbMW1VC</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-oslo/4a9f6dc5-fe85-47ec-abde-6f9d440d834b/tasks/b1k2qbfdg.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the Entire review with the general profile" completed (exit code 0)</summary>
+</task-notification>
