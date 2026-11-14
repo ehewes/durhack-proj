@@ -1,7 +1,14 @@
+import bankHolidays from "./bank-holidays.json";
 import { toLocalTime } from "./time";
 
+/** England and Wales bank holidays. Snapshot in bank-holidays.json; refresh with the script. */
+export const BANK_HOLIDAYS_URL = "https://www.gov.uk/bank-holidays.json";
+
+/** What the UI says. These are recommended hours, so never "illegal" or "breach". */
+export const OUTSIDE_HOURS_WORDING = "outside the council's recommended hours";
+
 /**
- * Newcastle City Council's recommended hours for noisy construction work, local time.
+ * Newcastle City Council's recommended hours for noisy construction work, local minutes.
  * Weekday index: 0 = Sunday ... 6 = Saturday. Sundays and bank holidays allow none.
  */
 export const CONSTRUCTION_HOURS: Readonly<Record<number, { start: number; end: number } | null>> = {
@@ -14,16 +21,15 @@ export const CONSTRUCTION_HOURS: Readonly<Record<number, { start: number; end: n
   6: { start: 8 * 60, end: 13 * 60 },
 };
 
-/** England and Wales bank holidays come from https://www.gov.uk/bank-holidays.json */
-export const BANK_HOLIDAYS_URL = "https://www.gov.uk/bank-holidays.json";
+const BANK_HOLIDAYS: ReadonlySet<string> = new Set(bankHolidays.englandAndWales);
 
-/**
- * True when `at` falls outside the council's *recommended* hours.
- * `bankHolidays` holds ISO dates ("2026-12-25") for England and Wales.
- */
-export function isOutsideConstructionHours(at: Date, bankHolidays: ReadonlySet<string>): boolean {
+/** True when `at` falls outside the council's recommended hours, in Europe/London time. */
+export function isOutsideRecommendedHours(
+  at: Date,
+  holidays: ReadonlySet<string> = BANK_HOLIDAYS,
+): boolean {
   const local = toLocalTime(at);
-  if (bankHolidays.has(local.date)) return true;
+  if (holidays.has(local.date)) return true;
   const hours = CONSTRUCTION_HOURS[local.weekday];
   if (!hours) return true;
   return local.minutes < hours.start || local.minutes >= hours.end;

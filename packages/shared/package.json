@@ -3,11 +3,14 @@
   "private": true,
   "type": "module",
   "exports": {
+    ".": "./src/index.ts",
     "./domain": "./src/domain/index.ts",
     "./*": "./src/*/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc -p ."
+    "typecheck": "tsc -p .",
+    "refresh:bank-holidays": "bun scripts/refresh-bank-holidays.ts",
+    "fixtures:night": "bun scripts/make-night-fixtures.ts"
   },
   "dependencies": {
     "zod": "^4.6.7"
