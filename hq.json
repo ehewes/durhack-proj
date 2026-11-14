@@ -94,6 +94,11 @@
         "infra/",
         "Dockerfile"
       ]
+    },
+    "demo": {
+      "paths": [
+        "docs/demo/"
+      ]
     }
   },
   "check": [

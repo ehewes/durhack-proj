@@ -50,6 +50,14 @@ One issue = one agent = one worktree/branch = one PR. Humans assign issues. Neve
 Full detail: `.agents/skills/hq-work/SKILL.md`. Also useful: `./hq board`, `./hq setup --check`.
 Windows: use `hq.cmd` or `python tools/hq/hq.py` wherever this file says `./hq`.
 
+## Cloud agents
+If you run in a cloud sandbox without `gh`, `./hq` or Entire:
+- The human who dispatched you has already claimed the issue. Skip `./hq claim`, `./hq pr` and the
+  `entire` steps; open the PR with your tool and start its description with `Closes #N`.
+- Never take a `needs:mac` issue. On a `needs:keys` issue, write the code and mocked tests; leave
+  the steps marked (keys) in Verify for a human.
+- Everything else in this file still applies, especially Scope and the file-tree rules.
+
 ## Git
 - Work only in your own worktree and branch. Never commit on `main` (a hook blocks it).
 - Stage files by name. Never `git add -A` or `git add .`.
