@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01ET49tLTMG5GwdhvJx8uNrr",
+  "agent_id": "ae4d5bbac564baeb3",
+  "subagent_type": "general-purpose",
+  "task_description": "Build issue 70 consent onboarding",
+  "token_usage": {
+    "input_tokens": 324,
+    "cache_creation_tokens": 1608041,
+    "cache_read_tokens": 32897393,
+    "output_tokens": 195920,
+    "api_call_count": 156
+  },
+  "started_at": "2026-11-14T19:20:41.603946Z",
+  "completed_at": "2026-11-14T22:20:08.015101Z"
+}

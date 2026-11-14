@@ -1,0 +1,49 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "fe22809ef953",
+  "strategy": "manual-commit",
+  "branch": "ehewes/133-briefing-audio-route",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "apps/server/src/app.test.ts",
+    "apps/server/src/app.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/fe/22809ef953/0/metadata.json",
+      "transcript": "/fe/22809ef953/0/full.jsonl",
+      "compact_transcript": "/fe/22809ef953/0/transcript.jsonl",
+      "content_hash": "/fe/22809ef953/0/content_hash.txt",
+      "prompt": "/fe/22809ef953/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 26,
+    "cache_creation_tokens": 24885,
+    "cache_read_tokens": 3288343,
+    "output_tokens": 16952,
+    "api_call_count": 9,
+    "subagent_tokens": {
+      "input_tokens": 154,
+      "cache_creation_tokens": 184379,
+      "cache_read_tokens": 13289745,
+      "output_tokens": 61196,
+      "api_call_count": 76
+    },
+    "subagent_tokens_complete": true
+  },
+  "redaction": {
+    "replacements": 6,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 6,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}

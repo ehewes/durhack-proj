@@ -1,0 +1,198 @@
+make sure the issue is marked if its done
+
+---
+
+please go through the issues pull all up to date and then make sure u store to context that u hae to always update the tickets but then evaluate dont think too hard over some of the issuese that you can take using like the other flags to ensure no one else is using them or entire then we can work on some seperate areas i want like 3 agents working on them all at once
+
+---
+
+i didnt ask u to bring any tickets reality up to date i js asked u to go through the tickets
+
+---
+
+<task-notification>
+<task-id>a0d3e2876f812f029</task-id>
+<tool-use-id>toolu_01X3dmpiRuPZNUvKCtDKYzZc</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-oslo/4a9f6dc5-fe85-47ec-abde-6f9d440d834b/tasks/a0d3e2876f812f029.output</output-file>
+<status>completed</status>
+<summary>Agent "Build issue 67 permit sample" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I opened PR #139 for issue #67 and stopped there: nothing is merged and `./hq ship` was not run. `./hq check` passes and CI's `checks` and `terraform` jobs pass; `docker` was still pending when I stopped.
+
+- **PR:** https://github.com/ehewes/durhack-proj/pull/139 (closes #67, Entire trail #49 linked)
+- **Branch:** `ehewes/67-recorded-permits`
+- **Worktree:** `/Users/ellishewes/conductor/repos/durhack-proj/.claude/worktrees/agent-a0d3e2876f812f029`
+
+`./hq check` tail:
+```
+✓ bun run lint (0.3s)
+✓ bun run typecheck (5.8s)
+✓ bun run test (1.4s)
+✓ 3/3 checks passed
+```
+
+**What it does:** `bun run seed:works` loads the sample through the same step that stores a live SNS permit. I pulled that step out of the SNS handler; its responses are unchanged. Every seeded permit is stored with `simulated: true`. The integrations sample file is read, never edited.
+
+**Demo hotel:** Grey Street Hotel (OSM `node/2470415681`) gets the works penalty on the nights of 20 and 21 November 2026 (check-in 20th, check-out 22nd).
+- None of the 22 sample permits has night work on those dates, so I added one simulated permit, `9000451000023-01`. It is a road closure on Grey Street, 15.5 m from the hotel, from 22:00 on 20 Nov to 06:00 on 22 Nov.
+- A test finds the hotel in the Overpass fixture and reads the stay dates from the Quiet Stays fixture. It checks that `works.near` returns this permit as night work on both nights. I broke that test on purpose four ways and each one made it fail.
+- Run through the shared score, this permit takes the hotel's roadworks value to 0.
+
+**Follow-up:** #138 (needs-human). `docs/BUSINESS.md` tells judges "the permits are real", which is false if the demo runs on this simulated fallback. #76 copies that table into the pitch, so it should be fixed first.
+
+**Risks:**
+- **Outside Scope:** I added exactly one line to `apps/server/package.json`: `"seed:works": "bun src/features/works/seed.ts"`. Root `package.json` is untouched, so running it from the root needs a platform issue. For now use `bun --env-file=.env --filter @kip/server seed:works`, because inside `apps/server` Bun doesn't load the root `.env`.
+- **"Marked as recorded":** I took this to mean `simulated: true`. The sample file says it is "Not a recorded Street Manager feed", and `simulated` is the only label the works contract has. I ticked all three acceptance boxes and explained this in an evidence comment on #67.
+- **Demo dates:** the demo permit is tied to the Quiet Stays dates. If the stays fixtures move the stay, the test fails and the permit's times must move with it.
+- **Leftover data:** seeded permits stay in Mongo after the live feed starts. `db.works.deleteMany({ simulated: true })` removes exactly them.
+- **Ranking:** nothing ranks the hotel until #62 (load hotels) and #63 (ranking) land. The permit is a single point, so #63's planned 200 m lookup will match it.
+- **Missing key:** without `MONGO_URI` the script now stops at once with a clear message, instead of retrying for about 75 s.
+
+**Left for a human with `.env` (the keyed Verify step):**
+1. Run `bun --env-file=.env --filter @kip/server seed:works`. Expect "23 inserted … 10 have night work scheduled".
+2. Start the API with `bun run dev:api`, then run the `curl` in the PR's Risks section, which queries `works.near` at the hotel for 20 to 21 Nov. Expect `9000451000023-01` back. I tested that exact URL against the app with an in-memory store.</result>
+<usage><subagent_tokens>228017</subagent_tokens><tool_uses>126</tool_uses><duration_ms>1194145</duration_ms></usage>
+<worktree><worktreePath>/Users/ellishewes/conductor/repos/durhack-proj/.claude/worktrees/agent-a0d3e2876f812f029</worktreePath><worktreeBranch>worktree-agent-a0d3e2876f812f029</worktreeBranch></worktree>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a9d676405f405aecc</task-id>
+<tool-use-id>toolu_01XqiYoPEyaiUFeWmaKeExeJ</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-oslo/4a9f6dc5-fe85-47ec-abde-6f9d440d834b/tasks/a9d676405f405aecc.output</output-file>
+<status>failed</status>
+<summary>Agent "Write issue 77 Devpost and README" failed: Agent terminated early due to an API error: API Error: Can't reach the API server — check your internet or DNS (ENOTFOUND) (error type server_error)</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>`main` has not moved, so no rebase is needed. Running `./hq check`.</result>
+<worktree><worktreePath>/Users/ellishewes/conductor/repos/durhack-proj/.claude/worktrees/agent-a9d676405f405aecc</worktreePath><worktreeBranch>worktree-agent-a9d676405f405aecc</worktreeBranch></worktree>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a9d676405f405aecc</task-id>
+<tool-use-id>toolu_01YKKM3baUZpSvdQxjD85CLk</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-oslo/4a9f6dc5-fe85-47ec-abde-6f9d440d834b/tasks/a9d676405f405aecc.output</output-file>
+<status>completed</status>
+<summary>Agent "Write issue 77 Devpost and README" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Issue #77 is done and PR #148 is open with `review:pass`. CI is green, and both acceptance criteria are ticked on #77 with an evidence comment. I did not merge or run `./hq ship`.
+
+- **PR:** https://github.com/ehewes/durhack-proj/pull/148
+- **Branch:** `ehewes/77-devpost-readme`
+- **Worktree:** `/Users/ellishewes/conductor/repos/durhack-proj/.claude/worktrees/agent-a9d676405f405aecc`
+
+**What changed**
+- **`docs/demo/devpost.md` (new):** the Devpost text in field order: the story, a real-versus-simulated table, and "used today" versus "planned" for every prize track. Every claim was checked against `main` at `de073c7`. A team checklist sits at the top.
+- **`README.md`:** a new Kip intro, a corrected disclosure (an empty initial commit, then PRs #1 and #4 are the pre-event framework), and a rewritten run section placed before the Quickstart. The Quickstart text is unchanged. The issue scopes the README to its run section only; I also changed the intro and disclosure because you asked and the criteria name the disclosure.
+- **`main` moved mid-task:** #109 (the Solana Memo client) and #146 merged. #146 confirms one sponsor track per team, so the prize section now leads with Best Use of MongoDB Atlas and lists the rest as not entered. Solana now counts as working, but only against a mocked RPC.
+
+**`./hq check` tail**
+```
+✓ bun run lint (0.3s)
+✓ bun run typecheck (6.5s)
+✓ bun run test (0.8s)
+✓ 3/3 checks passed
+```
+
+**Review:** `entire review general` ran twice and approved both times, with no trail findings to resolve. I fixed the real nits: the OpenStreetMap node now draws as planned, the run section comes first, and the disclosure names the empty initial commit. One nit claimed the initial commit has 10 files; it is empty, which `git cat-file` confirms.
+
+**TODOs left for Ellis and Nick** (checklist at the top of the Devpost file):
+- live URL (#74) and video (#80)
+- make the repo public; it is private now, after reviewing transcripts (#78)
+- enter only MongoDB Atlas, and confirm the data is in Atlas (#8)
+- decide how much of the MongoDB fallback to build (#149)
+- the 30-night backfill (#33): on 2026-11-14 the only live Sound sensor sat outside the 3 km circle
+- a HealthKit export for the demo night (#48)
+- a source for Bewick Court
+- an image of the Mermaid diagram, since Devpost doesn't render it
+
+**Follow-up issues** (all `status:needs-human`, linked on #77):
+- #144: `ELEVENLABS_VOICE_ID` is required for the briefing voice but missing from `.env.example`, and `STREET_MANAGER_TOPIC_ARN` is ignored.
+- #145: the brief and decision log still say Kip is built in a fresh repo.
+- #147: Expo's first start leaves an untracked `apps/mobile/.gitignore`.
+- #149: decide how much of the MongoDB fallback to build before the freeze.
+
+**Risks and caveats**
+- **`db:up` not exercised:** the local Docker daemon returned 500 errors. A teammate still needs to follow the steps cold with Docker.
+- **Rest of the cold run:** the API, worker and Expo web bundle all started, and the README's push snippet produced a live spike in zsh and bash.
+- **Expo file:** that untracked `apps/mobile/.gitignore` came from my Expo run. I left it unstaged as told, so `./hq pr` needed `--allow-dirty`.
+- **Unscoped kill:** I once stopped my test worker with `pkill -f "src/main.worker.ts"`, which was not limited to my worktree. Nothing else appeared to be running, but if another agent's worker stopped around 19:30 UTC, that was me.
+- **Stale memory note:** your memory note says the submission repo would be created fresh at kick-off. That is no longer true (see #145).</result>
+<usage><subagent_tokens>371652</subagent_tokens><tool_uses>86</tool_uses><duration_ms>2559233</duration_ms></usage>
+<worktree><worktreePath>/Users/ellishewes/conductor/repos/durhack-proj/.claude/worktrees/agent-a9d676405f405aecc</worktreePath><worktreeBranch>worktree-agent-a9d676405f405aecc</worktreeBranch></worktree>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>ae4d5bbac564baeb3</task-id>
+<tool-use-id>toolu_01ET49tLTMG5GwdhvJx8uNrr</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-oslo/4a9f6dc5-fe85-47ec-abde-6f9d440d834b/tasks/ae4d5bbac564baeb3.output</output-file>
+<status>completed</status>
+<summary>Agent "Build issue 70 consent onboarding" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>#70 is done up to a reviewed PR: PR #143 is open, mergeable and labelled `review:pass`, and nothing is merged.
+
+- **PR:** https://github.com/ehewes/durhack-proj/pull/143
+- **Branch:** `ehewes/70-consent-onboarding`
+- **Worktree:** `/Users/ellishewes/conductor/repos/durhack-proj/.claude/worktrees/agent-ae4d5bbac564baeb3`
+- **Scope:** all 15 changed files are under `apps/mobile/src/features/account/`. Nothing outside it was edited.
+
+**What it does**
+- **Consent:** onboarding asks about the microphone, Apple Health and location one step at a time. Each has a plain explanation and an equal yes or no, with nothing preselected.
+- **Profile:** the Quiet Stays profile question comes last and can be skipped. Nothing is saved until Finish, and the profile is saved before consent so a half-finished onboarding never counts as done.
+- **Account tab:** shows onboarding until the user has answered, then their answers. Each consent and the profile can be changed with one tap.
+- **Delete everything:** sits behind an inline confirmation step. Afterwards onboarding reopens with a count of what was removed.
+- **Permission prompts:** onboarding never asks iOS for a permission. The account feature exports `useHasConsent(type)` and `useConsent()` so other features can ask only after a yes. It also exports `ConsentGate` for showing onboarding on first launch.
+
+**Verification**
+- `./hq check` after merging the latest main:
+  ```
+  ✓ bun run lint (0.2s)
+  ✓ bun run typecheck (5.2s)
+  ✓ bun run test (0.7s)
+  ✓ 3/3 checks passed
+  ```
+- The app tests (`bun test apps/mobile/src/features/account`) pass, 16 of 16. I deliberately broke each key rule in the code and a test failed every time.
+- The web export builds.
+- A headless Chrome run against the real account router and service, with an in-memory store instead of Mongo, passed all 29 checks in light and dark mode. That run caught one bug: the web build was dropping which answer is selected, so screen readers could not hear it. That is fixed.
+- The anti-slop check is clean.
+- Screenshots are in `.context/shots/` in the worktree. I couldn't upload them to the PR from the command line, so the PR lists them by name.
+
+**Review**
+The first `entire review` run was killed before it reviewed anything, when the machine seems to have slept. The rerun asked for changes, and I fixed them:
+- **Two high findings:** overlapping saves could bring back a consent the user had just turned off, and a save still in flight could recreate the account after a delete. Account changes now save one at a time, and older server responses can no longer overwrite a newer answer. Both trail findings are resolved.
+- **Smaller findings, also fixed:**
+  - A retried onboarding now shows the profile that was already stored instead of offering Skip.
+  - A failed delete stays on screen after Cancel.
+  - The Account tab now shows onboarding through `ConsentGate`, so there is only one onboarding.
+  - Headings use the shared type scale.
+- **Hook tests:** only the cache logic got unit tests. The app has no React Native test renderer, so the screens are covered by the browser run.
+- `entire trail ready` did not mark the trail ready, because this repo has no approval gate. The PR itself was marked ready.
+
+**Follow-up issues** (all `status:needs-human`, linked on #70)
+- #140: wrap the tabs in `ConsentGate` so the app opens on onboarding at first launch. This needs an edit in `apps/mobile/app/`, which the issue says not to touch.
+- #141: start a fresh anonymous ID after a delete. That ID lives in `lib/user-id.ts`, which is platform code.
+- #142: the server keeps a deleted user's briefing audio in memory until it restarts. This is a gap in the briefing feature.
+- #150: a failed delete is forgotten when the app restarts. Fixing it means changing what `account.me` returns, which needs its own issue.
+
+**Risks**
+- Until #140, onboarding only appears on the Account tab. No feature asks iOS for a permission today, so nothing prompts early in the meantime.
+- Until #141, a user who deletes everything keeps the same anonymous ID, so their new answers are stored under it.
+- Recording, HealthKit and location must check `useHasConsent` before asking iOS. Only code review enforces that.
+- Nothing has run on an iPhone yet, only the web build.
+
+#70 has its three acceptance criteria ticked and an evidence comment, and stays `status:review`. Left for a human: review and merge #143 (I did not run `./hq ship`), and assign #140, #141, #142 and #150.</result>
+<usage><subagent_tokens>347171</subagent_tokens><tool_uses>215</tool_uses><duration_ms>10767157</duration_ms></usage>
+<worktree><worktreePath>/Users/ellishewes/conductor/repos/durhack-proj/.claude/worktrees/agent-ae4d5bbac564baeb3</worktreePath><worktreeBranch>worktree-agent-ae4d5bbac564baeb3</worktreeBranch></worktree>
+</task-notification>
+
+---
+
+option a
+
+---
+
+continue
