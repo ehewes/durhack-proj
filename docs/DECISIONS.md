@@ -52,7 +52,7 @@ wording rules in `docs/DOMAIN.md`, stack and contracts in `docs/ARCHITECTURE.md`
 **Consequences:** Every agent follows `docs/DOMAIN.md` for anything it computes or shows.
 
 ## 2026-11-14: The API is the only caller of third-party services
-**Context:** Gemini, ElevenLabs and Solana need secret keys; the iOS app and dashboard are clients.
+**Context:** Gemini, ElevenLabs and Solana need secret keys; the app (iOS and web) is a client.
 **Decision:** Only the API calls Gemini, ElevenLabs and Solana. Clients call the API.
 **Consequences:** Keys live in one place. Clip labelling and briefings need a network round trip.
 
@@ -93,10 +93,39 @@ custom program.
 **Consequences:** No toolchain setup; a fraction of a penny per night. It proves when a log
 existed, not that it's true, and we say so.
 
-## 2026-11-14: One server package and image, on Bun
+## 2026-11-14: Bun workspaces; one server package and image
 **Context:** The API and worker share clients, schemas and database code, and the plan wants one
 Docker image.
-**Decision:** `apps/server` holds both entrypoints (`src/api`, `src/worker`) and builds with the
-dashboard into one image. Bun is the runtime and package manager; Hono, Zod and node-cron run on it.
-**Consequences:** One build and deploy. Lanes split `apps/server/src` by directory to keep
-parallel issues disjoint.
+**Decision:** Bun is the package manager for the whole repo and the server runtime.
+`apps/server` holds both entrypoints (`main.api.ts`, `main.worker.ts`) and builds with the Expo
+web export into one image.
+**Consequences:** One build and deploy, one lockfile. Never hand-merge `bun.lock`.
+
+## 2026-11-14: React Native on Expo for both the phone and the dashboard
+**Context:** The team's strongest language is TypeScript, and the demo needs an iPhone app and a
+browser dashboard.
+**Decision:** One Expo app (dev client, Expo Router) builds iOS and web. HealthKit through
+`@kingstinct/react-native-healthkit`; background metering, spike clips and the speech check in a
+small local Expo Module (`kip-audio`, Swift). Replaces the plan's SwiftUI app and React/Vite
+dashboard.
+**Consequences:** One UI codebase and shared types. The native audio module is the riskiest
+piece: build and test it on a device first. Maps need a `.native`/`.web` split. A watchOS app
+becomes a separate native target, so it stays a stretch.
+
+## 2026-11-14: tRPC on Hono for the API
+**Context:** App and server are both TypeScript, and several agents change API shapes in parallel.
+**Decision:** tRPC v11 mounted on Hono. Every JSON call and the live subscription go through
+tRPC; plain Hono routes only for binary clip upload, the Street Manager SNS endpoint, health and
+the web build.
+**Consequences:** End-to-end types with no codegen; a server change that breaks the app fails
+typecheck. Non-TypeScript clients (SNS) still get plain HTTP.
+
+## 2026-11-14: File tree by feature, then by layer
+**Context:** Up to ~10 agents work at once. A layer-first tree (`routes/`, `services/`,
+`screens/`) puts every task in the same folders.
+**Decision:** Each feature (`city`, `night`, `attribution`, `labels`, `briefing`, `evidence`,
+`stays`, `works`, `live`, `account`) owns a folder in `apps/mobile/src/features/`,
+`apps/server/src/features/` and `packages/shared/src/`. Lanes are features. Registries are
+written once in M0 with every feature stubbed; shared code changes through `platform` issues.
+**Consequences:** Parallel issues touch disjoint paths. Cross-feature calls go through a feature's
+`index.ts`. The rules are in `docs/ARCHITECTURE.md`.

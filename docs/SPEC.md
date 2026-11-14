@@ -48,16 +48,17 @@ council's hours and briefs you within seconds.
 If a P1 step isn't working at the freeze, cut it from the script rather than slip.
 
 ## MVP scope (M1)
-- iOS app: relative dB logged once a second, a 10-second clip around each spike, on-device
-  voice-activity check that drops clips with speech, recording while locked, HealthKit read of
-  the Watch's sleep stages, heart rate, HRV and respiratory rate after the night ends, upload to
-  the API, and a live demo mode that streams dB.
+- Kip app on iOS (Expo): relative dB logged once a second, a 10-second clip around each spike,
+  on-device check that drops clips with speech, recording while locked, HealthKit read of the
+  Watch's sleep stages, heart rate, HRV and respiratory rate after the night ends, upload to the
+  API, and a live demo mode that streams dB.
 - Ingest worker: Observatory noise, NO2 and PM2.5 every 5 minutes, plus a backfill of at least
   30 nights; OpenStreetMap hotels and venues.
 - API: night upload, clip labelling (Gemini, then delete the clip), wake-up attribution,
   construction-hours check, briefing text (Gemini) and voice (ElevenLabs), city map data, hotel
   ranking per profile, Street Manager SNS endpoint (or a recorded sample).
-- Dashboard: city map, night timeline, live event view, Quiet Stays page.
+- Kip app on web (same Expo codebase, the demo dashboard): city map, night timeline, live event
+  view, Quiet Stays page.
 - Deployed on Vultr via Terraform, HTTPS via Caddy on an sslip.io hostname.
 
 ## Non-goals
@@ -73,7 +74,7 @@ If a P1 step isn't working at the freeze, cut it from the script rather than sli
 2. ElevenLabs Scribe as a second noise classifier; disagreements become "uncertain" (P1).
 3. Complaint draft for the council from the evidence log (P1).
 4. Simulated user cohort on the map and in hotel scores, labelled as simulated (P1).
-5. watchOS app: haptics, "something woke me" button, briefing playback. Only if Watch signing
+5. Native watchOS target: haptics, "something woke me" button, briefing playback. Only if Watch signing
    works in the first 2 hours (P2).
 6. Air quality factor in the hotel score (P2).
 

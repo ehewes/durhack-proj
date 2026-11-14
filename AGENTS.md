@@ -15,8 +15,16 @@ Read only what your issue needs.
 ## Product rules
 - Anything Kip computes, labels or shows follows `docs/DOMAIN.md`, including its wording table:
   "linked to", never "caused by"; city figures are "indicative".
-- Only the API calls Gemini, ElevenLabs and Solana. No third-party keys in the app or dashboard.
+- Only the API calls Gemini, ElevenLabs and Solana. No third-party keys in the app (iOS or web).
 - No raw audio at rest, no health values in logs, simulated data always labelled.
+
+## File tree
+Code is split by feature (`docs/ARCHITECTURE.md`, "File tree"). Your issue's lane is a feature.
+- Edit only your feature's folders in `apps/mobile/src/features/`, `apps/server/src/features/`
+  and `packages/shared/src/`, plus new migration files.
+- Use another feature only through its `index.ts`. Never import its `repo.ts`, hooks or components.
+- Never edit registries (`trpc/router.ts`, `main.worker.ts`, `app/`) or shared code (`lib/`,
+  `integrations/`, `db/`, `packages/shared/src/domain/`) unless your issue's lane is `platform`.
 
 ## The loop
 One issue = one agent = one worktree/branch = one PR. Humans assign issues. Never pick your own.

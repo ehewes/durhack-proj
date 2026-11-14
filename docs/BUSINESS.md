@@ -33,7 +33,7 @@ Kip asks one question up front and re-weights the score.
 ### Rules for the score
 - It is an estimate and the UI says so. Every score has its sources one tap away: which sensors,
   which permits, how many real nights. Without this, low-scoring hotels will dispute it.
-- Weights live in one place in `packages/shared` so the dashboard can show the breakdown.
+- Weights live in one place, `packages/shared/src/domain/`, so the app can show the breakdown.
 - Simulated cohort nights are flagged and labelled wherever they affect a score.
 
 ## Revenue

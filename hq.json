@@ -1,30 +1,96 @@
 {
   "default_branch": "main",
   "lanes": {
-    "ios": {
+    "city": {
       "owner": "both",
       "paths": [
-        "apps/ios/"
+        "apps/mobile/src/features/city/",
+        "apps/server/src/features/city/",
+        "packages/shared/src/city/"
       ]
     },
-    "api": {
+    "night": {
       "owner": "both",
       "paths": [
-        "apps/server/src/api/",
-        "apps/server/src/services/"
+        "apps/mobile/src/features/night/",
+        "apps/server/src/features/night/",
+        "packages/shared/src/night/"
       ]
     },
-    "worker": {
+    "attribution": {
       "owner": "both",
       "paths": [
-        "apps/server/src/worker/",
-        "apps/server/src/db/"
+        "apps/mobile/src/features/attribution/",
+        "apps/server/src/features/attribution/",
+        "packages/shared/src/attribution/"
       ]
     },
-    "web": {
+    "labels": {
       "owner": "both",
       "paths": [
-        "apps/dashboard/"
+        "apps/mobile/src/features/labels/",
+        "apps/server/src/features/labels/",
+        "packages/shared/src/labels/"
+      ]
+    },
+    "briefing": {
+      "owner": "both",
+      "paths": [
+        "apps/mobile/src/features/briefing/",
+        "apps/server/src/features/briefing/",
+        "packages/shared/src/briefing/"
+      ]
+    },
+    "evidence": {
+      "owner": "both",
+      "paths": [
+        "apps/mobile/src/features/evidence/",
+        "apps/server/src/features/evidence/",
+        "packages/shared/src/evidence/"
+      ]
+    },
+    "stays": {
+      "owner": "both",
+      "paths": [
+        "apps/mobile/src/features/stays/",
+        "apps/server/src/features/stays/",
+        "packages/shared/src/stays/"
+      ]
+    },
+    "works": {
+      "owner": "both",
+      "paths": [
+        "apps/mobile/src/features/works/",
+        "apps/server/src/features/works/",
+        "packages/shared/src/works/"
+      ]
+    },
+    "live": {
+      "owner": "both",
+      "paths": [
+        "apps/mobile/src/features/live/",
+        "apps/server/src/features/live/",
+        "packages/shared/src/live/"
+      ]
+    },
+    "account": {
+      "owner": "both",
+      "paths": [
+        "apps/mobile/src/features/account/",
+        "apps/server/src/features/account/",
+        "packages/shared/src/account/"
+      ]
+    },
+    "platform": {
+      "owner": "both",
+      "paths": [
+        "apps/mobile/app/",
+        "apps/mobile/src/lib/",
+        "apps/mobile/modules/",
+        "apps/server/src/trpc/",
+        "apps/server/src/integrations/",
+        "apps/server/src/db/",
+        "packages/shared/src/domain/"
       ]
     },
     "infra": {
@@ -32,12 +98,6 @@
       "paths": [
         "infra/",
         "Dockerfile"
-      ]
-    },
-    "shared": {
-      "owner": "both",
-      "paths": [
-        "packages/shared/"
       ]
     }
   },

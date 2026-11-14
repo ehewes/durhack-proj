@@ -1,7 +1,7 @@
 # Domain
 
 The science, rules and wording Kip depends on. Code that computes, labels or displays any of
-these must follow this file. Constants live in `packages/shared`, not inline.
+these must follow this file. Constants live in `packages/shared/src/domain/`, not inline.
 
 ## Night noise and the WHO curve
 - **Night window:** 23:00 to 07:00, `Europe/London` local time (handle BST changes).
@@ -72,7 +72,7 @@ mainnet with the Memo program (no Anchor). It proves *when* a log existed, not t
 are true. Never claim more.
 
 ## Wording rules
-Anything user-facing, in the briefing prompt, the dashboard or the pitch:
+Anything user-facing, in the briefing prompt, the app (iOS or web) or the pitch:
 
 | Say | Never say |
 |---|---|
