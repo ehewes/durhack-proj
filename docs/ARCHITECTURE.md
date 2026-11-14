@@ -80,7 +80,7 @@ Bun is the package manager and workspace tool everywhere, and the server runtime
 | Documents | MongoDB Atlas with 2dsphere indexes | Hotel ranking is one aggregation pipeline |
 | AI | Gemini API on a paid-tier key, JSON output | Free-tier keys aren't allowed for UK-facing apps |
 | Voice | ElevenLabs TTS (briefing), Scribe (second classifier), Sound Effects (demo clip) | |
-| Chain | Solana mainnet, Memo program only (no Anchor) | A memo costs a fraction of a penny |
+| Chain | Solana Memo program only (no Anchor): devnet for the hackathon demo, mainnet for the real app | A memo costs a fraction of a penny |
 | Hosting | Live: a shared Docker host behind Kip's own Cloudflare tunnel at `kip.edenmatrix.xyz` (`infra/tunnel/`). Alternative: Vultr Cloud Compute (London), Vultr Container Registry, Caddy with an `<ip>.sslip.io` hostname | iOS requires HTTPS. Cloudflare ends TLS, so the host opens no ports |
 | Infra | Terraform: `vultr/vultr`, `mongodb/mongodbatlas` (IP access list), Tiger Cloud provider; cloud-init via `templatefile()` | One command rebuilds the stack |
 | Quality | Biome (lint + format), `tsc` per package (typecheck; not `tsc -b`, whose declaration checks reject the tRPC client types), `bun test` | `./hq check` runs all three; CI runs them plus Terraform and Docker builds |
@@ -311,7 +311,7 @@ into each new workspace via `.worktreeinclude`. For a plain git worktree, copy `
 | `TIGER_URI` | API, worker | Tiger Cloud service |
 | `GEMINI_API_KEY` | API | Google AI Studio, **paid tier** (enable billing in hour one) |
 | `ELEVENLABS_API_KEY` | API | ElevenLabs (MLH promo code) |
-| `SOLANA_RPC_URL`, `SOLANA_KEYPAIR` | API | Mainnet RPC; a small funded keypair used only for memos |
+| `SOLANA_RPC_URL`, `SOLANA_KEYPAIR` | API | RPC for the chosen network (devnet for the demo, mainnet for the real app); a small funded keypair used only for memos |
 | `STREET_MANAGER_TOPIC_ARN` | API | Street Manager open data registration (register in hour one) |
 | `EXPO_PUBLIC_API_URL` | App | `https://kip.edenmatrix.xyz` (the live deploy), `https://<ip>.sslip.io` on Vultr, or the local server in development. Not a secret |
 | `EXPO_PUBLIC_MAPBOX_TOKEN` | App, web map | Mapbox public token (`pk.`). Restrict it to the dashboard origins. Not a secret. Never commit a real token. iOS does not read it |
