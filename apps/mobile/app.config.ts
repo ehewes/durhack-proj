@@ -35,9 +35,9 @@ const config: ExpoConfig = {
         background: false,
       },
     ],
-    "@maplibre/maplibre-react-native",
+    // Mapbox Maps SDK for iOS. The SDK download needs no token; the app reads a public one at runtime.
+    "@rnmapbox/maps",
   ],
-  // The HealthKit plugin above also adds the com.apple.developer.healthkit entitlement on prebuild.
   experiments: { typedRoutes: true },
 };
 
