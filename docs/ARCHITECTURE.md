@@ -311,8 +311,8 @@ into each new workspace via `.worktreeinclude`. For a plain git worktree, copy `
 | `TIGER_URI` | API, worker | Tiger Cloud service |
 | `GEMINI_API_KEY` | API | Google AI Studio, **paid tier** (enable billing in hour one) |
 | `ELEVENLABS_API_KEY` | API | ElevenLabs (MLH promo code) |
+| `ELEVENLABS_VOICE_ID` | API | ElevenLabs voice library: the ID of the voice that speaks the briefing. `briefing.get` fails without it |
 | `SOLANA_RPC_URL`, `SOLANA_KEYPAIR` | API | RPC for the chosen network (devnet for the demo, mainnet for the real app); a small funded keypair used only for memos |
-| `STREET_MANAGER_TOPIC_ARN` | API | Street Manager open data registration (register in hour one) |
 | `EXPO_PUBLIC_API_URL` | App | `https://kip.edenmatrix.xyz` (the live deploy), `https://<ip>.sslip.io` on Vultr, or the local server in development. Not a secret |
 | `EXPO_PUBLIC_MAPBOX_TOKEN` | App, web map | Mapbox public token (`pk.`). Restrict it to the dashboard origins. Not a secret. Never commit a real token. iOS does not read it |
 | `CLOUDFLARE_TUNNEL_TOKEN` | `cloudflared` on the tunnel host | Zero Trust, tunnel `kip`. Lives only in the host's `/opt/kip/.env`, never in the repo or a prompt |

@@ -16,11 +16,11 @@ const schema = z.object({
   GEMINI_API_KEY: z.string().min(1).optional(),
   // labels, briefing (ElevenLabs)
   ELEVENLABS_API_KEY: z.string().min(1).optional(),
+  /** Voice that speaks the briefing; `briefing.get` fails without it */
+  ELEVENLABS_VOICE_ID: z.string().min(1).optional(),
   // evidence (Solana mainnet, Memo program)
   SOLANA_RPC_URL: z.url().optional(),
   SOLANA_KEYPAIR: z.string().min(1).optional(),
-  // works (Street Manager over SNS)
-  STREET_MANAGER_TOPIC_ARN: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof schema>;
