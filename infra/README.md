@@ -50,6 +50,30 @@ changes the image restarts the API, and the URL answers 502 for about a second, 
 demo steps, not during one. The first build on the host takes a few minutes; later ones reuse the
 cache.
 
+### Deploy from GitHub Actions
+`.github/workflows/deploy.yml` deploys every push to `main` once `ci` passes on it. To run it by
+hand, use `gh workflow run deploy`. Only one deploy runs at a time, and a newer one waits. Merging
+to `main` therefore restarts the demo, so hold merges during a demo.
+
+The runner joins the tailnet as `tag:ci` and runs `deploy.sh` on the commit `ci` checked, so a
+failed run's log reads like a local deploy. Server secrets never leave `/opt/kip/.env`.
+
+| Name | Kind | What |
+|---|---|---|
+| `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` | Actions secrets | Tailscale OAuth client `kip-ci-deploy`: scope `auth_keys`, tag `tag:ci` |
+| `DEPLOY_SSH_KEY` | Actions secret | Private half of the `kip-ci-deploy` key in `deploy`'s `~/.ssh/authorized_keys`, limited to `restrict,from="100.64.0.0/10"` (tailnet addresses only) |
+| `DEPLOY_HOST` | Actions variable | `deploy@<host tailnet IP>` |
+| `DEPLOY_KNOWN_HOSTS` | Actions variable | The host's ed25519 key, pinned. Check it against `ssh-keygen -F <host tailnet IP>` on a trusted machine |
+
+- **Rotate the deploy key.** Generate a new ed25519 key and add `restrict,from="100.64.0.0/10" <public key>`
+  to `deploy`'s `~/.ssh/authorized_keys`. Run `gh secret set DEPLOY_SSH_KEY < <private key>`, then
+  remove the old line.
+- **Rotate the OAuth client.** In Tailscale, create a new client under Settings, OAuth clients, with
+  `auth_keys` write and tag `tag:ci`. Set both `TS_OAUTH_*` secrets, then delete the old client.
+- **Reach.** The tailnet policy allows every device to reach every other, so a `tag:ci` runner
+  can reach more than this host. Narrowing it to `tag:ci` → the host on port 22 is a policy
+  change in the Tailscale admin console.
+
 ### Settings and secrets
 On the host, edit `/opt/kip/.env`. It lists every server variable, commented out. Then rerun
 `deploy.sh`, or apply it in place:
