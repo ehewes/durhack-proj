@@ -1,12 +1,14 @@
 import type { AttributionForNightOutput } from "@kip/shared/attribution";
 import type { NightTimeline } from "@kip/shared/night";
 import { useQuery } from "@tanstack/react-query";
+import { StyleSheet, View } from "react-native";
 import { useTRPC } from "@/lib/trpc";
-import { Button, Card, Screen, Text } from "@/lib/ui";
+import { Notice, Row, Screen, Section, StatusView, space } from "@/lib/ui";
 import { AttributionSummary, WakeMarkers } from "../../attribution";
 import { LabelChip } from "../../labels";
-import { NightTimelineChart } from "../components";
+import { NightEventRows, NightTimelineChart } from "../components";
 import { WatchNightCard } from "../components/WatchNightCard";
+import { durationText, NIGHT_COPY } from "../copy";
 import { fixtureAttribution, fixtureNight } from "../data/fixture";
 
 type State =
@@ -60,42 +62,66 @@ function useNight(): State {
 export function NightScreen() {
   const state = useNight();
   return (
-    <Screen>
-      <Text variant="title">Your night</Text>
-      {state.kind === "loading" && <Text variant="caption">Loading your night.</Text>}
+    <Screen underHeader>
+      {state.kind === "loading" && <StatusView kind="loading" message={NIGHT_COPY.loading} />}
       {state.kind === "error" && (
-        <Card>
-          <Text>We could not load your night.</Text>
-          <Button label="Try again" onPress={state.retry} />
-        </Card>
+        <Section>
+          <View style={styles.pad}>
+            <StatusView
+              kind="error"
+              message={NIGHT_COPY.error}
+              retryLabel={NIGHT_COPY.retry}
+              onRetry={state.retry}
+            />
+          </View>
+        </Section>
       )}
       {state.kind === "night" && (
         <>
-          <Text variant="caption">
-            {state.night.night}. Noise is in relative dB from the phone microphone, not calibrated.
-            {state.simulated ? " Simulated night." : ""}
-          </Text>
-          <Card>
-            <NightTimelineChart
+          {state.simulated && <Notice message={NIGHT_COPY.simulated} icon="flask" />}
+          <Section title={state.night.night}>
+            <Row
+              title={NIGHT_COPY.inBed}
+              leading="bed.double"
+              value={durationText(state.night.startedAt, state.night.endedAt)}
+            />
+            <Row
+              title={NIGHT_COPY.spikes}
+              leading="waveform"
+              value={String(state.night.events.length)}
+            />
+            <Row
+              title={NIGHT_COPY.wakeUps}
+              leading="alarm"
+              value={String(state.attribution?.night.wakeUps ?? state.night.wakeUps.length)}
+            />
+          </Section>
+          <Section title={NIGHT_COPY.timelineTitle} footer={NIGHT_COPY.noiseNote} inset>
+            <NightTimelineChart night={state.night} showWakeUps={false} showList={false} />
+          </Section>
+          {state.attribution && (
+            <Section title={NIGHT_COPY.wakeTitle} inset>
+              <AttributionSummary result={state.attribution} />
+              <WakeMarkers
+                startedAt={state.night.startedAt}
+                endedAt={state.night.endedAt}
+                result={state.attribution}
+                events={state.night.events}
+              />
+            </Section>
+          )}
+          <Section title={NIGHT_COPY.spikesTitle} inset>
+            <NightEventRows
               night={state.night}
               showWakeUps={false}
               renderEventChip={(event) => <LabelChip label={event.label} />}
             />
-            {state.attribution && (
-              <>
-                <AttributionSummary result={state.attribution} />
-                <WakeMarkers
-                  startedAt={state.night.startedAt}
-                  endedAt={state.night.endedAt}
-                  result={state.attribution}
-                  events={state.night.events}
-                />
-              </>
-            )}
-          </Card>
+          </Section>
         </>
       )}
       <WatchNightCard />
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({ pad: { paddingHorizontal: space.md } });

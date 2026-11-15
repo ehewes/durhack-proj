@@ -1,10 +1,11 @@
 import { EVIDENCE_NOTE, type ReportOutput, type VerifyOutput } from "@kip/shared/evidence";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { StyleSheet, View } from "react-native";
 import { useTRPC, useTRPCClient } from "@/lib/trpc";
-import { Button, Card, Screen, Text } from "@/lib/ui";
+import { Screen, Section, StatusView, space, Text } from "@/lib/ui";
 import { NightEvidenceCard } from "../components/NightEvidenceCard";
-import { EMPTY_BODY, EMPTY_TITLE, EVIDENCE_INTRO } from "../copy";
+import { EMPTY_BODY, EMPTY_TITLE, EVIDENCE_INTRO, LOAD_ERROR, LOADING, TRY_AGAIN } from "../copy";
 import { type EvidenceNight, sortNights } from "../model";
 
 type Busy = Record<string, "pending" | "failed" | undefined>;
@@ -57,22 +58,32 @@ export function EvidenceScreen() {
 
   const nights = sortNights((list.data ?? []) as EvidenceNight[]);
   return (
-    <Screen>
-      <Text variant="title">Evidence log</Text>
-      <Text>{EVIDENCE_INTRO}</Text>
-      <Text variant="caption">{EVIDENCE_NOTE}</Text>
-      {list.isPending && <Text variant="caption">Loading your nights.</Text>}
+    <Screen underHeader>
+      <View style={styles.intro}>
+        <Text variant="subheadline" tone="secondary">
+          {EVIDENCE_INTRO}
+        </Text>
+        <Text variant="footnote">{EVIDENCE_NOTE}</Text>
+      </View>
+      {list.isPending && <StatusView kind="loading" message={LOADING} />}
       {list.isError && (
-        <Card>
-          <Text>We could not load your nights.</Text>
-          <Button label="Try again" onPress={() => void list.refetch()} />
-        </Card>
+        <Section>
+          <View style={styles.pad}>
+            <StatusView
+              kind="error"
+              message={LOAD_ERROR}
+              retryLabel={TRY_AGAIN}
+              onRetry={() => void list.refetch()}
+            />
+          </View>
+        </Section>
       )}
       {list.isSuccess && nights.length === 0 && (
-        <Card>
-          <Text variant="body">{EMPTY_TITLE}</Text>
-          <Text variant="caption">{EMPTY_BODY}</Text>
-        </Card>
+        <Section>
+          <View style={styles.pad}>
+            <StatusView kind="empty" title={EMPTY_TITLE} message={EMPTY_BODY} />
+          </View>
+        </Section>
       )}
       {nights.map((night) => (
         <NightEvidenceCard
@@ -98,3 +109,8 @@ export function EvidenceScreen() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  intro: { gap: space.xs, paddingHorizontal: space.xs },
+  pad: { paddingHorizontal: space.md },
+});

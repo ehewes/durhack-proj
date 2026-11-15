@@ -1,6 +1,7 @@
 import type { TravellerProfile } from "@kip/shared/domain";
 import { useState } from "react";
-import { Button, Card, Text } from "@/lib/ui";
+import { StyleSheet, View } from "react-native";
+import { Button, Notice, Section, StatusView, space, Text } from "@/lib/ui";
 import { answer, type ConsentDraft, draftChoices, EMPTY_DRAFT, ONBOARDING_STEPS } from "../consent";
 import {
   BACK,
@@ -19,7 +20,6 @@ import {
 } from "../copy";
 import { useFinishOnboarding, useLastDeletion } from "../hooks/useAccount";
 import { ConsentQuestion } from "./ConsentQuestion";
-import { Heading } from "./Heading";
 import { ProfileQuestion } from "./ProfileQuestion";
 
 /**
@@ -45,42 +45,47 @@ export function Onboarding({ savedProfile }: { savedProfile: TravellerProfile | 
   return (
     <>
       {deleted && step === 0 ? (
-        <Card>
-          <Heading>{DELETED_TITLE}</Heading>
-          <Text>{deletionSummary(deleted)}</Text>
-        </Card>
+        <Notice message={`${DELETED_TITLE}. ${deletionSummary(deleted)}`} icon="checkmark.circle" />
       ) : null}
-      <Text variant="caption">{stepLine(step + 1, ONBOARDING_STEPS.length)}</Text>
-      {step === 0 ? (
-        <>
-          <Text variant="title">{ONBOARDING_TITLE}</Text>
-          <Text>{ONBOARDING_INTRO}</Text>
-        </>
-      ) : null}
+      <View style={styles.header}>
+        <Text variant="footnote" numeric>
+          {stepLine(step + 1, ONBOARDING_STEPS.length)}
+        </Text>
+        {step === 0 ? (
+          <>
+            <Text variant="largeTitle">{ONBOARDING_TITLE}</Text>
+            <Text variant="callout" tone="secondary">
+              {ONBOARDING_INTRO}
+            </Text>
+          </>
+        ) : null}
+      </View>
       {current === "profile" ? (
         <>
-          <Card>
-            <Heading>{PROFILE_TITLE}</Heading>
-            <Text>{PROFILE_QUESTION}</Text>
-            <Text variant="caption">{PROFILE_INTRO}</Text>
+          <Section title={PROFILE_TITLE} footer={PROFILE_INTRO}>
+            <View style={styles.pad}>
+              <Text variant="headline">{PROFILE_QUESTION}</Text>
+            </View>
             <ProfileQuestion value={profile} onChange={setPicked} disabled={busy} />
-          </Card>
-          {busy ? <Text variant="caption">{SAVING}</Text> : null}
-          {finish.isError ? <Text>{SAVE_ERROR}</Text> : null}
-          <Button
-            label={FINISH}
-            onPress={() => save(profile)}
-            disabled={busy || !choices || !profile}
-          />
-          {/* There is no way to clear a stored profile, so a stored one cannot be skipped. */}
-          {savedProfile === null ? (
+          </Section>
+          {busy ? <StatusView kind="loading" message={SAVING} /> : null}
+          {finish.isError ? <Text tone="danger">{SAVE_ERROR}</Text> : null}
+          <View style={styles.actions}>
             <Button
-              label={SKIP_PROFILE}
-              variant="secondary"
-              onPress={() => save(null)}
-              disabled={busy || !choices}
+              label={FINISH}
+              onPress={() => save(profile)}
+              disabled={busy || !choices || !profile}
             />
-          ) : null}
+            {/* There is no way to clear a stored profile, so a stored one cannot be skipped. */}
+            {savedProfile === null ? (
+              <Button
+                label={SKIP_PROFILE}
+                variant="secondary"
+                onPress={() => save(null)}
+                disabled={busy || !choices}
+              />
+            ) : null}
+          </View>
         </>
       ) : (
         <ConsentQuestion
@@ -94,13 +99,14 @@ export function Onboarding({ savedProfile }: { savedProfile: TravellerProfile | 
         />
       )}
       {step > 0 ? (
-        <Button
-          label={BACK}
-          variant="secondary"
-          onPress={() => setStep(step - 1)}
-          disabled={busy}
-        />
+        <Button label={BACK} variant="plain" onPress={() => setStep(step - 1)} disabled={busy} />
       ) : null}
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  header: { gap: space.sm, paddingHorizontal: space.xs },
+  pad: { padding: space.md },
+  actions: { gap: space.sm },
+});

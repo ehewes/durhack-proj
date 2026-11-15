@@ -1,7 +1,7 @@
 import type { SensorLevel } from "@kip/shared/city";
 import { Pressable, StyleSheet, View } from "react-native";
-import { radius, space, Text, useColors } from "@/lib/ui";
-import { ESTIMATE_LABEL, STATE_LABEL, STATE_NOTE } from "../copy";
+import { hairline, haptics, Icon, Section, space, Text, useColors } from "@/lib/ui";
+import { ESTIMATE_LABEL, LIST_TITLE, STATE_LABEL, STATE_NOTE } from "../copy";
 import { pctText, sensorColor, sensorDetails, sensorState } from "../sensors";
 
 type RowProps = {
@@ -18,15 +18,15 @@ function SensorRow({ sensor, selected, now, onPress }: RowProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected, expanded: selected }}
       accessibilityLabel={`${sensor.name}, ${pctText(sensor.pctHighlySleepDisturbed)}, ${STATE_LABEL[state]}`}
-      onPress={onPress}
-      style={[
+      onPress={() => {
+        haptics.selection();
+        onPress();
+      }}
+      style={({ pressed }) => [
         styles.row,
-        {
-          borderColor: selected ? colors.accent : colors.border,
-          backgroundColor: colors.surface,
-        },
+        (pressed || selected) && { backgroundColor: colors.fill },
       ]}
     >
       <View style={styles.head}>
@@ -37,18 +37,33 @@ function SensorRow({ sensor, selected, now, onPress }: RowProps) {
           ]}
         />
         <View style={styles.name}>
-          <Text>{sensor.name}</Text>
-          <Text variant="caption">{STATE_LABEL[state]}</Text>
+          <Text numberOfLines={1}>{sensor.name}</Text>
+          <Text variant="footnote">{STATE_LABEL[state]}</Text>
         </View>
-        <Text>{pctText(sensor.pctHighlySleepDisturbed)}</Text>
+        <Text variant="headline" numeric>
+          {pctText(sensor.pctHighlySleepDisturbed)}
+        </Text>
+        <Icon
+          name={selected ? "chevron.up" : "chevron.down"}
+          size={12}
+          tone="textTertiary"
+          weight="semibold"
+        />
       </View>
       {selected && (
-        <View style={styles.details}>
-          <Text variant="caption">{ESTIMATE_LABEL}</Text>
+        <View style={[styles.details, { borderTopColor: colors.separator }]}>
+          <Text variant="footnote">{ESTIMATE_LABEL}</Text>
           {sensorDetails(sensor).map((d) => (
-            <Text key={d.label} variant="caption">{`${d.label}: ${d.value}`}</Text>
+            <View key={d.label} style={styles.detail}>
+              <Text variant="subheadline" tone="secondary">
+                {d.label}
+              </Text>
+              <Text variant="subheadline" numeric style={styles.value}>
+                {d.value}
+              </Text>
+            </View>
           ))}
-          {note ? <Text variant="caption">{note}</Text> : null}
+          {note ? <Text variant="footnote">{note}</Text> : null}
         </View>
       )}
     </Pressable>
@@ -62,10 +77,10 @@ type ListProps = {
   onSelect: (id: string | null) => void;
 };
 
-/** Sensors as rows. The selected row expands to its details, the same sensor the map highlights. */
+/** Sensors as grouped rows. The selected row expands to its details, the sensor the map highlights. */
 export function SensorList({ sensors, selectedId, now, onSelect }: ListProps) {
   return (
-    <View style={styles.list}>
+    <Section title={LIST_TITLE}>
       {sensors.map((sensor) => (
         <SensorRow
           key={sensor.id}
@@ -75,15 +90,16 @@ export function SensorList({ sensors, selectedId, now, onSelect }: ListProps) {
           onPress={() => onSelect(sensor.id === selectedId ? null : sensor.id)}
         />
       ))}
-    </View>
+    </Section>
   );
 }
 
 const styles = StyleSheet.create({
-  list: { gap: space.sm },
-  row: { borderWidth: 1, borderRadius: radius.md, padding: space.sm, gap: space.sm },
-  head: { flexDirection: "row", alignItems: "center", gap: space.sm },
-  name: { flex: 1 },
-  swatch: { width: 14, height: 14, borderRadius: radius.sm, borderWidth: 1 },
-  details: { gap: space.xs },
+  row: { paddingHorizontal: space.md, paddingVertical: space.sm + 3, gap: space.sm },
+  head: { minHeight: 32, flexDirection: "row", alignItems: "center", gap: space.md - 4 },
+  name: { flex: 1, gap: 1 },
+  swatch: { width: 14, height: 14, borderRadius: 7, borderWidth: hairline },
+  details: { gap: space.xs, borderTopWidth: hairline, paddingTop: space.sm, marginLeft: 26 },
+  detail: { flexDirection: "row", justifyContent: "space-between", gap: space.md },
+  value: { flexShrink: 1, textAlign: "right" },
 });

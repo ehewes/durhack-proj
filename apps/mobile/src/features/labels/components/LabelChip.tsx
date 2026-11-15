@@ -1,6 +1,7 @@
 import type { NoiseLabel } from "@kip/shared/domain";
-import { Text as RNText, useColorScheme, View } from "react-native";
-import { radius, space, type, useColors } from "@/lib/ui";
+import type { SFSymbol } from "expo-symbols";
+import { StyleSheet, View } from "react-native";
+import { hairline, Icon, radius, space, Text, useColors } from "@/lib/ui";
 
 const NAMES: Record<NoiseLabel, string> = {
   construction: "Construction",
@@ -12,49 +13,57 @@ const NAMES: Record<NoiseLabel, string> = {
   handling: "Phone handling",
 };
 
-// Muted tints, one per label. `uncertain` has no fill and a dashed border so it never reads as a
-// confident label.
-const TINTS: Record<Exclude<NoiseLabel, "uncertain">, { light: string; dark: string }> = {
-  construction: { light: "#f1e4d3", dark: "#3a2f22" },
-  traffic: { light: "#e1e6ee", dark: "#262c36" },
-  siren: { light: "#f1dcdc", dark: "#3a2626" },
-  snoring: { light: "#e0ebe3", dark: "#233028" },
-  other: { light: "#e8e8e4", dark: "#2a2a28" },
-  handling: { light: "#ebe3ee", dark: "#2e2832" },
+// One symbol per label, so the label reads without relying on colour.
+const ICONS: Record<NoiseLabel, SFSymbol> = {
+  construction: "hammer",
+  traffic: "car",
+  siren: "light.beacon.max",
+  snoring: "zzz",
+  other: "waveform",
+  uncertain: "questionmark",
+  handling: "iphone",
 };
 
-/** The label a noise event got; `null` while the clip is still being labelled. */
+/**
+ * The label a noise event got; `null` while the clip is still being labelled. Confident labels sit
+ * on a neutral fill; `uncertain` and labelling have no fill and a dashed border.
+ */
 export function LabelChip({ label }: { label: NoiseLabel | null }) {
   const colors = useColors();
-  const scheme = useColorScheme() === "dark" ? "dark" : "light";
   const text = label === null ? "Labelling" : NAMES[label];
-  const fill = label === null || label === "uncertain" ? null : TINTS[label][scheme];
+  const tentative = label === null || label === "uncertain";
   return (
     <View
       accessible
       accessibilityLabel={`Noise label: ${text}`}
-      style={{
-        alignSelf: "flex-start",
-        paddingHorizontal: space.sm,
-        paddingVertical: space.xs,
-        borderRadius: radius.sm,
-        borderWidth: 1,
-        borderStyle: fill ? "solid" : "dashed",
-        borderColor: colors.border,
-        backgroundColor: fill ?? "transparent",
-      }}
+      style={[
+        styles.chip,
+        tentative
+          ? { borderStyle: "dashed", borderColor: colors.border, borderWidth: 1 }
+          : { backgroundColor: colors.fill, borderColor: colors.border, borderWidth: hairline },
+      ]}
     >
-      <RNText
-        style={[
-          type.caption,
-          {
-            color: fill ? colors.text : colors.textSecondary,
-            fontStyle: fill ? "normal" : "italic",
-          },
-        ]}
+      <Icon name={label === null ? "ellipsis" : ICONS[label]} size={12} tone="textSecondary" />
+      <Text
+        variant="footnote"
+        tone={tentative ? "secondary" : "primary"}
+        style={tentative && styles.tentative}
       >
         {text}
-      </RNText>
+      </Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  chip: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.xs,
+    paddingHorizontal: space.sm,
+    paddingVertical: 3,
+    borderRadius: radius.sm,
+  },
+  tentative: { fontStyle: "italic" },
+});

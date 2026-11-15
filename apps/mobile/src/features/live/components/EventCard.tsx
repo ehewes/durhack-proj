@@ -1,6 +1,6 @@
 import type { LiveEvent } from "@kip/shared/live";
 import { Text as RNText } from "react-native";
-import { Card, Text, useColors } from "@/lib/ui";
+import { Section, Text, useColors } from "@/lib/ui";
 import {
   baselineLine,
   hoursLine,
@@ -9,21 +9,22 @@ import {
   spikeTimeLine,
   WAITING_EVENT,
 } from "../copy";
-import { room } from "./room";
+import { useRoom } from "./room";
 
 /** Label and the construction-hours check for the latest spike. */
 export function EventCard({ event }: { event: LiveEvent | null }) {
   const colors = useColors();
+  const room = useRoom();
   if (!event) {
     return (
-      <Card>
-        <Text>{WAITING_EVENT}</Text>
-      </Card>
+      <Section inset>
+        <Text tone="secondary">{WAITING_EVENT}</Text>
+      </Section>
     );
   }
   const hours = hoursLine(event);
   return (
-    <Card>
+    <Section inset>
       <RNText style={[room.event, { color: colors.text }]}>{labelTitle(event.label)}</RNText>
       {hours ? <RNText style={[room.hours, { color: colors.text }]}>{hours}</RNText> : null}
       <RNText style={[room.detail, { color: colors.textSecondary }]}>
@@ -35,6 +36,6 @@ export function EventCard({ event }: { event: LiveEvent | null }) {
       <RNText style={[room.detail, { color: colors.textSecondary }]}>
         {baselineLine(event.spike.baselineDb)}
       </RNText>
-    </Card>
+    </Section>
   );
 }

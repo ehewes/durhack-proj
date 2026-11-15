@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Text as RNText } from "react-native";
-import { Button, Card, Text, useColors } from "@/lib/ui";
+import { Button, Section, Text } from "@/lib/ui";
 import {
   BRIEFING_TITLE,
   BRIEFING_UNAVAILABLE,
@@ -10,11 +9,9 @@ import {
   PLAY_BRIEFING_AGAIN,
 } from "../copy";
 import { briefingPlaybackSupported, playBriefing, stopBriefing } from "../playback";
-import { room } from "./room";
 
 /** Plays `briefingAudioUrl` from the live event. On iOS, points at the web dashboard. */
 export function BriefingPlayer({ url }: { url: string | null }) {
-  const colors = useColors();
   const [playing, setPlaying] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -63,12 +60,10 @@ export function BriefingPlayer({ url }: { url: string | null }) {
   };
 
   return (
-    <Card>
-      <RNText style={[room.detail, { color: colors.text, fontWeight: "600" }]}>
-        {BRIEFING_TITLE}
-      </RNText>
+    <Section inset>
+      <Text variant="headline">{BRIEFING_TITLE}</Text>
       <Button label={playing ? PLAY_BRIEFING_AGAIN : PLAY_BRIEFING} onPress={replay} />
       {failed ? <Text>{BRIEFING_UNAVAILABLE}</Text> : null}
-    </Card>
+    </Section>
   );
 }

@@ -7,6 +7,7 @@ export const DATES_TITLE = "Stay dates";
 export const LIST_TITLE = "Ranked hotels";
 export const LOADING = "Ranking hotels.";
 export const EMPTY = "No hotels to rank for these dates.";
+export const EMPTY_ACTION = "Reset the dates";
 export const NO_SELECTION = "Select a hotel in the list or on the map to see its breakdown.";
 /** Every score is an estimate of the surroundings, never of a room. */
 export const ESTIMATE_LABEL = `Estimate: an ${SAY_INDICATIVE_ESTIMATE} of the area around the hotel, not of a room.`;

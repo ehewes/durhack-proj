@@ -1,17 +1,11 @@
 import type { ReactNode } from "react";
-import { Text as RNText, StyleSheet } from "react-native";
-import { type, useColors } from "@/lib/ui";
+import { Text } from "@/lib/ui";
 
-/** A section or card heading: the body size from the shared type scale, in semibold. */
+/** A section or card heading: the iOS headline style. */
 export function Heading({ children }: { children: ReactNode }) {
-  const colors = useColors();
   return (
-    <RNText accessibilityRole="header" style={[type.body, styles.heading, { color: colors.text }]}>
+    <Text variant="headline" accessibilityRole="header">
       {children}
-    </RNText>
+    </Text>
   );
 }
-
-const styles = StyleSheet.create({
-  heading: { fontWeight: "600" },
-});

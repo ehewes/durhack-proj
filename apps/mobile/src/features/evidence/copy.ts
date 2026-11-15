@@ -13,3 +13,10 @@ export const NOT_ANCHORED_BODY = "Anchor this night first, then check it.";
 
 export const EMPTY_TITLE = "No nights logged yet";
 export const EMPTY_BODY = "Record a night and it will appear here, ready to anchor.";
+
+export const LOADING = "Loading your nights.";
+export const LOAD_ERROR = "Kip could not load your nights.";
+export const TRY_AGAIN = "Try again";
+export const ANCHOR_ERROR = "Kip could not anchor this night. Try again.";
+export const VERIFY_ERROR = "Kip could not check this night. Try again.";
+export const REPORT_ERROR = "Kip could not prepare the report. Try again.";
