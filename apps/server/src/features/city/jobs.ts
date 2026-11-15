@@ -18,8 +18,21 @@ import {
 } from "./repo";
 import { refreshSensorLnight } from "./service";
 
-/** Circle around Grey's Monument. The bounding box is only the API query. */
+/** Air quality circle around Grey's Monument. The bounding box is only the API query. */
 export const CITY_RADIUS_KM = 3;
+
+/**
+ * Night noise reaches further out. The Observatory's only Sound sensor near the centre,
+ * PER_AIRMON_MESH1822245, sits 4.25 km away, so noise uses a 5 km circle.
+ */
+export const NOISE_RADIUS_KM = 5;
+
+/** One square for the query covers both circles; each reading is then trimmed to its own. */
+export const QUERY_RADIUS_KM = Math.max(CITY_RADIUS_KM, NOISE_RADIUS_KM);
+
+export function radiusKm(metric: SensorMetric): number {
+  return metric === "noise_db" ? NOISE_RADIUS_KM : CITY_RADIUS_KM;
+}
 
 /**
  * The Sound series lagged the API clock by about an hour on 2026-11-14.
@@ -47,7 +60,7 @@ export type ObservatoryPull = {
 };
 
 /**
- * Keeps one sample as a reading and its sensor, with the live pull's rules: inside the city
+ * Keeps one sample as a reading and its sensor, with the live pull's rules: inside its metric's
  * circle, not flagged, finite. Shared with the backfill so both store the same sensors.
  */
 export function remember(
@@ -56,12 +69,10 @@ export function remember(
   readings: Map<string, SensorReadingInsert>,
   sensors: Map<string, SensorUpsert>,
 ): void {
-  // The API square has corners outside the circle. The only live Sound sensor
-  // on 2026-11-14 (PER_AIRMON_MESH1822245) sits 4.25 km out, so a poll can
-  // store no noise_db rows.
-  if (distanceKm(NEWCASTLE_CITY_CENTRE, sample.sensor) > CITY_RADIUS_KM) return;
   const metric = METRIC_BY_VARIABLE[sample.reading.variable];
   if (!metric || sample.reading.flagged || !Number.isFinite(sample.reading.value)) return;
+  // The API square has corners outside each circle, and noise has the wider one.
+  if (distanceKm(NEWCASTLE_CITY_CENTRE, sample.sensor) > radiusKm(metric)) return;
   const sensorId = sample.sensor.id;
   if (!sensorId) return;
 
@@ -103,7 +114,7 @@ export async function pullObservatoryReadings(deps: {
   const now = deps.now ?? new Date();
   const samples = await deps.client.latestReadings({
     variables: LIVE_VARIABLES,
-    bbox: bboxAround(NEWCASTLE_CITY_CENTRE, CITY_RADIUS_KM),
+    bbox: bboxAround(NEWCASTLE_CITY_CENTRE, QUERY_RADIUS_KM),
     lookbackHours: LOOKBACK_HOURS,
   });
 

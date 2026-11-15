@@ -8,7 +8,7 @@ import {
   NEWCASTLE_CITY_CENTRE,
   type ObservatoryClient,
 } from "../../integrations/observatory";
-import { CITY_RADIUS_KM, LIVE_VARIABLES, METRIC_BY_VARIABLE, remember } from "./jobs";
+import { LIVE_VARIABLES, METRIC_BY_VARIABLE, radiusKm, remember } from "./jobs";
 import {
   type CityRepo,
   SENSOR_METRICS,
@@ -89,7 +89,8 @@ export function backfillDays(now: Date, nights = BACKFILL_NIGHTS): string[] {
  * Loads Observatory history for Sound, NO2 and PM2.5 through the v2 API, one London day of one
  * series at a time, with the live pull's filters. Readings land on their primary key, so a
  * repeat stores nothing twice. Each finished past day is marked, so a rerun after a stop picks
- * up where it left off. Today is fetched up to now and never marked.
+ * up where it left off. Today is fetched up to now and never marked. After a filter changes,
+ * refill one series with `--metric=noise_db --force`.
  */
 export async function backfillCity(deps: {
   client: Pick<ObservatoryClient, "history">;
@@ -99,6 +100,8 @@ export async function backfillCity(deps: {
   nights?: number;
   /** Ignore the markers and fetch every chunk again. */
   force?: boolean;
+  /** Only these series, for example noise after its circle changed. Default: all three. */
+  metrics?: readonly SensorMetric[];
   batchSize?: number;
   log?: (line: string) => void;
 }): Promise<BackfillSummary> {
@@ -107,7 +110,6 @@ export async function backfillCity(deps: {
   const log = deps.log ?? (() => {});
   const days = backfillDays(now, deps.nights ?? BACKFILL_NIGHTS);
   const done = deps.force ? new Set<string>() : await deps.store.doneChunks();
-  const bbox = bboxAround(NEWCASTLE_CITY_CENTRE, CITY_RADIUS_KM);
   const seen = new Set<string>();
   const summary: BackfillSummary = { days, fetched: 0, skipped: 0, stored: 0, sensors: 0 };
 
@@ -120,12 +122,13 @@ export async function backfillCity(deps: {
 
     for (const variable of LIVE_VARIABLES) {
       const metric = METRIC_BY_VARIABLE[variable];
-      if (!metric) continue;
+      if (!metric || (deps.metrics && !deps.metrics.includes(metric))) continue;
       if (complete && done.has(chunkKey(day, metric))) {
         summary.skipped += 1;
         continue;
       }
 
+      const bbox = bboxAround(NEWCASTLE_CITY_CENTRE, radiusKm(metric));
       const history = await deps.client.history({ start, end, variables: [variable], bbox });
       const located = new Map(history.sensors.map((sensor) => [sensor.name, sensor]));
       const readings = new Map<string, SensorReadingInsert>();
@@ -241,6 +244,16 @@ function flagValue(name: string): string | undefined {
   return arg?.slice(name.length + 3);
 }
 
+/** `--metric=noise_db` or a comma list. Unknown names stop the run before any request. */
+export function parseMetrics(value: string | undefined): SensorMetric[] | undefined {
+  if (!value) return undefined;
+  const metrics = value.split(",").map((m) => m.trim());
+  const unknown = metrics.filter((m) => !(SENSOR_METRICS as readonly string[]).includes(m));
+  if (unknown.length > 0)
+    throw new Error(`unknown metric ${unknown.join(", ")}: use ${SENSOR_METRICS.join(", ")}`);
+  return metrics as SensorMetric[];
+}
+
 if (import.meta.main) {
   const { requireEnv } = await import("../../env");
   // Missing keys fail here at once, not after the connection retries.
@@ -265,6 +278,7 @@ if (import.meta.main) {
       now,
       nights,
       force: process.argv.includes("--force"),
+      metrics: parseMetrics(flagValue("metric")),
       log: (line) => console.log(line),
     });
     const since = londonDayStart(summary.days[0] ?? LONDON_DATE.format(now));
