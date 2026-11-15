@@ -8,6 +8,7 @@ import {
 } from "@kip/shared/labels";
 import type { EventLabelPatch, NightEvent } from "@kip/shared/night";
 import { NightNotFoundError, type NightRecord } from "../night";
+import { type ScribeTag, scribeLabel } from "./scribe";
 
 export type ClipFailure = "type" | "size" | "format" | "event" | "classifier";
 
@@ -30,6 +31,8 @@ export type LabelsDeps = {
     patches: readonly EventLabelPatch[],
   ): Promise<NightRecord>;
   classifyClip(bytes: Uint8Array, mime: string): Promise<{ label: NoiseLabel }>;
+  /** ElevenLabs Scribe audio-event tags: the second classifier. */
+  tagAudio(bytes: Uint8Array): Promise<readonly ScribeTag[]>;
 };
 
 export type LabelClipInput = {
@@ -87,14 +90,21 @@ export function createLabelsService(deps: LabelsDeps) {
       const event = nearestEvent(record.events, input.t);
       if (!event) throw new LabelsClipError("event", "No spike at that time");
 
+      // Both run at once. Scribe is a second opinion: if it fails, Gemini's label stands alone.
+      const scribeVote = deps
+        .tagAudio(input.bytes)
+        .then((tags) => scribeLabel(tags))
+        .catch(() => null);
       let label: NoiseLabel;
       try {
         label = (await deps.classifyClip(input.bytes, mime)).label;
       } catch {
         throw new LabelsClipError("classifier", "The clip could not be labelled");
       }
+      const scribe = await scribeVote;
+      // Both labels are kept on the event; the stored label is `uncertain` when they differ.
       const updated = await deps.addEventLabels(input.userId, input.nightId, [
-        { id: event.id, gemini: label },
+        scribe ? { id: event.id, gemini: label, scribe } : { id: event.id, gemini: label },
       ]);
       const stored = updated.events.find((e) => e.id === event.id);
       return { eventId: event.id, label: stored?.label ?? label };

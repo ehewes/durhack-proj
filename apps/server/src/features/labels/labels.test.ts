@@ -7,6 +7,7 @@ import { createCallerFactory, router } from "../../trpc/init";
 import { NightNotFoundError, type NightRecord } from "../night";
 import { createLabelsHttp } from "./http";
 import { createLabelsRouter } from "./router";
+import { labelForTag, scribeLabel } from "./scribe";
 import { createLabelsService, type LabelsDeps } from "./service";
 
 const USER = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -41,7 +42,10 @@ function wav(length = 640): Uint8Array {
   return bytes;
 }
 
-function setup(classify: LabelsDeps["classifyClip"] = async () => ({ label: "construction" })) {
+function setup(
+  classify: LabelsDeps["classifyClip"] = async () => ({ label: "construction" }),
+  tag: LabelsDeps["tagAudio"] = async () => [],
+) {
   let night = record();
   const patches: EventLabelPatch[][] = [];
   const classifyClip = mock(classify);
@@ -61,6 +65,7 @@ function setup(classify: LabelsDeps["classifyClip"] = async () => ({ label: "con
       return night;
     },
     classifyClip,
+    tagAudio: mock(tag),
   };
   return { service: createLabelsService(deps), patches, classifyClip };
 }
@@ -164,6 +169,57 @@ describe("POST /upload/clip", () => {
     const { service } = setup(async () => ({ label: "handling" }));
     const res = await upload(app(service), {});
     expect(await res.json()).toEqual({ eventId: "clip-1", label: "handling" });
+  });
+});
+
+describe("Scribe second label", () => {
+  const tags = (...text: string[]) => text.map((t) => ({ text: t }));
+
+  test("agreement keeps both labels and the shared label", async () => {
+    const { service, patches } = setup(
+      async () => ({ label: "construction" }),
+      async () => tags("(drilling)"),
+    );
+    const res = await upload(app(service), {});
+    expect(await res.json()).toEqual({ eventId: "clip-1", label: "construction" });
+    expect(patches[0]).toEqual([{ id: "clip-1", gemini: "construction", scribe: "construction" }]);
+  });
+
+  test("disagreement stores uncertain and keeps both labels", async () => {
+    const { service } = setup(
+      async () => ({ label: "construction" }),
+      async () => tags("(snoring)"),
+    );
+    const res = await upload(app(service), {});
+    expect(await res.json()).toEqual({ eventId: "clip-1", label: "uncertain" });
+    const night = await service.forNight(USER, NIGHT);
+    expect(night.events[0]?.label).toBe("uncertain");
+  });
+
+  test("a failing Scribe leaves Gemini's label alone", async () => {
+    const { service, patches } = setup(undefined, async () => {
+      throw new Error("scribe down");
+    });
+    const res = await upload(app(service), {});
+    expect(await res.json()).toEqual({ eventId: "clip-1", label: "construction" });
+    expect(patches[0]).toEqual([{ id: "clip-1", gemini: "construction" }]);
+  });
+
+  test("tags Kip cannot name do not vote", async () => {
+    const { service, patches } = setup(undefined, async () => tags("(laughter)", "(music)"));
+    await upload(app(service), {});
+    expect(patches[0]).toEqual([{ id: "clip-1", gemini: "construction" }]);
+  });
+
+  test("maps tags to the label set", () => {
+    expect(labelForTag("(Jackhammer)")).toBe("construction");
+    expect(labelForTag("(car horn)")).toBe("traffic");
+    expect(labelForTag("(siren)")).toBe("siren");
+    expect(labelForTag("(snores)")).toBe("snoring");
+    expect(labelForTag("(rustling)")).toBe("handling");
+    expect(labelForTag("(laughter)")).toBeNull();
+    expect(scribeLabel(tags("(car)", "(drilling)", "(drilling)"))).toBe("construction");
+    expect(scribeLabel([])).toBeNull();
   });
 });
 
