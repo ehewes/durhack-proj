@@ -8,6 +8,7 @@ import {
   type LiveEvent,
   type LivePushInput,
   type LiveSample,
+  type LiveSpike,
   type LiveStreamItem,
   liveEvent,
   livePushInput,
@@ -35,6 +36,8 @@ type Session = {
   samples: LiveSample[];
   items: LiveStreamItem[];
   emitted: Set<number>;
+  /** Confirmed spikes by peak time, so a clip that arrives later can find its spike. */
+  spikes: Map<number, LiveSpike>;
   subscribers: Set<Subscriber>;
 };
 
@@ -42,6 +45,7 @@ const session: Session = {
   samples: [],
   items: [],
   emitted: new Set(),
+  spikes: new Map(),
   subscribers: new Set(),
 };
 
@@ -53,6 +57,7 @@ export function resetLiveSession(): void {
   session.samples.length = 0;
   session.items.length = 0;
   session.emitted.clear();
+  session.spikes.clear();
   session.subscribers.clear();
 }
 
@@ -75,12 +80,14 @@ export function pushLiveSamples(input: LivePushInput): LivePushResult {
   for (const spike of closedSpikes(session.samples)) {
     if (session.emitted.has(spike.t)) continue;
     session.emitted.add(spike.t);
+    const confirmed: LiveSpike = {
+      t: spike.t,
+      peakDb: spike.peakDb,
+      baselineDb: baselineDb(session.samples, spike.t),
+    };
+    session.spikes.set(spike.t, confirmed);
     const event = liveEvent.parse({
-      spike: {
-        t: spike.t,
-        peakDb: spike.peakDb,
-        baselineDb: baselineDb(session.samples, spike.t),
-      },
+      spike: confirmed,
       label: "uncertain",
       outsideRecommendedHours: isOutsideRecommendedHours(new Date(spike.t * 1000)),
       briefingAudioUrl: null,
@@ -91,6 +98,24 @@ export function pushLiveSamples(input: LivePushInput): LivePushResult {
 
   trim();
   return { samples: batch.samples.length, events };
+}
+
+/** The confirmed spike whose peak is nearest `t`, within `withinSeconds`; null if none. */
+export function spikeNear(t: number, withinSeconds: number): LiveSpike | null {
+  let best: LiveSpike | null = null;
+  for (const spike of session.spikes.values()) {
+    const gap = Math.abs(spike.t - t);
+    if (gap > withinSeconds) continue;
+    if (!best || gap < Math.abs(best.t - t)) best = spike;
+  }
+  return best;
+}
+
+/** Send one finished event to every viewer. It replaces the earlier event for the same spike. */
+export function publishLiveEvent(input: LiveEvent): LiveEvent {
+  const event = liveEvent.parse(input);
+  publish(liveStreamItem.parse({ type: "event", event }));
+  return event;
 }
 
 /** Replay the retained window, then each later push, until `signal` aborts. */
@@ -143,10 +168,14 @@ function trim(): void {
   const oldest = session.samples[0]?.t;
   if (oldest === undefined) {
     session.emitted.clear();
+    session.spikes.clear();
     return;
   }
   for (const t of session.emitted) {
     if (t < oldest) session.emitted.delete(t);
+  }
+  for (const t of session.spikes.keys()) {
+    if (t < oldest) session.spikes.delete(t);
   }
 }
 
