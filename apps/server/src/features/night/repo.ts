@@ -230,6 +230,57 @@ async function deleteUser(userId: string): Promise<NightDeleteCounts> {
   };
 }
 
+/** Where a night was recorded, for the coverage map. Never leaves the server as is. */
+export type NightLocation = { userId: string; lat: number; lon: number; simulated: boolean };
+
+type NightLocationRow = {
+  userId: string;
+  location: { lat: number; lon: number } | null;
+  simulated?: boolean;
+};
+
+/** The part of the `nights` collection the coverage read uses, so tests can check its filter. */
+export type NightLocationSource = {
+  find(
+    filter: Record<string, unknown>,
+    options: { projection: Record<string, 1> },
+  ): { toArray(): Promise<NightLocationRow[]> };
+};
+
+const liveNightLocations: NightLocationSource = {
+  find: (filter, options) => nights().find(filter, options),
+};
+
+/**
+ * Locations of nights from `since` (a London night date) on, real and simulated. Only nights
+ * stored with location consent have one; the consent check here is a second guard.
+ */
+export function readNightLocations(
+  since: string,
+  source: NightLocationSource = liveNightLocations,
+): Promise<NightLocation[]> {
+  return guard("read", async () => {
+    const rows = await source
+      .find(
+        { night: { $gte: since }, location: { $ne: null }, "consent.location": true },
+        { projection: { userId: 1, location: 1, simulated: 1 } },
+      )
+      .toArray();
+    return rows.flatMap((row): NightLocation[] =>
+      row.location
+        ? [
+            {
+              userId: row.userId,
+              lat: row.location.lat,
+              lon: row.location.lon,
+              simulated: row.simulated === true,
+            },
+          ]
+        : [],
+    );
+  });
+}
+
 /** Tiger + Mongo. Connecting waits until the first call, so imports stay side-effect free. */
 export function createNightRepo(): NightRepo {
   return {
