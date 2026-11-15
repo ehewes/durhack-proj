@@ -1,3 +1,5 @@
+import type { AttributionForNightOutput } from "@kip/shared/attribution";
+import { toAttributionView } from "@kip/shared/attribution";
 import type { NightTimeline } from "@kip/shared/night";
 
 // Offline fallback for `night.get`: a simulated night, never real data.
@@ -54,4 +56,15 @@ export const fixtureNight: NightTimeline = {
   ],
   attribution: null,
   evidence: { hash: null, memoSignature: null },
+};
+
+// Stand-in for `attribution.forNight` while the API is a stub. Simulated, like the night above.
+const fixtureCounts = [{ wakeUps: 3, followedSpike: 2 }];
+export const fixtureAttribution: AttributionForNightOutput = {
+  nightId: fixtureNight.nightId,
+  wakeUps: fixtureNight.wakeUps,
+  followedSpike: 2,
+  randomWindowRate: 0.011,
+  night: toAttributionView(fixtureCounts),
+  pooled: toAttributionView(fixtureCounts),
 };
