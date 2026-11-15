@@ -1,7 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import type { CityCoverage } from "@kip/shared/city";
 import { bannedWording } from "@kip/shared/domain";
-import { COVERAGE_TITLE, coverageHeat, coverageNotes, SENSOR_DOTS } from "./coverage";
+import {
+  COVERAGE_TITLE,
+  coverageHeat,
+  coverageNotes,
+  hasSimulated,
+  SENSOR_DOTS,
+  SIMULATED_SWITCH,
+} from "./coverage";
 
 const coverage = (cells: CityCoverage["cells"]): CityCoverage => ({
   cellMeters: 500,
@@ -22,6 +29,39 @@ describe("node-network heat", () => {
       { position: [-1.62, 54.98], weight: 0.55 },
     ]);
     expect(coverageHeat([])).toEqual([]);
+  });
+
+  test("with simulated people switched off, only real cells are drawn", () => {
+    const cells = [
+      { lat: 54.97, lon: -1.61, people: 3, simulatedPeople: 2 },
+      { lat: 54.98, lon: -1.62, people: 0, simulatedPeople: 4 },
+    ];
+    expect(coverageHeat(cells, false)).toEqual([{ position: [-1.61, 54.97], weight: 1 }]);
+    expect(coverageHeat(cells, true)).toHaveLength(2);
+    expect(
+      coverageHeat([{ lat: 54.98, lon: -1.62, people: 0, simulatedPeople: 4 }], false),
+    ).toEqual([]);
+  });
+
+  test("the switch shows only with simulated people, and says when they are hidden", () => {
+    const onlySimulated = coverage([{ lat: 54.97, lon: -1.61, people: 0, simulatedPeople: 2 }]);
+    expect(hasSimulated(onlySimulated)).toBe(true);
+    expect(
+      hasSimulated(coverage([{ lat: 54.97, lon: -1.61, people: 3, simulatedPeople: 0 }])),
+    ).toBe(false);
+    const hidden = coverageNotes(onlySimulated, false);
+    expect(hidden.some((note) => note.includes("no area has 3 or more real users"))).toBe(true);
+    expect(hidden.some((note) => note.includes("not real users"))).toBe(false);
+    const mixed = coverage([{ lat: 54.97, lon: -1.61, people: 3, simulatedPeople: 1 }]);
+    expect(coverageNotes(mixed, false).at(-1)).toBe(
+      "Simulated people are hidden: real users only.",
+    );
+    for (const line of [SIMULATED_SWITCH, ...hidden]) {
+      expect(bannedWording(line, "cohort")).toEqual([]);
+    }
+    for (const line of [SIMULATED_SWITCH, hidden.at(-1) ?? ""]) {
+      expect(line.toLowerCase().includes("simulated")).toBe(true);
+    }
   });
 
   test("labels simulated people only when they are on the map, within the wording rules", () => {
