@@ -4,58 +4,60 @@
 
 **Noise, sleep and stress, mapped street by street.**
 
-Cities measure noise. People live with it: drilling at 6am, a siren at 2am, a hotel room above a
-bar. Nobody connects the two. Kip does, and every person who uses it makes the map better.
+Cities measure noise. People live with it: roadworks outside the office, a bar under the bedroom
+window, a siren at 2am. Nobody connects the noise to how people sleep and how stressed they feel.
+Kip does, and every person who uses it makes the map better.
 
 [Live demo](https://kip.edenmatrix.xyz) · [Devpost write-up](docs/demo/devpost.md) · Built in 24
 hours at DurHack 2026 by Ellis and Nick
 
 ## Mission
-Night noise is one of Europe's largest environmental health costs. The WHO estimates that western
-Europe loses at least a million healthy years of life to traffic noise every year, and disturbed
-sleep is the largest share (*Burden of disease from environmental noise*, 2011). Our goal is fewer
-sleepless nights and less night-time stress in cities.
+Noise is one of Europe's largest environmental health costs, and it doesn't stop at bedtime. The
+WHO estimates that western Europe loses at least a million healthy years of life to traffic noise
+every year, through disturbed sleep, annoyance, heart disease and children's learning (*Burden of
+disease from environmental noise*, 2011). Our goal is less stress and better sleep for people in
+cities, day and night.
 
-That starts with measuring noise where people actually sleep. City sensors are few, and they sit
-at the kerb. Kip turns every phone that opts in into another sensor and links what it hears to
-sleep and heart rate. The more people use Kip, the denser the network, and the clearer it becomes
-which streets keep a city awake.
+That starts with measuring noise where people actually are. City sensors are few, and they sit at
+the kerb. Kip turns every phone that opts in into another sensor, at home, at work and on the
+street, and links what it hears to sleep and heart rate. The more people use Kip, the denser the
+network, and the clearer it becomes where noise is linked to poor sleep and stress.
 
 ## Every user is a sensor
 ```mermaid
 flowchart LR
-  obs["Urban Observatory<br/>street sensors"] --> kip
+  obs["Urban Observatory<br/>street sensors, around the clock"] --> kip
   phones["Phones running Kip<br/>rustle removed by our model"] --> kip
   kip["Kip links noise to<br/>sleep and heart rate"] --> map["Area map<br/>sleep now, stress next"]
-  kip --> night["Your night<br/>which wake-ups followed which noise"]
+  kip --> you["You<br/>which noise came before<br/>a wake-up or a heart-rate jump"]
   kip --> stays["Quiet Stay Score<br/>for every hotel"]
   map --> users["More people use Kip"]
-  night --> users
+  you --> users
   stays --> users
   users --> phones
 ```
 
 ## What it does
 - **Area map.** Urban Observatory noise sensors across Newcastle, each shaded by an indicative
-  estimate of residents highly sleep disturbed: 30 nights of night-time noise (Lnight) through
-  the WHO road-traffic curve, with roadworks permits on top.
-- **Your night.** Apple Watch sleep stages and heart rate beside bedroom noise in relative dB.
-  Gemini labels each spike (construction, traffic, siren, snoring) and ElevenLabs Scribe gives a
-  second opinion. Where they disagree, Kip says "uncertain", so your own snoring isn't blamed on
-  the building site. Kip shows which wake-ups followed a spike, compared with random moments from
-  the same night, and flags works outside the council's recommended hours.
-- **Briefing and evidence.** A spoken morning summary, a drafted out-of-hours report for the
-  council, and the night's log hash anchored on Solana (devnet for the demo), which proves when
-  the log existed.
-- **Quiet Stays.** Every hotel in Newcastle scored on night noise nearby, roadworks on your dates,
-  night air quality and nights slept nearby by Kip users, then re-ranked for a light sleeper, a
+  estimate of nearby residents highly sleep disturbed (30 nights of night-time noise through the
+  WHO road-traffic curve), with roadworks permits on top.
+- **Noise, labelled.** Gemini labels each noise spike (construction, traffic, siren, snoring) and
+  ElevenLabs Scribe gives a second opinion. Where they disagree, Kip says "uncertain", so your own
+  snoring isn't blamed on the building site. Live, Kip labels a spike within seconds and checks it
+  against the council's recommended hours for noisy work.
+- **Your sleep.** Apple Watch sleep stages and heart rate beside bedroom noise in relative dB. Kip
+  shows which wake-ups followed a noise spike, compared with random moments from the same night.
+- **Briefing and evidence.** A spoken summary, a drafted report for the council, and the log's
+  hash anchored on Solana (devnet for the demo), which proves when the log existed.
+- **Quiet Stays.** Every hotel in Newcastle scored on the noise around it, roadworks on your
+  dates, air quality and nights slept nearby by Kip users, then re-ranked for a light sleeper, a
   night out, best value or business, in one MongoDB geo pipeline.
 
 Kip says "linked to", never "caused by", and every estimate is labelled indicative. Simulated
 data, such as the other users on the map, is labelled simulated wherever it appears.
 
 ## Our model: a phone that doesn't hear itself
-A phone on a nightstand, in a pocket or under a pillow mostly hears itself: sleeves, bedsheets,
+A phone in a pocket, on a desk or under a pillow mostly hears itself: sleeves, bags, bedsheets,
 being picked up. Left in, that rustle becomes false spikes and false links to wake-ups, and a
 phone is useless as a sensor. So we trained our own model to remove it.
 
@@ -65,20 +67,20 @@ phone is useless as a sensor. So we trained our own model to remove it.
 |---|---|---|
 | SI-SDR improvement | **+11.9 dB** | -3.9 dB, worse than doing nothing |
 
-It removes 17.9 dB where there is handling noise and 0.15 dB everywhere else, so the room
-underneath stays. On a real recording of a phone set down five times, it caught all five drops
-(precision 0.96, recall 1.0). It is a 0.42M-parameter PyTorch mask model, trained in 14 minutes
-on a Lium RTX 3090 for $0.16 and exported to ONNX. Details: [ml/README.md](ml/README.md).
+It removes 17.9 dB where there is handling noise and 0.15 dB everywhere else, so the sound around
+the phone stays. On a real recording of a phone set down five times, it caught all five drops
+(precision 0.96, recall 1.0), and it already thins the rustle of a phone in a pocket while
+walking. It is a 0.42M-parameter PyTorch mask model, trained in 14 minutes on a Lium RTX 3090 for
+$0.16 and exported to ONNX. Details: [ml/README.md](ml/README.md).
 
 ## What's next
-1. **Stress by area.** Nights already carry heart rate and HRV. With enough consenting users,
-   Kip can show where noise is linked to restless, high-heart-rate nights, street by street. An
-   indicator, not a diagnosis.
-2. **More sensors.** Finish overnight recording on the phone and run our model on every clip, so
-   real nights correct the city estimate. Then cities beyond Newcastle.
+1. **Stress, day and night.** Apple Watch heart rate and HRV through the day, linked to the noise
+   around you, then mapped area by area. An indicator, not a diagnosis.
+2. **More sensors.** Phones that sense through the day as well as overnight, so real readings
+   correct the city estimate. Then cities beyond Newcastle.
 3. **A business that pays for the network.** Affiliate commission on hotel bookings first, then
    Verified Quiet (hotels pay to replace the estimate with measured, room-by-room data), then
-   area data for councils and developers planning night work.
+   area data for councils, developers and estate agents.
 
 ## Built with
 Expo (iPhone and web) · TypeScript and Bun · tRPC on Hono · Tiger Data (TimescaleDB) · MongoDB
