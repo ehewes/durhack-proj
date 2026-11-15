@@ -102,7 +102,8 @@ export type RankRow = {
     }
   >;
   venues: Array<Near & { venueKind: "nightlife" | "sight" }>;
-  nights: Array<{ _id: string }>;
+  /** Opted-in nights within 300 m. `simulated` marks the labelled simulated cohort. */
+  nights: Array<{ _id: string; simulated?: boolean }>;
 };
 
 export type RankRepo = {

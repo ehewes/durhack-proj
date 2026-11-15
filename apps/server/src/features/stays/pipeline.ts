@@ -142,7 +142,7 @@ export function buildRankPipeline(params: RankPipelineParams = {}): Document[] {
       radiusM: REAL_NIGHTS_RADIUS_M,
       match: { "consent.location": true, "location.lat": { $type: "number" } },
       where: ["$location.lon", "$location.lat"],
-      project: { _id: 1 },
+      project: { _id: 1, simulated: 1 },
     }),
     {
       $project: {
