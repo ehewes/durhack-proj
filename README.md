@@ -72,13 +72,15 @@ Every variable is optional in development. Where to get each one: [docs/ARCHITEC
 
 | Variable | What it turns on |
 |---|---|
+| `PORT` | The API's port: 3000 by default |
 | `MONGO_URI`, `TIGER_URI` | The local Docker databases by default. Production uses MongoDB Atlas and Tiger Cloud |
-| `GEMINI_API_KEY` (paid tier) | The briefing text. Without it, the briefing falls back to Kip's own template |
-| `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID` | The briefing voice. `briefing.get` fails without both. `ELEVENLABS_VOICE_ID` is not in `.env.example` yet (#144) |
-| `EXPO_PUBLIC_API_URL` | Where the app finds the API. On an iPhone, use your Mac's LAN IP, not `localhost` |
-| `EXPO_PUBLIC_MAPBOX_TOKEN` | Web map tiles: a public `pk.` token. iOS uses MapLibre and does not read it |
-| `SOLANA_RPC_URL`, `SOLANA_KEYPAIR` | The Solana Memo client: a mainnet RPC URL and a small funded keypair. Nothing calls it yet; anchoring is planned (#71) |
-| `STREET_MANAGER_TOPIC_ARN` | Nothing yet: the SNS route accepts all three official Street Manager topics (#144) |
+| `WEB_DIST` | The Expo web export the API serves as the dashboard. Unset in development |
+| `GEMINI_API_KEY` (paid tier) | Clip labels and the briefing text. Without it, the briefing falls back to Kip's own template |
+| `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID` | The briefing voice and Scribe's second clip label. `briefing.get` fails without both |
+| `SOLANA_RPC_URL`, `SOLANA_KEYPAIR` | Evidence anchoring: an RPC URL for the chosen network (devnet for the demo, mainnet for the real app) and a small funded keypair used only for memos |
+| `EXPO_PUBLIC_API_URL` | Where the app finds the API: `https://kip.edenmatrix.xyz` for the live deploy. For a local server on an iPhone, use your Mac's LAN IP, not `localhost` |
+| `EXPO_PUBLIC_MAPBOX_TOKEN` | Web map tiles: a public `pk.` token, restricted to the dashboard's URLs |
+| `EXPO_PUBLIC_MAPBOX_MOBILE_TOKEN` | iPhone map tiles: a separate public `pk.` token with no URL restriction. Restart Metro after changing it |
 | `VULTR_API_KEY`, `MONGODB_ATLAS_*`, `TF_VAR_*` | Terraform only: [infra/README.md](infra/README.md) |
 
 ### iPhone and deploy
