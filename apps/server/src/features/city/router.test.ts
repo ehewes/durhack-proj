@@ -1,7 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { citySensors, type SensorLevel } from "@kip/shared/city";
+import { TRPCError } from "@trpc/server";
 import sensorsFixture from "../../../../../packages/shared/src/city/fixtures/city-sensors.json";
 import { createCallerFactory } from "../../trpc/init";
+import { NightStorageError } from "../night";
 import type { SensorDocument } from "./repo";
 import { createCityRouter } from "./router";
 import { listCitySensors } from "./service";
@@ -77,14 +79,23 @@ describe("city.sensors", () => {
 });
 
 describe("city.coverage", () => {
+  const near = (userId: string, dLat: number, simulated = false) => ({
+    userId,
+    lat: 54.9746 + dLat / 111_320,
+    lon: -1.6132,
+    simulated,
+  });
+  const allows =
+    (location: boolean, answered = true) =>
+    async (userId: string) => ({
+      userId,
+      consent: { microphone: true, health: false, location },
+      consentUpdatedAt: answered ? "2026-11-14T20:00:00+00:00" : null,
+      profile: null,
+    });
+
   test("returns rough cells from the last 30 nights, with real people hidden under 3", async () => {
     const asked: string[] = [];
-    const near = (userId: string, dLat: number, simulated = false) => ({
-      userId,
-      lat: 54.9746 + dLat / 111_320,
-      lon: -1.6132,
-      simulated,
-    });
     const caller = createCallerFactory(
       createCityRouter(
         async () => [],
@@ -92,6 +103,7 @@ describe("city.coverage", () => {
           asked.push(since);
           return [near("a", 0), near("b", 5), near("c", 3000, true)];
         },
+        allows(true),
       ),
     )({ userId: null });
     const coverage = await caller.coverage();
@@ -99,5 +111,72 @@ describe("city.coverage", () => {
     expect(coverage.minPeople).toBe(3);
     expect(coverage.cells).toHaveLength(1);
     expect(coverage.cells[0]).toMatchObject({ people: 0, simulatedPeople: 1 });
+  });
+
+  test("drops a user who has since turned location off, or never answered", async () => {
+    const consent = new Map([
+      ["a", true],
+      ["b", true],
+      ["c", true],
+      ["d", false],
+    ]);
+    const looked: string[] = [];
+    const caller = createCallerFactory(
+      createCityRouter(
+        async () => [],
+        async () => [
+          near("a", 0),
+          near("a", 2),
+          near("b", 5),
+          near("c", 8),
+          near("d", 10),
+          near("e", 12),
+          near("s", 3000, true),
+        ],
+        async (userId) => {
+          looked.push(userId);
+          if (userId === "e") return allows(true, false)(userId);
+          return allows(consent.get(userId) ?? false)(userId);
+        },
+      ),
+    )({ userId: null });
+    const { cells } = await caller.coverage();
+    expect(cells.map((c) => [c.people, c.simulatedPeople])).toEqual([
+      [3, 0],
+      [0, 1],
+    ]);
+    expect(looked.sort()).toEqual(["a", "b", "c", "d", "e"]);
+  });
+
+  test("reuses one computed coverage for five minutes", async () => {
+    let reads = 0;
+    const caller = createCallerFactory(
+      createCityRouter(
+        async () => [],
+        async () => {
+          reads += 1;
+          return [near("s", 0, true)];
+        },
+        allows(true),
+      ),
+    )({ userId: null });
+    await caller.coverage();
+    await caller.coverage();
+    expect(reads).toBe(1);
+  });
+
+  test("a storage failure comes back as a clean server error", async () => {
+    const caller = createCallerFactory(
+      createCityRouter(
+        async () => [],
+        async () => {
+          throw new NightStorageError("Could not read the night");
+        },
+        allows(true),
+      ),
+    )({ userId: null });
+    const failure = await caller.coverage().catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(TRPCError);
+    expect((failure as TRPCError).code).toBe("INTERNAL_SERVER_ERROR");
   });
 });

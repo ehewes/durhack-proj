@@ -42,6 +42,14 @@ export type CityCoverage = z.infer<typeof cityCoverage>;
 export type CoveragePoint = { userId: string; lat: number; lon: number; simulated: boolean };
 
 const round6 = (value: number) => Math.round(value * 1e6) / 1e6;
+const clamp = (value: number, limit: number) => Math.min(Math.max(value, -limit), limit);
+
+/** A real place on Earth. Uploads accept any number, so a bad one must never reach a cell. */
+function onEarth(lat: number, lon: number): boolean {
+  return (
+    Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180
+  );
+}
 
 /** The grid cell a location falls in: a stable key and the cell's centre. */
 export function cellOf(lat: number, lon: number): { key: string; lat: number; lon: number } {
@@ -49,8 +57,9 @@ export function cellOf(lat: number, lon: number): { key: string; lat: number; lo
   const col = Math.floor(lon / LON_STEP);
   return {
     key: `${row}:${col}`,
-    lat: round6((row + 0.5) * LAT_STEP),
-    lon: round6((col + 0.5) * LON_STEP),
+    // Near a pole or the antimeridian a centre could fall just outside the valid range.
+    lat: clamp(round6((row + 0.5) * LAT_STEP), 90),
+    lon: clamp(round6((col + 0.5) * LON_STEP), 180),
   };
 }
 
@@ -72,7 +81,7 @@ export function coverageFrom(points: readonly CoveragePoint[]): CityCoverage {
     { lat: number; lon: number; real: Set<string>; simulated: Set<string> }
   >();
   for (const point of points) {
-    if (!Number.isFinite(point.lat) || !Number.isFinite(point.lon)) continue;
+    if (!onEarth(point.lat, point.lon)) continue;
     const cell = cellOf(point.lat, point.lon);
     const entry = cells.get(cell.key) ?? {
       lat: cell.lat,

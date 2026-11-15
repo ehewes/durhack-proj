@@ -51,6 +51,17 @@ describe("coverage cells", () => {
     ]);
   });
 
+  test("skips locations off the map, so one bad upload never breaks coverage for everyone", () => {
+    const off = ["a", "b", "c"].map((userId) => ({ userId, lat: 100, lon: LON, simulated: false }));
+    const coverage = cityCoverage.parse(
+      coverageFrom([...off, { userId: "d", lat: LAT, lon: 200, simulated: true }]),
+    );
+    expect(coverage.cells).toEqual([]);
+    expect(cityCoverage.parse(coverageFrom([person("p", 0, true)])).cells).toHaveLength(1);
+    const pole = cellOf(90, 180);
+    expect(pole.lat <= 90 && pole.lon <= 180).toBe(true);
+  });
+
   test("never returns an input location, skips bad ones, and parses as the payload", () => {
     const points = [
       person("a"),
