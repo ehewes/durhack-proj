@@ -1,10 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import {
   activeDates,
+  classifyGeometry,
   intervalOverlapsNight,
   isInNewcastleArea,
   isNightWork,
+  nightWorkStatusOf,
   overlapsDates,
+  type StoredWork,
+  toWorksNearItem,
   type WorkSchedule,
   worksNearInput,
 } from "./index";
@@ -156,5 +160,104 @@ describe("worksNearInput", () => {
       worksNearInput.safeParse({ lat: 54.97, lon: -1.61, from: "2026-11-16", to: "2026-11-15" })
         .success,
     ).toBe(false);
+  });
+});
+
+const stored: StoredWork = {
+  permitReferenceNumber: "P1",
+  workReferenceNumber: "W1",
+  eventReference: 1,
+  eventType: "PERMIT_SUBMITTED",
+  eventTime: "2026-11-01T00:00:00.000Z",
+  objectReference: "O1",
+  highwayAuthority: "Newcastle City Council",
+  streetName: "Neville Street",
+  town: null,
+  areaName: null,
+  workCategory: "Standard",
+  trafficManagementType: "Lane closure",
+  currentTrafficManagementType: null,
+  workStatus: "in_progress",
+  proposedStart: { date: "2026-11-16T00:00:00.000Z", time: "2026-11-16T09:00:00.000Z" },
+  proposedEnd: { date: "2026-11-16T00:00:00.000Z", time: "2026-11-16T18:30:00.000Z" },
+  actualStart: null,
+  actualEnd: null,
+  nightWork: false,
+  simulated: true,
+  geometry: {
+    type: "LineString",
+    coordinates: [
+      [-1.62, 54.97],
+      [-1.619, 54.9701],
+    ],
+  },
+};
+
+describe("worksNear item", () => {
+  test("a line or area is an extent and a point is a point", () => {
+    const line = toWorksNearItem(stored);
+    expect(line.status === "ok" && line.item.precision).toBe("extent");
+    const ring = [
+      [-1.62, 54.97],
+      [-1.619, 54.97],
+      [-1.619, 54.971],
+      [-1.62, 54.97],
+    ];
+    const area = toWorksNearItem({ ...stored, geometry: { type: "Polygon", coordinates: [ring] } });
+    expect(area.status === "ok" && area.item.geometry.type).toBe("Polygon");
+    const point = toWorksNearItem({
+      ...stored,
+      geometry: { type: "Point", coordinates: [-1.62, 54.97] },
+    });
+    expect(point.status === "ok" && point.item.precision).toBe("point");
+  });
+
+  test("absent geometry is not malformed geometry", () => {
+    expect(classifyGeometry(undefined)).toEqual({ status: "absent" });
+    expect(classifyGeometry(null)).toEqual({ status: "absent" });
+    expect(classifyGeometry({ type: "LineString", coordinates: [[-1.6, 54.9]] })).toEqual({
+      status: "malformed",
+    });
+    expect(classifyGeometry({ type: "Point", coordinates: [-1.6, 154.9] })).toEqual({
+      status: "malformed",
+    });
+    expect(classifyGeometry({ type: "Point", coordinates: [-1.6, Number.NaN] })).toEqual({
+      status: "malformed",
+    });
+    expect(
+      classifyGeometry({
+        type: "Polygon",
+        coordinates: [
+          [
+            [0, 0],
+            [1, 0],
+            [1, 1],
+            [0, 1],
+          ],
+        ],
+      }),
+    ).toEqual({
+      status: "malformed",
+    });
+  });
+
+  test("night work is scheduled, not scheduled, or unknown", () => {
+    expect(nightWorkStatusOf({ ...stored, nightWork: true })).toBe("scheduled");
+    expect(nightWorkStatusOf(stored)).toBe("not_scheduled");
+    const dateOnly = {
+      ...stored,
+      proposedStart: { date: stored.proposedStart.date, time: null },
+      proposedEnd: { date: stored.proposedEnd.date, time: null },
+    };
+    expect(nightWorkStatusOf(dateOnly)).toBe("unknown");
+    const item = toWorksNearItem(dateOnly);
+    expect(item.status === "ok" && item.item.nightWork).toBe("unknown");
+  });
+
+  test("bounds the radius and the date range", () => {
+    const base = { lat: 54.97, lon: -1.61, from: "2026-11-15", to: "2026-11-16" };
+    expect(worksNearInput.safeParse({ ...base, radiusM: 5001 }).success).toBe(false);
+    expect(worksNearInput.safeParse({ ...base, radiusM: 5000 }).success).toBe(true);
+    expect(worksNearInput.safeParse({ ...base, to: "2027-03-01" }).success).toBe(false);
   });
 });
