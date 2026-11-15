@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "a89bea839914",
+  "strategy": "manual-commit",
+  "branch": "ehewes/184-map-heatmap",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/mobile/src/lib/map/Map.native.tsx",
+    "apps/mobile/src/lib/map/Map.web.tsx",
+    "apps/mobile/src/lib/map/index.ts",
+    "apps/mobile/src/lib/map/map.test.ts",
+    "apps/mobile/src/lib/map/style.ts",
+    "apps/mobile/src/lib/map/types.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a8/9bea839914/0/metadata.json",
+      "transcript": "/a8/9bea839914/0/full.jsonl",
+      "compact_transcript": "/a8/9bea839914/0/transcript.jsonl",
+      "content_hash": "/a8/9bea839914/0/content_hash.txt",
+      "prompt": "/a8/9bea839914/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 66,
+    "cache_creation_tokens": 75769,
+    "cache_read_tokens": 10325650,
+    "output_tokens": 44167,
+    "api_call_count": 33
+  },
+  "redaction": {
+    "replacements": 5,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 4,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
