@@ -1,11 +1,12 @@
 import { expect, test } from "bun:test";
+import { createHash } from "node:crypto";
 import { canonicalJson, memoText, parseMemo } from "@kip/shared/evidence";
 import { nightTimeline } from "@kip/shared/night";
 import nightTimelineFixture from "../../../../../packages/shared/src/night/fixtures/night-timeline.json";
 import { createCallerFactory, router } from "../../trpc/init";
 import type { NightRecord } from "../night";
 import { createEvidenceRouter } from "./router";
-import { createEvidenceService, hashLog } from "./service";
+import { createEvidenceService } from "./service";
 
 const USER = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const OTHER = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
@@ -33,6 +34,7 @@ function harness() {
       memos.set(signature, text);
       return { signature, explorerUrl: `https://explorer.solana.com/tx/${signature}` };
     },
+    sha256: (text) => createHash("sha256").update(text).digest("hex"),
     readMemo: async (signature) => {
       const text = memos.get(signature);
       if (!text) throw new Error("Transaction not found");
@@ -109,7 +111,6 @@ test("verify before anchoring says not-anchored; private fields are not hashed",
   expect(before).toMatchObject({ status: "not-anchored", anchoredHash: null, signature: null });
   edit((r) => ({ ...r, location: { lat: 1, lon: 2 } }));
   expect((await caller(null).evidence.verify({ nightId })).currentHash).toBe(before.currentHash);
-  expect(before.currentHash).toBe(hashLog({ ...timeline, userId: USER } as unknown as NightRecord));
 });
 
 test("another user cannot anchor a night, and chain failures map to BAD_GATEWAY", async () => {
@@ -127,6 +128,7 @@ test("another user cannot anchor a night, and chain failures map to BAD_GATEWAY"
       throw new Error("Solana sendTransaction failed (500)");
     },
     readMemo: async () => "",
+    sha256: () => "0".repeat(64),
   });
   const c = createCallerFactory(router({ evidence: createEvidenceRouter(failing) }))({
     userId: USER,

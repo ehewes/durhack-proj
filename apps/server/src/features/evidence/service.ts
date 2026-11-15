@@ -1,5 +1,4 @@
 // Business logic for `evidence`. Other features may call only what index.ts re-exports from here.
-import { createHash } from "node:crypto";
 import {
   type AnchorOutput,
   canonicalJson,
@@ -22,6 +21,8 @@ export type EvidenceDeps = {
   ): Promise<unknown>;
   writeMemo(text: string): Promise<{ signature: string; explorerUrl: string }>;
   readMemo(signature: string): Promise<string>;
+  /** SHA-256 of a string as lowercase hex. Injected so this file has no Node imports. */
+  sha256(text: string): string;
 };
 
 export type EvidenceService = {
@@ -40,12 +41,6 @@ export function logOf(record: NightRecord): Record<string, unknown> {
   return log;
 }
 
-export function hashLog(record: NightRecord): string {
-  return createHash("sha256")
-    .update(canonicalJson(logOf(record)))
-    .digest("hex");
-}
-
 function chainError(fallback: string) {
   return (error: unknown): never => {
     throw new EvidenceChainError(error instanceof Error ? error.message : fallback);
@@ -53,6 +48,8 @@ function chainError(fallback: string) {
 }
 
 export function createEvidenceService(deps: EvidenceDeps): EvidenceService {
+  const hashLog = (record: NightRecord) => deps.sha256(canonicalJson(logOf(record)));
+
   async function requireNight(nightId: string): Promise<NightRecord> {
     const record = await deps.getNight(nightId);
     if (!record) throw new NightNotFoundError(nightId);
