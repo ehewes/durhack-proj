@@ -263,9 +263,9 @@ describe("reader", () => {
   });
 
   test("is unavailable on the web and where HealthKit is missing", async () => {
-    expect(await createWatchSleepReader(null).readNight("2026-11-14", CONSENTED)).toEqual({
-      status: "unavailable",
-    });
+    const web = createWatchSleepReader(null);
+    expect(await web.readNight("2026-11-14", CONSENTED)).toEqual({ status: "unavailable" });
+    expect(await web.readNight("2026-11-14", { health: false })).toEqual({ status: "unavailable" });
     const { port, calls } = fakePort(ONE_NIGHT, false);
     expect(await createWatchSleepReader(port).readNight("2026-11-14", CONSENTED)).toEqual({
       status: "unavailable",

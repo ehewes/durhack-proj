@@ -305,9 +305,10 @@ export function createWatchSleepReader(port: HealthPort | null): WatchSleepReade
     consent: HealthConsent,
     run: (health: HealthPort) => Promise<T>,
   ): Promise<T | NotRead> {
+    // No HealthKit at all (the web): nothing to ask for, whatever the consent.
+    if (!port) return { status: "unavailable" };
     // docs/DOMAIN.md, Privacy: no HealthKit call, not even the iOS sheet, before consent in Kip.
     if (!consent.health) return { status: "no-consent" };
-    if (!port) return { status: "unavailable" };
     try {
       if (!port.isAvailable()) return { status: "unavailable" };
       await port.requestRead();
