@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>bp4zn14gw</task-id>
+<tool-use-id>toolu_01KEnqwbpFAVrddvWtyrkcXV</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-porto-novo/e67c95ea-6674-436a-b3fa-91a77c4313b1/tasks/bp4zn14gw.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the Entire multi-agent review for PR 183" completed (exit code 0)</summary>
+</task-notification>
