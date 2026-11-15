@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "cf5830ba9f80",
+  "strategy": "manual-commit",
+  "branch": "ehewes/mlh-sponsor-track-evaluate",
+  "checkpoints_count": 6,
+  "files_touched": [
+    "README.md",
+    "docs/demo/assets/kip-banner.png"
+  ],
+  "sessions": [
+    {
+      "metadata": "/cf/5830ba9f80/0/metadata.json",
+      "transcript": "/cf/5830ba9f80/0/full.jsonl",
+      "compact_transcript": "/cf/5830ba9f80/0/transcript.jsonl",
+      "content_hash": "/cf/5830ba9f80/0/content_hash.txt",
+      "prompt": "/cf/5830ba9f80/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 86,
+    "cache_creation_tokens": 208996,
+    "cache_read_tokens": 4227948,
+    "output_tokens": 94845,
+    "api_call_count": 32
+  },
+  "redaction": {
+    "replacements": 8,
+    "layers": {
+      "betterleaks": 1,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 7,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
