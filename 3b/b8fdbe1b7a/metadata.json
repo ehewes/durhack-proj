@@ -5,6 +5,7 @@
   "branch": "ehewes/189-scatter-cohort",
   "checkpoints_count": 1,
   "files_touched": [
+    "apps/server/src/features/night/seed.ts",
     "apps/server/src/features/stays/pipeline.ts",
     "apps/server/src/features/stays/rank.test.ts",
     "apps/server/src/features/stays/repo.ts",
@@ -19,6 +20,13 @@
       "prompt": "/3b/b8fdbe1b7a/0/prompt.txt"
     }
   ],
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 3753,
+    "cache_read_tokens": 1574564,
+    "output_tokens": 2384,
+    "api_call_count": 3
+  },
   "redaction": {
     "replacements": 6,
     "layers": {

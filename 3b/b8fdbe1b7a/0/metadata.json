@@ -3,10 +3,11 @@
   "checkpoint_id": "3bb8fdbe1b7a",
   "session_id": "e67c95ea-6674-436a-b3fa-91a77c4313b1",
   "strategy": "manual-commit",
-  "created_at": "2026-11-15T01:53:57.706047Z",
+  "created_at": "2026-11-15T01:54:32.128917Z",
   "branch": "ehewes/189-scatter-cohort",
   "checkpoints_count": 1,
   "files_touched": [
+    "apps/server/src/features/night/seed.ts",
     "apps/server/src/features/stays/pipeline.ts",
     "apps/server/src/features/stays/rank.test.ts",
     "apps/server/src/features/stays/repo.ts",
@@ -18,12 +19,19 @@
   "checkpoint_transcript_start": 1656,
   "transcript_lines_at_start": 1656,
   "compact_transcript_start": 218,
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 3753,
+    "cache_read_tokens": 1574564,
+    "output_tokens": 2384,
+    "api_call_count": 3
+  },
   "session_token_usage": {
-    "input_tokens": 390,
-    "cache_creation_tokens": 509321,
-    "cache_read_tokens": 58351737,
-    "output_tokens": 278956,
-    "api_call_count": 188
+    "input_tokens": 396,
+    "cache_creation_tokens": 513074,
+    "cache_read_tokens": 59926301,
+    "output_tokens": 281340,
+    "api_call_count": 191
   },
   "redaction": {
     "replacements": 6,
