@@ -16,15 +16,15 @@
       "transcript": "/d0/029d8f4735/0/full.jsonl",
       "compact_transcript": "/d0/029d8f4735/0/transcript.jsonl",
       "content_hash": "/d0/029d8f4735/0/content_hash.txt",
-      "prompt": "/d0/029d8f4735/0/prompt.txt"
+      "prompt": ""
     }
   ],
   "token_usage": {
-    "input_tokens": 102,
-    "cache_creation_tokens": 217023,
-    "cache_read_tokens": 6728213,
-    "output_tokens": 85646,
-    "api_call_count": 49
+    "input_tokens": 4,
+    "cache_creation_tokens": 3119,
+    "cache_read_tokens": 464070,
+    "output_tokens": 845,
+    "api_call_count": 2
   },
   "redaction": {
     "replacements": 5,
