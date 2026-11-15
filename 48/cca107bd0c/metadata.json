@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "48cca107bd0c",
+  "strategy": "manual-commit",
+  "branch": "worktree-agent-a448d16b4333eaaee",
+  "checkpoints_count": 7,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/48/cca107bd0c/0/metadata.json",
+      "transcript": "/48/cca107bd0c/0/full.jsonl",
+      "compact_transcript": "/48/cca107bd0c/0/transcript.jsonl",
+      "content_hash": "/48/cca107bd0c/0/content_hash.txt",
+      "prompt": "/48/cca107bd0c/0/prompt.txt"
+    }
+  ],
+  "redaction": {
+    "replacements": 64,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 18,
+      "key_context": 46,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
