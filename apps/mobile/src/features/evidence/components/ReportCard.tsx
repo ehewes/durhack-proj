@@ -1,17 +1,36 @@
+import type { ReportOutput } from "@kip/shared/evidence";
 import { Card, Text } from "@/lib/ui";
-import { REPORT_NOTE, REPORT_TITLE } from "../copy";
-import { plural, type Report } from "../model";
+import { DRAFT_GEMINI, DRAFT_TEMPLATE, REPORT_NO_EVENTS, REPORT_TITLE } from "../copy";
+import { plural } from "../model";
 
-export function ReportCard({ report }: { report: Report }) {
+export function ReportCard({ report }: { report: ReportOutput }) {
   return (
     <Card>
       <Text variant="body">{REPORT_TITLE}</Text>
-      <Text>
-        {plural(report.nights, "anchored night")}: {plural(report.events, "noise event")},{" "}
-        {report.outsideHours} outside the council's recommended hours,{" "}
-        {plural(report.wakeUps, "wake-up")}.
-      </Text>
-      <Text variant="caption">{REPORT_NOTE}</Text>
+      {report.events.length === 0 ? (
+        <Text>{REPORT_NO_EVENTS}</Text>
+      ) : (
+        <>
+          <Text>
+            {plural(report.events.length, "construction event")} outside the council's recommended
+            hours:
+          </Text>
+          {report.events.map((e) => (
+            <Text key={e.id}>
+              {e.localTime}, {Math.round(e.relativeDb)} relative dB
+            </Text>
+          ))}
+          {report.draft && (
+            <>
+              <Text>{report.draft}</Text>
+              <Text variant="caption">
+                {report.draftSource === "gemini" ? DRAFT_GEMINI : DRAFT_TEMPLATE}
+              </Text>
+            </>
+          )}
+        </>
+      )}
+      <Text variant="caption">{report.note}</Text>
     </Card>
   );
 }

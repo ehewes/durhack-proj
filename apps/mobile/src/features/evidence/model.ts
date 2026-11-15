@@ -8,17 +8,6 @@ export type EvidenceNight = Pick<
   "nightId" | "night" | "eventCount" | "outsideRecommendedHoursCount" | "wakeUpCount" | "evidence"
 >;
 
-export type Report = {
-  nights: number;
-  events: number;
-  outsideHours: number;
-  wakeUps: number;
-};
-
-export function isAnchored(night: EvidenceNight): boolean {
-  return night.evidence.memoSignature !== null;
-}
-
 export function explorerUrl(signature: string): string {
   return `${EXPLORER_TX}${signature}`;
 }
@@ -26,17 +15,6 @@ export function explorerUrl(signature: string): string {
 /** Newest night first. */
 export function sortNights<T extends { night: string }>(nights: readonly T[]): T[] {
   return nights.slice().sort((a, b) => b.night.localeCompare(a.night));
-}
-
-/** Totals over the anchored nights only: the report covers what has a proof. */
-export function buildReport(nights: readonly EvidenceNight[]): Report {
-  const anchored = nights.filter(isAnchored);
-  return {
-    nights: anchored.length,
-    events: anchored.reduce((n, x) => n + x.eventCount, 0),
-    outsideHours: anchored.reduce((n, x) => n + x.outsideRecommendedHoursCount, 0),
-    wakeUps: anchored.reduce((n, x) => n + x.wakeUpCount, 0),
-  };
 }
 
 export function plural(n: number, one: string, many = `${one}s`): string {

@@ -1,12 +1,11 @@
-import { EVIDENCE_NOTE, type VerifyOutput } from "@kip/shared/evidence";
+import { EVIDENCE_NOTE, type ReportOutput, type VerifyOutput } from "@kip/shared/evidence";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTRPC, useTRPCClient } from "@/lib/trpc";
 import { Button, Card, Screen, Text } from "@/lib/ui";
 import { NightEvidenceCard } from "../components/NightEvidenceCard";
-import { ReportCard } from "../components/ReportCard";
 import { EMPTY_BODY, EMPTY_TITLE, EVIDENCE_INTRO } from "../copy";
-import { buildReport, type EvidenceNight, sortNights } from "../model";
+import { type EvidenceNight, sortNights } from "../model";
 
 type Busy = Record<string, "pending" | "failed" | undefined>;
 
@@ -16,17 +15,31 @@ export function EvidenceScreen() {
   const queryClient = useQueryClient();
   const list = useQuery({ ...trpc.night.list.queryOptions(), retry: false });
   const [checking, setChecking] = useState<Busy>({});
+  const [reporting, setReporting] = useState<Busy>({});
   const [anchoring, setAnchoring] = useState<Busy>({});
   const [results, setResults] = useState<Record<string, VerifyOutput | undefined>>({});
+  const [reports, setReports] = useState<Record<string, ReportOutput | undefined>>({});
 
   async function onVerify(nightId: string) {
     setChecking((s) => ({ ...s, [nightId]: "pending" }));
+    setResults((s) => ({ ...s, [nightId]: undefined }));
     try {
       const result = await client.evidence.verify.query({ nightId });
       setResults((s) => ({ ...s, [nightId]: result }));
       setChecking((s) => ({ ...s, [nightId]: undefined }));
     } catch {
       setChecking((s) => ({ ...s, [nightId]: "failed" }));
+    }
+  }
+
+  async function onReport(nightId: string) {
+    setReporting((s) => ({ ...s, [nightId]: "pending" }));
+    try {
+      const report = await client.evidence.report.query({ nightId });
+      setReports((s) => ({ ...s, [nightId]: report }));
+      setReporting((s) => ({ ...s, [nightId]: undefined }));
+    } catch {
+      setReporting((s) => ({ ...s, [nightId]: "failed" }));
     }
   }
 
@@ -61,7 +74,6 @@ export function EvidenceScreen() {
           <Text variant="caption">{EMPTY_BODY}</Text>
         </Card>
       )}
-      {nights.length > 0 && <ReportCard report={buildReport(nights)} />}
       {nights.map((night) => (
         <NightEvidenceCard
           key={night.nightId}
@@ -71,9 +83,15 @@ export function EvidenceScreen() {
             failed: checking[night.nightId] === "failed",
             result: results[night.nightId],
           }}
+          report={{
+            pending: reporting[night.nightId] === "pending",
+            failed: reporting[night.nightId] === "failed",
+            result: reports[night.nightId],
+          }}
           anchorPending={anchoring[night.nightId] === "pending"}
           anchorFailed={anchoring[night.nightId] === "failed"}
           onVerify={() => void onVerify(night.nightId)}
+          onReport={() => void onReport(night.nightId)}
           onAnchor={() => void onAnchor(night.nightId)}
         />
       ))}
