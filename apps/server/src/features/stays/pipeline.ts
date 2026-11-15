@@ -81,7 +81,7 @@ function lookupWithin(options: {
 
 /**
  * The whole ranking in one aggregation. `$geoNear` is first (it must be, and only one is
- * allowed), then one `$lookup` per source: sensors, works within 200 m, venues within walking
+ * allowed), then one `$lookup` per source: noise sensors, air sensors, works within 200 m, venues within walking
  * distance, and opted-in nights within 300 m. Scoring with the shared weights happens after.
  */
 export function buildRankPipeline(params: RankPipelineParams = {}): Document[] {
@@ -104,6 +104,14 @@ export function buildRankPipeline(params: RankPipelineParams = {}): Document[] {
       match: { lnight30: { $type: "number" } },
       where: "$location.coordinates",
       project: { lnight30: 1 },
+    }),
+    lookupWithin({
+      from: "sensors",
+      as: "airSensors",
+      radiusM: SENSOR_RADIUS_M,
+      match: { metrics: { $in: ["no2", "pm25"] } },
+      where: "$location.coordinates",
+      project: { _id: 1 },
     }),
     lookupWithin({
       from: "works",
@@ -151,6 +159,7 @@ export function buildRankPipeline(params: RankPipelineParams = {}): Document[] {
         bookingLink: 1,
         distanceFromOriginM: 1,
         sensors: 1,
+        airSensors: 1,
         works: 1,
         venues: 1,
         nights: 1,

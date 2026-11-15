@@ -3,7 +3,13 @@ import { type HotelScoreInputs, scoreHotel } from "@kip/shared/domain";
 import type { RankInput, RankResult } from "@kip/shared/stays";
 import { activeDates } from "@kip/shared/works";
 import { buildRankPipeline } from "./pipeline";
-import { createRankRepo, type RankRepo, type RankRow, usesGeoIndex } from "./repo";
+import {
+  createRankRepo,
+  type RankRepo,
+  type RankRow,
+  type SensorNightAir,
+  usesGeoIndex,
+} from "./repo";
 
 /** Lnight when no sensor is in range. The sources list is then empty, which the UI shows. */
 export const FALLBACK_LNIGHT_DB = 55;
@@ -33,12 +39,42 @@ export function weightedLnight(sensors: RankRow["sensors"]): number {
   return weights > 0 ? sum / weights : FALLBACK_LNIGHT_DB;
 }
 
+/**
+ * Inverse-distance weighted night NO2 and PM2.5 from the air sensors in range. A metric no
+ * sensor reports stays undefined, which the score does not penalise.
+ */
+export function weightedAir(
+  sensors: RankRow["airSensors"],
+  readings: ReadonlyMap<string, SensorNightAir>,
+): HotelScoreInputs["airQuality"] {
+  const sums = { no2: { sum: 0, weights: 0 }, pm25: { sum: 0, weights: 0 } };
+  for (const sensor of sensors) {
+    const reading = readings.get(sensor._id);
+    if (!reading) continue;
+    const weight = 1 / Math.max(sensor.distanceM, MIN_SENSOR_DISTANCE_M);
+    for (const metric of ["no2", "pm25"] as const) {
+      const value = reading[metric];
+      if (value === undefined) continue;
+      sums[metric].sum += value * weight;
+      sums[metric].weights += weight;
+    }
+  }
+  const mean = ({ sum, weights }: { sum: number; weights: number }) =>
+    weights > 0 ? sum / weights : undefined;
+  return { no2: mean(sums.no2), pm25: mean(sums.pm25) };
+}
+
 function nearest(venues: RankRow["venues"], kind: "nightlife" | "sight"): number | undefined {
   const distances = venues.filter((v) => v.venueKind === kind).map((v) => v.distanceM);
   return distances.length > 0 ? Math.min(...distances) : undefined;
 }
 
-function rowToScore(row: RankRow, input: RankInput, stayDates: string[]) {
+function rowToScore(
+  row: RankRow,
+  input: RankInput,
+  stayDates: string[],
+  air: ReadonlyMap<string, SensorNightAir>,
+) {
   const works = row.works.flatMap((work) => {
     const span = activeDates(work);
     if (!span) return [];
@@ -48,6 +84,7 @@ function rowToScore(row: RankRow, input: RankInput, stayDates: string[]) {
   });
   const inputs: HotelScoreInputs = {
     lnightDb: weightedLnight(row.sensors),
+    airQuality: weightedAir(row.airSensors ?? [], air),
     stayDates,
     works,
     nightlifeDistanceM: nearest(row.venues, "nightlife"),
@@ -104,8 +141,12 @@ export async function rank(
 ): Promise<RankResult> {
   const rows = await repo.aggregate(buildRankPipeline({ near: input.near }));
   const stayDates = stayNights(input.checkIn, input.checkOut);
+  const airSensorIds = [
+    ...new Set(rows.flatMap((row) => (row.airSensors ?? []).map((s) => s._id))),
+  ];
+  const air = new Map((await repo.nightAir(airSensorIds)).map((r) => [r.sensorId, r]));
   const hotels = rows
-    .map((row) => rowToScore(row, input, stayDates))
+    .map((row) => rowToScore(row, input, stayDates, air))
     .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
   return { profile: input.profile, checkIn: input.checkIn, checkOut: input.checkOut, hotels };
 }
