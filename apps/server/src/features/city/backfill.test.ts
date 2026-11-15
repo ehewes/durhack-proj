@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
+  type BBox,
+  bboxAround,
   NEWCASTLE_CITY_CENTRE,
   type ObservatoryHistory,
   type ObservatorySensor,
@@ -10,9 +12,11 @@ import {
   backfillDays,
   chunkKey,
   londonDayStart,
+  parseMetrics,
   readingCountsStatement,
   sensorCountLines,
 } from "./backfill";
+import { CITY_RADIUS_KM, NOISE_RADIUS_KM } from "./jobs";
 import type { SensorReadingInsert, SensorUpsert } from "./repo";
 
 // 00:45 GMT on Sunday 15 November 2026: London is on GMT, so today is 2026-11-15.
@@ -30,9 +34,17 @@ const INSIDE: ObservatorySensor = {
 // About 5.5 km north of Grey's Monument: inside the query square, outside the 3 km circle.
 const FAR: ObservatorySensor = { ...INSIDE, id: "far-1", name: "PER_AIRMON_FAR", latitude: 55.023 };
 
-type HistoryCall = { start: Date; end: Date; variables: readonly string[] };
+// About 4.25 km north, like PER_AIRMON_MESH1822245: inside the noise circle only.
+const NEAR: ObservatorySensor = {
+  ...INSIDE,
+  id: "near-1",
+  name: "PER_AIRMON_NEAR",
+  latitude: 55.012,
+};
 
-function fakeClient() {
+type HistoryCall = { start: Date; end: Date; variables: readonly string[]; bbox?: BBox };
+
+function fakeClient(options: { near?: boolean } = {}) {
   const calls: HistoryCall[] = [];
   return {
     calls,
@@ -40,17 +52,21 @@ function fakeClient() {
       start: Date | string;
       end: Date | string;
       variables?: readonly string[];
+      bbox?: BBox;
     }): Promise<ObservatoryHistory> {
       const start = query.start as Date;
       const end = query.end as Date;
       const variable = query.variables?.[0] ?? "";
-      calls.push({ start, end, variables: query.variables ?? [] });
+      calls.push({ start, end, variables: query.variables ?? [], bbox: query.bbox });
       const at = (minutes: number) => new Date(start.getTime() + minutes * 60_000);
       return {
         start,
         end,
-        sensors: [INSIDE, FAR],
+        sensors: options.near ? [INSIDE, FAR, NEAR] : [INSIDE, FAR],
         readings: [
+          ...(options.near
+            ? [{ sensorName: NEAR.name, variable, value: 60, time: at(15), flagged: false }]
+            : []),
           { sensorName: INSIDE.name, variable, value: 40, time: at(10), flagged: false },
           { sensorName: INSIDE.name, variable, value: 41, time: at(20), flagged: false },
           // Dropped like the live pull drops them: flagged, not finite, outside the circle.
@@ -157,6 +173,51 @@ describe("backfill run", () => {
     const client = fakeClient();
     await backfillCity({ client, repo: fakeRepo(), store, now: NOW, force: true });
     expect(client.calls).toHaveLength(36 * 3);
+  });
+});
+
+describe("backfill circles", () => {
+  test("noise reaches 5 km while NO2 and PM2.5 stay within 3 km", async () => {
+    const client = fakeClient({ near: true });
+    const repo = fakeRepo();
+    await backfillCity({ client, repo, store: fakeStore(), now: NOW });
+
+    const near = repo.inserts.flat().filter((row) => row.sensorId === NEAR.id);
+    expect(near).toHaveLength(36);
+    expect(near.every((row) => row.metric === "noise_db")).toBe(true);
+    expect(repo.sensors.find((s) => s.sensorId === NEAR.id)?.metrics).toEqual(["noise_db"]);
+
+    const boxFor = (variable: string) =>
+      client.calls.find((c) => c.variables[0] === variable)?.bbox;
+    expect(boxFor("Sound")).toEqual(bboxAround(NEWCASTLE_CITY_CENTRE, NOISE_RADIUS_KM));
+    expect(boxFor("NO2")).toEqual(bboxAround(NEWCASTLE_CITY_CENTRE, CITY_RADIUS_KM));
+    expect(boxFor("PM2.5")).toEqual(bboxAround(NEWCASTLE_CITY_CENTRE, CITY_RADIUS_KM));
+  });
+
+  test("--metric=noise_db --force refills noise only", async () => {
+    const days = backfillDays(NOW).slice(0, -1);
+    const store = fakeStore(
+      days.flatMap((day) => ["noise_db", "no2", "pm25"].map((m) => `${day}/${m}`)),
+    );
+    const client = fakeClient({ near: true });
+    const summary = await backfillCity({
+      client,
+      repo: fakeRepo(),
+      store,
+      now: NOW,
+      force: true,
+      metrics: ["noise_db"],
+    });
+    expect(client.calls).toHaveLength(36);
+    expect(client.calls.every((c) => c.variables[0] === "Sound")).toBe(true);
+    expect(summary.fetched).toBe(36);
+  });
+
+  test("reads --metric as one name or a comma list, and rejects unknown names", () => {
+    expect(parseMetrics(undefined)).toBeUndefined();
+    expect(parseMetrics("noise_db")).toEqual(["noise_db"]);
+    expect(parseMetrics("no2, pm25")).toEqual(["no2", "pm25"]);
+    expect(() => parseMetrics("noise")).toThrow("unknown metric noise");
   });
 });
 

@@ -9,7 +9,14 @@ import {
   NEWCASTLE_CITY_CENTRE,
   type ObservatoryRequest,
 } from "../../integrations/observatory";
-import { CITY_RADIUS_KM, jobs, LOOKBACK_HOURS, pullObservatoryReadings } from "./jobs";
+import {
+  CITY_RADIUS_KM,
+  jobs,
+  LOOKBACK_HOURS,
+  NOISE_RADIUS_KM,
+  pullObservatoryReadings,
+  QUERY_RADIUS_KM,
+} from "./jobs";
 import type { CityRepo, SensorReadingInsert, SensorUpsert } from "./repo";
 
 const fixtureDir = join(
@@ -111,7 +118,7 @@ function expectLiveQuery(calls: ObservatoryRequest[]) {
   expect(first?.path).toBe("/sensors/data/json");
   expect(first?.query.get("last_n_hours")).toBe(String(LOOKBACK_HOURS));
   expect(first?.query.getAll("variables")).toEqual(["Sound", "NO2", "PM2.5"]);
-  const box = bboxAround(NEWCASTLE_CITY_CENTRE, CITY_RADIUS_KM);
+  const box = bboxAround(NEWCASTLE_CITY_CENTRE, QUERY_RADIUS_KM);
   expect(first?.query.get("bbox_p1_x")).toBe(String(box.minLongitude));
   expect(first?.query.get("bbox_p1_y")).toBe(String(box.minLatitude));
   expect(first?.query.get("bbox_p2_x")).toBe(String(box.maxLongitude));
@@ -126,14 +133,14 @@ describe("city.observatory", () => {
     ]);
   });
 
-  test("drops the recorded noise sensor, which sits outside 3 km", async () => {
+  test("keeps the recorded noise sensor, 4.25 km out, inside the 5 km noise circle", async () => {
     const noise = recordedNoiseSensor();
-    expect(
-      distanceKm(NEWCASTLE_CITY_CENTRE, {
-        latitude: noise.Sensor_Centroid_Latitude,
-        longitude: noise.Sensor_Centroid_Longitude,
-      }),
-    ).toBeGreaterThan(CITY_RADIUS_KM);
+    const km = distanceKm(NEWCASTLE_CITY_CENTRE, {
+      latitude: noise.Sensor_Centroid_Latitude,
+      longitude: noise.Sensor_Centroid_Longitude,
+    });
+    expect(km).toBeGreaterThan(CITY_RADIUS_KM);
+    expect(km).toBeLessThanOrEqual(NOISE_RADIUS_KM);
 
     const { client, calls } = clientFor((request) =>
       request.query.get("offset") === "5" ? readingsPage2 : readingsPage,
@@ -143,12 +150,33 @@ describe("city.observatory", () => {
 
     expectLiveQuery(calls);
     expect(calls.map((call) => call.query.get("offset"))).toEqual(["0", "5"]);
-    expect(pulled).toEqual({ readings: [], sensors: [] });
-    expect(readings).toEqual([[]]);
-    expect(sensors).toEqual([[]]);
+    // The newest Sound across both recorded pages. Max Sound is another series and is not stored.
+    const expectedReadings: SensorReadingInsert[] = [
+      {
+        time: new Date("2026-11-14T12:04:00.000Z"),
+        sensorId: "80410",
+        metric: "noise_db",
+        value: 82.1,
+      },
+    ];
+    const expectedSensors: SensorUpsert[] = [
+      {
+        sensorId: "80410",
+        name: "PER_AIRMON_MESH1822245",
+        longitude: -1.559245,
+        latitude: 54.996419,
+        broker: "aq_mesh_api",
+        heightAboveGround: 2,
+        metrics: ["noise_db"],
+        updatedAt: now,
+      },
+    ];
+    expect(pulled).toEqual({ readings: expectedReadings, sensors: expectedSensors });
+    expect(readings).toEqual([expectedReadings]);
+    expect(sensors).toEqual([expectedSensors]);
   });
 
-  test("stores in-circle NO2, PM2.5 and Sound from a fixture-shaped page", async () => {
+  test("keeps each metric inside its own circle from a fixture-shaped page", async () => {
     const outside = recordedNoiseSensor();
     const mesh = sensorFromFixture({
       Sensor_Name: "PER_AIRMON_MESH1921150",
@@ -178,6 +206,14 @@ describe("city.observatory", () => {
             Variable: "Sound",
             Value: 82.1,
             Timestamp: "2026-11-14T12:04:00",
+            Flagged: false,
+          },
+          {
+            // 4.25 km out: inside the noise circle, outside the air quality one.
+            Sensor_Name: outside.Sensor_Name,
+            Variable: "NO2",
+            Value: 30,
+            Timestamp: "2026-11-14T14:10:00",
             Flagged: false,
           },
           {
@@ -257,6 +293,12 @@ describe("city.observatory", () => {
         metric: "pm25",
         value: 5.01,
       },
+      {
+        time: new Date("2026-11-14T12:04:00.000Z"),
+        sensorId: "80410",
+        metric: "noise_db",
+        value: 82.1,
+      },
     ];
     const expectedSensors: SensorUpsert[] = [
       {
@@ -267,6 +309,16 @@ describe("city.observatory", () => {
         broker: "aq_mesh_api",
         heightAboveGround: 2,
         metrics: ["noise_db", "no2", "pm25"],
+        updatedAt: now,
+      },
+      {
+        sensorId: "80410",
+        name: "PER_AIRMON_MESH1822245",
+        longitude: -1.559245,
+        latitude: 54.996419,
+        broker: "aq_mesh_api",
+        heightAboveGround: 2,
+        metrics: ["noise_db"],
         updatedAt: now,
       },
     ];
