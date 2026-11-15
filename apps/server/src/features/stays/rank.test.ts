@@ -140,6 +140,15 @@ describe("rank", () => {
     expect(hotel?.estimate).toBe(true);
   });
 
+  test("labels nearby nights simulated when any of them are", async () => {
+    const mixed = row("mixed", { nights: [{ _id: "n1" }, { _id: "n2", simulated: true }] });
+    const real = row("real", { nights: [{ _id: "n3" }] });
+    const result = await rank({ profile: "lightSleeper", ...stay }, fakeRepo([mixed, real]));
+    const sources = new Map(result.hotels.map((h) => [h.hotelId, h.sources.realNights]));
+    expect(sources.get("mixed")).toEqual({ count: 2, simulated: true });
+    expect(sources.get("real")).toEqual({ count: 1, simulated: false });
+  });
+
   test("ignores a permit that ended before the stay", async () => {
     const past = row("past", {
       works: [

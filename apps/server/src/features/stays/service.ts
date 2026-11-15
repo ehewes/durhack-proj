@@ -79,7 +79,11 @@ function rowToScore(row: RankRow, input: RankInput, stayDates: string[]) {
         overlapsStay: true,
         nightWork: w.nightWork,
       })),
-      realNights: { count: row.nights.length, simulated: false },
+      // Simulated cohort nights count too, and say so: never presented as real people's nights.
+      realNights: {
+        count: row.nights.length,
+        simulated: row.nights.some((night) => night.simulated === true),
+      },
     },
     estimate: true as const,
     bookingUrl: row.bookingLink.url,
