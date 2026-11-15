@@ -4,7 +4,7 @@ Event facts, deadlines and prize targets. Fill in the TBDs at kick-off.
 
 ## Event
 - DurHack 2026, an MLH member event. About 24 hours.
-- Dates: TBD. Plan assumes 24 hours from about 10am, so hours 14 to 20 fall overnight.
+- Dates: Sat 14 Nov 2026 12:00 to Sun 15 Nov 2026 12:00 (24 hours), so hours 12 to 20 fall overnight.
 - Team: Ellis and Nick. Both of us own everything; lanes in `docs/ARCHITECTURE.md` only split
   work between agents.
 - Project: **Kip**, sleep, noise and the city. See `docs/SPEC.md` and `docs/BUSINESS.md`.
@@ -13,11 +13,11 @@ Event facts, deadlines and prize targets. Fill in the TBDs at kick-off.
 ## Deadlines
 | What | When |
 |---|---|
-| Kick-off (hacking starts) | TBD |
+| Kick-off (hacking starts) | Sat 14 Nov 2026, 12:00 |
 | M0 skeleton merged and deployed | kick-off + ~2h |
 | Checkpoint: Watch works, else phone only | kick-off + 2h |
 | Checkpoint: one full night stored end to end | kick-off + 14h |
-| Code freeze (judging minus 3h), tag `demo-v1` | TBD (plan: kick-off + 20h) |
+| Code freeze, tag `demo-v1` | Sun 15 Nov 2026, 12:00 (kick-off + 24h) |
 | Submission (Devpost) | TBD |
 | Judging | TBD |
 
@@ -43,14 +43,15 @@ Promo codes and credits (ElevenLabs, Entire, Vultr, MongoDB) come from the MLH e
 them.
 
 ## Hour-one sign-ups
-Start these at kick-off; each can take hours or days.
-- Street Manager open data registration (SNS subscription must be confirmed within 3 days;
-  fallback: a recorded sample of Newcastle permits).
-- Gemini paid tier (billing enabled on the key).
-- Hotel affiliate network (Awin, CJ, Expedia, Travelpayouts). Expect no approval during the event;
-  the demo uses placeholder links.
-- Apple developer account and HealthKit entitlement; test Watch signing, stop at hour 2.
-- Check which Observatory noise sensors reported in the last 24 hours; backfill 30+ nights.
+Status on 2026-11-14. Keys live in a 1Password Environment, not in the repo.
+- Done: ElevenLabs key; MongoDB Atlas cluster and org API key; Tiger Cloud service; Solana RPC and
+  keypair (devnet for the demo, mainnet for the real app, see `docs/DECISIONS.md`).
+- Done: Gemini key on the free tier, not paid. Use only our own test clips.
+- Done: Apple developer account. Watch signing result not known yet; test it, stop at hour 2.
+- Skipped on purpose: Street Manager registration (use the recorded sample of Newcastle permits,
+  #67); hotel affiliate network (OpenStreetMap hotels with placeholder booking links); Vultr API
+  key (the live deploy is the Cloudflare tunnel at kip.edenmatrix.xyz, Vultr is only an alternative).
+- Open: check which Observatory noise sensors reported in the last 24 hours; backfill 30+ nights.
 
 ## Risks
 | Risk | Likelihood | Fallback |
@@ -61,7 +62,7 @@ Start these at kick-off; each can take hours or days.
 | Nobody sleeps near an Observatory sensor | Happened (confirmed 2026-11-14) | The personal night still works; the city map uses sensors near the venue |
 | Street Manager feed not live in time | Medium | A recorded sample of Newcastle permits |
 | Observatory sensors stale or API down | Medium | History backfilled into Tiger in hour one; pick sensors that reported in the last 24 hours |
-| Gemini paid tier not set up | Low | Enable billing in hour one |
+| Gemini free-tier limits hit | Low | Use only our own test clips; enable billing if needed |
 | Hotel affiliate access not granted | High | OpenStreetMap hotels with placeholder booking links |
 | Live audio fails in a loud hall | Medium | Speaker held against the phone; backup video |
 | Judges challenge the causation claim | High | Counts against the random-window baseline; say "linked to", never "caused by" |

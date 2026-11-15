@@ -1,4 +1,10 @@
-import { type WorkRecord, workRecord } from "@kip/shared/works";
+import {
+  type StoredWork,
+  storedWork,
+  type WorkGeometry,
+  type WorkRecord,
+  workRecord,
+} from "@kip/shared/works";
 import type { Db, Filter } from "mongodb";
 import { mongo } from "../../db/mongo";
 
@@ -7,7 +13,7 @@ export type WorksWrite = "inserted" | "updated" | "kept";
 /** Permit storage. Tests pass a memory repository; the API uses MongoDB `works`. */
 export interface WorksRepository {
   upsert(work: WorkRecord): Promise<WorksWrite>;
-  findNear(lon: number, lat: number, radiusM: number): Promise<WorkRecord[]>;
+  findNear(lon: number, lat: number, radiusM: number): Promise<StoredWork[]>;
 }
 
 const METRES_PER_DEGREE_LAT = 110_540;
@@ -39,19 +45,48 @@ function distanceToSegment(
 }
 
 /** Metres from a WGS84 point to a stored geometry. A line uses the closest point on it. */
-export function distanceToWork(lat: number, lon: number, work: WorkRecord): number {
-  if (work.geometry.type === "Point") {
-    const [workLon, workLat] = work.geometry.coordinates;
+export function distanceToWork(lat: number, lon: number, work: { geometry: WorkGeometry }): number {
+  const geometry = work.geometry;
+  if (geometry.type === "Point") {
+    const [workLon, workLat] = geometry.coordinates;
     return Math.hypot(...localMetres(workLat, workLon, lat, lon));
   }
+  if (
+    geometry.type === "Polygon" &&
+    insideRing(lat, lon, geometry.coordinates[0]) &&
+    !geometry.coordinates.slice(1).some((hole) => insideRing(lat, lon, hole))
+  ) {
+    return 0;
+  }
+  const lines = geometry.type === "LineString" ? [geometry.coordinates] : geometry.coordinates;
   let best = Number.POSITIVE_INFINITY;
-  for (let i = 0; i < work.geometry.coordinates.length - 1; i++) {
-    const start = work.geometry.coordinates[i];
-    const end = work.geometry.coordinates[i + 1];
-    if (!start || !end) continue;
-    best = Math.min(best, distanceToSegment(lat, lon, start, end));
+  for (const line of lines) {
+    for (let i = 0; i < line.length - 1; i++) {
+      const start = line[i];
+      const end = line[i + 1];
+      if (!start || !end) continue;
+      best = Math.min(best, distanceToSegment(lat, lon, start, end));
+    }
   }
   return best;
+}
+
+function insideRing(
+  lat: number,
+  lon: number,
+  ring: ReadonlyArray<readonly [number, number]> | undefined,
+): boolean {
+  if (!ring) return false;
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const a = ring[i];
+    const b = ring[j];
+    if (!a || !b) continue;
+    if (a[1] > lat !== b[1] > lat && lon < ((b[0] - a[0]) * (lat - a[1])) / (b[1] - a[1]) + a[0]) {
+      inside = !inside;
+    }
+  }
+  return inside;
 }
 
 /** In-memory permits for tests. Same upsert and distance rules as the MongoDB repository. */
@@ -81,7 +116,7 @@ export function memoryWorksRepository(): WorksRepository & { all(): WorkRecord[]
             a.distance - b.distance ||
             a.work.permitReferenceNumber.localeCompare(b.work.permitReferenceNumber),
         )
-        .map((hit) => workRecord.parse(hit.work));
+        .map((hit) => storedWork.parse(hit.work));
     },
   };
 }
@@ -125,7 +160,7 @@ export function createMongoWorksRepository(db: Db): WorksRepository {
         },
       } as Filter<WorkRecord>;
       const docs = await works().find(filter).toArray();
-      return docs.map((doc) => workRecord.parse(doc));
+      return docs.map((doc) => storedWork.parse(doc));
     },
   };
 }

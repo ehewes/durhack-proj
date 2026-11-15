@@ -110,8 +110,14 @@ function stageRows(nightId: string, stages: readonly StageRow[]): StageInsert[] 
   }));
 }
 
-function stored(document: NightDocument): NightDocument & { _id: string } {
-  return { ...document, _id: document.nightId };
+/** Marks a night as made-up. The shared schema has no such field, so only the stored copy has it. */
+type SimulatedFlag = { simulated: true };
+
+function stored(
+  document: NightDocument,
+  flag?: SimulatedFlag,
+): NightDocument & { _id: string } & Partial<SimulatedFlag> {
+  return { ...document, ...flag, _id: document.nightId };
 }
 
 function documentOf(raw: NightDocument): NightDocument {
@@ -146,7 +152,7 @@ async function guard<T>(action: "read" | "write", run: () => Promise<T>): Promis
   }
 }
 
-async function save(write: NightWrite): Promise<void> {
+async function save(write: NightWrite, flag?: SimulatedFlag): Promise<void> {
   const nightId = write.document.nightId;
   const sql = tiger();
   await sql.begin(async (tx) => {
@@ -166,7 +172,9 @@ async function save(write: NightWrite): Promise<void> {
       }
     }
   });
-  await nights().replaceOne({ _id: nightId }, stored(write.document), { upsert: true });
+  await nights().replaceOne({ _id: nightId }, stored(write.document, flag), {
+    upsert: true,
+  });
 }
 
 async function readSeries(nightId: string): Promise<NightSeries> {
@@ -204,14 +212,16 @@ function affected(result: { count: number | null }): number {
 }
 
 async function deleteUser(userId: string): Promise<NightDeleteCounts> {
-  const docs = await nights().find({ userId }).toArray();
+  const docs = await nights()
+    .find({ userId, simulated: { $ne: true } })
+    .toArray();
   const ids = docs.map((doc) => doc.nightId);
   if (ids.length === 0) return { nights: 0, noiseRows: 0, vitalRows: 0, stageRows: 0 };
   const sql = tiger();
   const noise = await sql`delete from night_noise where night_id = any(${ids}::uuid[])`;
   const vital = await sql`delete from vitals where night_id = any(${ids}::uuid[])`;
   const stage = await sql`delete from sleep_stages where night_id = any(${ids}::uuid[])`;
-  const deleted = await nights().deleteMany({ userId });
+  const deleted = await nights().deleteMany({ userId, simulated: { $ne: true } });
   return {
     nights: deleted.deletedCount,
     noiseRows: affected(noise),
@@ -220,23 +230,126 @@ async function deleteUser(userId: string): Promise<NightDeleteCounts> {
   };
 }
 
+/** Where a night was recorded, for the coverage map. Never leaves the server as is. */
+export type NightLocation = { userId: string; lat: number; lon: number; simulated: boolean };
+
+type NightLocationRow = {
+  userId: string;
+  location: { lat: number; lon: number } | null;
+  simulated?: boolean;
+};
+
+/** The part of the `nights` collection the coverage read uses, so tests can check its filter. */
+export type NightLocationSource = {
+  find(
+    filter: Record<string, unknown>,
+    options: { projection: Record<string, 1> },
+  ): { toArray(): Promise<NightLocationRow[]> };
+};
+
+const liveNightLocations: NightLocationSource = {
+  find: (filter, options) => nights().find(filter, options),
+};
+
+/**
+ * Locations of nights from `since` (a London night date) on, real and simulated. Only nights
+ * stored with location consent have one; the consent check here is a second guard.
+ */
+export function readNightLocations(
+  since: string,
+  source: NightLocationSource = liveNightLocations,
+): Promise<NightLocation[]> {
+  return guard("read", async () => {
+    const rows = await source
+      .find(
+        { night: { $gte: since }, location: { $ne: null }, "consent.location": true },
+        { projection: { userId: 1, location: 1, simulated: 1 } },
+      )
+      .toArray();
+    return rows.flatMap((row): NightLocation[] =>
+      row.location
+        ? [
+            {
+              userId: row.userId,
+              lat: row.location.lat,
+              lon: row.location.lon,
+              simulated: row.simulated === true,
+            },
+          ]
+        : [],
+    );
+  });
+}
+
 /** Tiger + Mongo. Connecting waits until the first call, so imports stay side-effect free. */
 export function createNightRepo(): NightRepo {
   return {
     save: (write) => guard("write", () => save(write)),
     getDocument: (nightId) =>
       guard("read", async () => {
-        const found = await nights().findOne({ _id: nightId });
+        const found = await nights().findOne({ _id: nightId, simulated: { $ne: true } });
         return found ? documentOf(found) : null;
       }),
     readSeries: (nightId) => guard("read", () => readSeries(nightId)),
     listDocuments: (userId) =>
-      guard("read", async () => (await nights().find({ userId }).toArray()).map(documentOf)),
+      guard("read", async () =>
+        (
+          await nights()
+            .find({ userId, simulated: { $ne: true } })
+            .toArray()
+        ).map(documentOf),
+      ),
     updateDocument: (document) =>
       guard("write", async () => {
         const result = await nights().replaceOne({ _id: document.nightId }, stored(document));
         if (result.matchedCount === 0) throw new NightNotFoundError(document.nightId);
       }),
     deleteUser: (userId) => guard("write", () => deleteUser(userId)),
+  };
+}
+
+export type SimulatedNight = { simulated: true; document: NightDocument };
+
+/** Simulated nights live beside real ones in the same stores, told apart by `simulated: true`. */
+export type SimulatedNightStore = {
+  save(write: NightWrite): Promise<void>;
+  count(): Promise<number>;
+  /** The only read that returns simulated nights; each carries `simulated: true`. */
+  list(): Promise<SimulatedNight[]>;
+  /** Deletes only nights flagged simulated, in Mongo and Tiger. */
+  removeAll(): Promise<NightDeleteCounts>;
+};
+
+async function removeSimulated(): Promise<NightDeleteCounts> {
+  const docs = await nights()
+    .find({ simulated: true }, { projection: { nightId: 1 } })
+    .toArray();
+  const ids = docs.map((doc) => doc.nightId);
+  if (ids.length === 0) return { nights: 0, noiseRows: 0, vitalRows: 0, stageRows: 0 };
+  const sql = tiger();
+  const noise = await sql`delete from night_noise where night_id = any(${ids}::uuid[])`;
+  const vital = await sql`delete from vitals where night_id = any(${ids}::uuid[])`;
+  const stage = await sql`delete from sleep_stages where night_id = any(${ids}::uuid[])`;
+  const deleted = await nights().deleteMany({ _id: { $in: ids }, simulated: true });
+  return {
+    nights: deleted.deletedCount,
+    noiseRows: affected(noise),
+    vitalRows: affected(vital),
+    stageRows: affected(stage),
+  };
+}
+
+export function createSimulatedNightStore(): SimulatedNightStore {
+  return {
+    save: (write) => guard("write", () => save(write, { simulated: true })),
+    list: () =>
+      guard("read", async () =>
+        (await nights().find({ simulated: true }).toArray()).map((raw) => ({
+          simulated: true as const,
+          document: documentOf(raw),
+        })),
+      ),
+    count: () => guard("read", () => nights().countDocuments({ simulated: true })),
+    removeAll: () => guard("write", removeSimulated),
   };
 }

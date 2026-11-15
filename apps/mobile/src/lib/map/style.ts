@@ -1,37 +1,16 @@
-import type { StyleSpecification } from "maplibre-gl";
 import type {
   MapCamera,
   MapFeatureCollection,
   MapFeatureProperties,
   MapGeometry,
+  MapHeatPoint,
   MapPosition,
 } from "./types";
 
 /** Newcastle city centre, [longitude, latitude] */
 export const NEWCASTLE: [number, number] = [-1.614, 54.973];
 
-export const OSM_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-
-/**
- * OpenStreetMap raster tiles for the native map. The web map uses Mapbox.
- * Kept so Map.native.tsx can stay on MapLibre until that migration lands.
- */
-export const osmStyle: StyleSpecification = {
-  version: 8,
-  sources: {
-    osm: {
-      type: "raster",
-      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-      tileSize: 256,
-      maxzoom: 19,
-      attribution: OSM_ATTRIBUTION,
-    },
-  },
-  layers: [{ id: "osm", type: "raster", source: "osm" }],
-};
-
-/** Restrained Mapbox basemap. The default Standard style is busier than this dashboard needs. */
+/** Restrained Mapbox basemap for web and iPhone. The default Standard style is busier than Kip needs. */
 export const MAPBOX_STYLE = "mapbox://styles/mapbox/light-v11";
 
 export const MAPBOX_TOKEN_ENV = "EXPO_PUBLIC_MAPBOX_TOKEN";
@@ -39,10 +18,23 @@ export const MAPBOX_TOKEN_ENV = "EXPO_PUBLIC_MAPBOX_TOKEN";
 export const MISSING_MAPBOX_TOKEN_MESSAGE =
   "Set EXPO_PUBLIC_MAPBOX_TOKEN to a Mapbox public token to show the Newcastle map.";
 
+/** The iPhone reads its own public token, so URL restrictions on the web token never reach it. */
+export const MAPBOX_MOBILE_TOKEN_ENV = "EXPO_PUBLIC_MAPBOX_MOBILE_TOKEN";
+
+export const MISSING_MOBILE_MAPBOX_TOKEN_MESSAGE =
+  "Set EXPO_PUBLIC_MAPBOX_MOBILE_TOKEN to a Mapbox public token (pk.), then restart Metro, to show the Newcastle map.";
+
 /** Ink, one accent, and white. Matches the app theme. No multi-hue scale. */
 const INK = "#1a1a18";
 const ACCENT = "#2f5bd3";
 const ON_INK = "#ffffff";
+
+/** Text drawn over the map. The basemap stays light in dark mode, so this ink always reads. */
+export const MAP_INK = INK;
+
+/** The light canvas and edge for anything drawn in place of the map, so MAP_INK reads on it too. */
+export const MAP_CANVAS = "#f6f6f4";
+export const MAP_EDGE = "#e2e2de";
 
 const CLUSTER_RADIUS = 48;
 const CLUSTER_MAX_ZOOM = 14;
@@ -54,13 +46,26 @@ export function mapboxToken(env?: { EXPO_PUBLIC_MAPBOX_TOKEN?: string }): string
   return token.length > 0 ? token : undefined;
 }
 
+/**
+ * The iPhone map's public token. A secret `sk.` token is refused: whatever sits in an
+ * `EXPO_PUBLIC_` variable ships inside the app bundle.
+ */
+export function mobileMapboxToken(env?: {
+  EXPO_PUBLIC_MAPBOX_MOBILE_TOKEN?: string;
+}): string | undefined {
+  const token = mapboxToken({ EXPO_PUBLIC_MAPBOX_TOKEN: env?.EXPO_PUBLIC_MAPBOX_MOBILE_TOKEN });
+  return token?.startsWith("sk.") ? undefined : token;
+}
+
 export const MAP_SOURCE = {
+  heat: "kip-heat",
   points: "kip-points",
   lines: "kip-lines",
   polygons: "kip-polygons",
 } as const;
 
 export const MAP_LAYER = {
+  heat: "kip-heat",
   polygons: "kip-polygons",
   polygonLine: "kip-polygon-line",
   lines: "kip-lines",
@@ -69,7 +74,10 @@ export const MAP_LAYER = {
   points: "kip-points",
 } as const;
 
-/** Later entries draw above earlier ones. */
+/**
+ * Later entries draw above earlier ones. These are the layers a click or tap can select; the heat
+ * layer sits below all of them and is never selectable.
+ */
 export const MAP_LAYER_ORDER = [
   MAP_LAYER.polygons,
   MAP_LAYER.polygonLine,
@@ -101,8 +109,10 @@ export type MapGeoJsonSourceSpec = {
 
 export type MapLayerSpec = {
   id: string;
-  type: "fill" | "line" | "circle" | "symbol";
+  type: "fill" | "line" | "circle" | "symbol" | "heatmap";
   source: string;
+  /** The layer is hidden from this zoom in. */
+  maxzoom?: number;
   filter?: unknown[];
   layout?: Record<string, string | number | unknown[]>;
   paint?: Record<string, string | number | unknown[]>;
@@ -176,6 +186,22 @@ export function featuresToCollections(features: MapFeatureCollection | undefined
   return { points, lines, polygons };
 }
 
+/** Heat points as the heat source's features. Invalid positions are dropped, weights clamped to 0 to 1. */
+export function heatCollection(heat: readonly MapHeatPoint[] | undefined): DrawnCollection {
+  const collection = emptyCollection();
+  for (const point of heat ?? []) {
+    if (!isPosition(point?.position) || !Number.isFinite(point.weight)) continue;
+    const id = `heat-${collection.features.length}`;
+    collection.features.push({
+      type: "Feature",
+      id,
+      properties: { id, weight: Math.min(Math.max(point.weight, 0), 1) },
+      geometry: { type: "Point", coordinates: point.position },
+    });
+  }
+  return collection;
+}
+
 export function shapeSource(data: DrawnCollection): MapGeoJsonSourceSpec {
   return { type: "geojson", data };
 }
@@ -198,7 +224,7 @@ function selectedColor(selectedId: string | null): unknown[] {
   return ["case", ["==", ["get", "id"], selectedId ?? ""], ACCENT, INK];
 }
 
-/** Overlay layers. Point clusters use one ink, not a colour scale. */
+/** Overlay layers. Clusters use one ink; a single point takes its feature's `color`, else ink. */
 export function mapOverlayLayers(selectedId: string | null): MapLayerSpec[] {
   return [
     {
@@ -258,13 +284,58 @@ export function mapOverlayLayers(selectedId: string | null): MapLayerSpec[] {
       source: MAP_SOURCE.points,
       filter: ["!", ["has", "point_count"]],
       paint: {
-        "circle-color": INK,
+        "circle-color": ["coalesce", ["get", "color"], INK],
         "circle-radius": 6,
         "circle-stroke-color": ACCENT,
         "circle-stroke-width": selectedCase(selectedId, 3, 0),
       },
     },
   ];
+}
+
+/** The heat layer stops drawing from this zoom in, so it never reads as street-precise. */
+export const HEAT_MAX_ZOOM = 15;
+
+/** The accent at a given opacity. The heat ramp is this one hue, from clear to solid. */
+const accentAt = (alpha: number) => `rgba(47, 91, 211, ${alpha})`;
+
+/**
+ * A soft heat layer, one hue. Its radius doubles with each zoom level, so a point always covers
+ * about 300 m around it (roughly a 500 m area) at Newcastle's latitude, and it fades out before
+ * street level.
+ */
+export function heatLayer(): MapLayerSpec {
+  return {
+    id: MAP_LAYER.heat,
+    type: "heatmap",
+    source: MAP_SOURCE.heat,
+    maxzoom: HEAT_MAX_ZOOM,
+    paint: {
+      "heatmap-weight": ["coalesce", ["get", "weight"], 0],
+      "heatmap-intensity": 1,
+      "heatmap-radius": ["interpolate", ["exponential", 2], ["zoom"], 10, 7, 15, 224],
+      "heatmap-color": [
+        "interpolate",
+        ["linear"],
+        ["heatmap-density"],
+        0,
+        accentAt(0),
+        0.3,
+        accentAt(0.3),
+        1,
+        accentAt(0.6),
+      ],
+      "heatmap-opacity": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        HEAT_MAX_ZOOM - 1,
+        1,
+        HEAT_MAX_ZOOM,
+        0,
+      ],
+    },
+  };
 }
 
 /** A click target from a rendered feature. Clusters zoom; other hits select. */
@@ -303,4 +374,115 @@ export function camerasMatch(
     Math.abs(current.lat - next.center[1]) < CAMERA_EPSILON &&
     Math.abs(current.zoom - next.zoom) < ZOOM_EPSILON
   );
+}
+
+/** One overlay layer in the shape `@rnmapbox/maps` takes: camelCase style props. */
+export type NativeLayerSpec = {
+  id: string;
+  type: MapLayerSpec["type"];
+  source: string;
+  filter?: unknown[];
+  /**
+   * The native SDK stacks layers in the order it adds them. Each layer sits above the one before
+   * it, so the stack matches MAP_LAYER_ORDER whatever order they mount in.
+   */
+  aboveLayerID?: string;
+  /** The layer is hidden from this zoom in. */
+  maxZoomLevel?: number;
+  style: Record<string, unknown>;
+};
+
+function camelCase(key: string): string {
+  return key.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
+}
+
+function toNative(layer: MapLayerSpec, aboveLayerID: string | undefined): NativeLayerSpec {
+  const style: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries({ ...layer.layout, ...layer.paint })) {
+    style[camelCase(key)] = value;
+  }
+  return {
+    id: layer.id,
+    type: layer.type,
+    source: layer.source,
+    filter: layer.filter,
+    aboveLayerID,
+    maxZoomLevel: layer.maxzoom,
+    style,
+  };
+}
+
+/** The web overlay layers translated for the native SDK, so the iPhone draws the same map. */
+export function nativeOverlayLayers(selectedId: string | null): NativeLayerSpec[] {
+  const layers = mapOverlayLayers(selectedId);
+  return layers.map((layer, index) => toNative(layer, layers[index - 1]?.id));
+}
+
+/** The heat layer for the native SDK. The map mounts its source first, so it draws lowest. */
+export function nativeHeatLayer(): NativeLayerSpec {
+  return toNative(heatLayer(), undefined);
+}
+
+/** A tapped feature as the native SDK reports it: top-most first. */
+export type PressedFeature = {
+  id?: string | number;
+  properties?: Record<string, unknown> | null;
+};
+
+/** Classify a native tap the way a web click is classified: the top feature wins. */
+export function pressedHit(features: readonly PressedFeature[] | undefined): MapHit {
+  const top = features?.[0];
+  return top ? classifyMapHit(top.properties, top.id) : { kind: "empty" };
+}
+
+/** [longitude, latitude] of a point geometry, or null. Used to centre on a tapped cluster. */
+export function pointPosition(
+  geometry: { type?: string; coordinates?: unknown } | null | undefined,
+): MapPosition | null {
+  if (geometry?.type !== "Point" || !isPosition(geometry.coordinates)) return null;
+  return [geometry.coordinates[0], geometry.coordinates[1]];
+}
+
+function sameCamera(a: MapCamera, b: MapCamera): boolean {
+  return camerasMatch({ lng: a.center[0], lat: a.center[1], zoom: a.zoom }, b);
+}
+
+export type CameraTracker = {
+  /** The map went idle. Returns the camera to report, or null when it has not moved. */
+  idle: (center: readonly number[], zoom: number) => MapCamera | null;
+  /** The caller asked for a camera. Returns it when the map must move, or null. */
+  request: (next: MapCamera) => MapCamera | null;
+};
+
+/**
+ * Camera bookkeeping for the native map. The native SDK goes idle after loading, tiles and
+ * overlay updates too, so only real moves are reported, like web `moveend`: the first settle is
+ * where the map opened, not a move. The map moves only when the caller asks for a new camera, so
+ * echoing a reported camera back as props is a no-op.
+ */
+export function cameraTracker(initial: MapCamera): CameraTracker {
+  // Where the map last settled, where it is or is heading, and what the caller last asked for.
+  let shown: MapCamera | null = null;
+  let target = initial;
+  let requested = initial;
+  return {
+    idle(center, zoom) {
+      if (!isPosition(center) || !Number.isFinite(zoom)) return null;
+      const next: MapCamera = { center: [center[0], center[1]], zoom };
+      const opened = shown === null;
+      target = next;
+      if (shown && sameCamera(shown, next)) return null;
+      shown = next;
+      return opened ? null : next;
+    },
+    request(next) {
+      if (sameCamera(requested, next)) return null;
+      requested = next;
+      // Compare with where the map is heading, so asking for A, B, then A again before the map
+      // settles still sends it back to A.
+      if (sameCamera(target, next)) return null;
+      target = next;
+      return next;
+    },
+  };
 }

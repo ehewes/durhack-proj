@@ -3,14 +3,16 @@ import mapboxgl, {
   type Map as MapboxMap,
   type MapMouseEvent,
 } from "mapbox-gl";
-import { Text, useColors } from "@/lib/ui";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useEffect, useRef } from "react";
 import { StyleSheet, View } from "react-native";
+import { MissingMapToken } from "./MissingMapToken";
 import {
   camerasMatch,
   classifyMapHit,
   featuresToCollections,
+  heatCollection,
+  heatLayer,
   MAP_LAYER,
   MAP_LAYER_ORDER,
   MAP_SOURCE,
@@ -21,15 +23,24 @@ import {
   mapboxToken,
   mapOverlayLayers,
   NEWCASTLE,
+  pointPosition,
   pointSource,
   shapeSource,
 } from "./style";
-import type { MapCamera, MapFeatureCollection, MapPosition, MapProps, MapSelection } from "./types";
+import type {
+  MapCamera,
+  MapFeatureCollection,
+  MapHeatPoint,
+  MapPosition,
+  MapProps,
+  MapSelection,
+} from "./types";
 
 type OverlayState = {
   features: MapFeatureCollection | undefined;
   cluster: boolean;
   selectedId: string | null;
+  heat: readonly MapHeatPoint[] | undefined;
 };
 
 export type WebMapHandlers = {
@@ -42,12 +53,14 @@ export type WebMapSession = {
     features: MapFeatureCollection | undefined,
     cluster: boolean,
     selectedId: string | null,
+    heat?: readonly MapHeatPoint[],
   ) => void;
   setCamera: (center: MapPosition, zoom: number) => void;
   destroy: () => void;
 };
 
 function layersForSource(id: string): readonly string[] {
+  if (id === MAP_SOURCE.heat) return [MAP_LAYER.heat];
   if (id === MAP_SOURCE.points)
     return [MAP_LAYER.clusters, MAP_LAYER.clusterCount, MAP_LAYER.points];
   if (id === MAP_SOURCE.lines) return [MAP_LAYER.lines];
@@ -83,6 +96,12 @@ function applyOverlays(
 ): boolean {
   const collections = featuresToCollections(pending.features);
   const recreatePoints = previousCluster !== undefined && previousCluster !== pending.cluster;
+  // The heat layer goes in first and below everything else, and is never part of a click.
+  syncSource(map, MAP_SOURCE.heat, shapeSource(heatCollection(pending.heat)), false);
+  if (!map.getLayer(MAP_LAYER.heat)) {
+    const below = MAP_LAYER_ORDER.find((id) => map.getLayer(id));
+    map.addLayer(heatLayer() as never, below);
+  }
   syncSource(map, MAP_SOURCE.polygons, shapeSource(collections.polygons), false);
   syncSource(map, MAP_SOURCE.lines, shapeSource(collections.lines), false);
   syncSource(
@@ -98,23 +117,13 @@ function applyOverlays(
   return pending.cluster;
 }
 
-function clusterCenter(
-  geometry: { type?: string; coordinates?: unknown } | null | undefined,
-): MapPosition | null {
-  if (geometry?.type !== "Point" || !Array.isArray(geometry.coordinates)) return null;
-  const lng = geometry.coordinates[0];
-  const lat = geometry.coordinates[1];
-  if (typeof lng !== "number" || typeof lat !== "number") return null;
-  return [lng, lat];
-}
-
 function expandCluster(
   map: MapboxMap,
   clusterId: number,
   geometry: { type?: string; coordinates?: unknown },
 ) {
   const source = map.getSource(MAP_SOURCE.points);
-  const center = clusterCenter(geometry);
+  const center = pointPosition(geometry);
   if (source?.type !== "geojson" || !center) return;
   source.getClusterExpansionZoom(clusterId, (error, zoom) => {
     if (error || zoom == null) return;
@@ -145,7 +154,12 @@ export function openWebMap(
 
   let loaded = false;
   let appliedCluster: boolean | undefined;
-  let pending: OverlayState = { features: undefined, cluster: false, selectedId: null };
+  let pending: OverlayState = {
+    features: undefined,
+    cluster: false,
+    selectedId: null,
+    heat: undefined,
+  };
 
   const apply = () => {
     appliedCluster = applyOverlays(map, pending, appliedCluster);
@@ -191,8 +205,8 @@ export function openWebMap(
   });
 
   return {
-    setOverlays(features, cluster, selectedId) {
-      pending = { features, cluster, selectedId };
+    setOverlays(features, cluster, selectedId, heat) {
+      pending = { features, cluster, selectedId, heat };
       if (loaded) apply();
     },
     setCamera(center, zoom) {
@@ -215,10 +229,10 @@ export function MapView({
   features,
   cluster = false,
   selectedId = null,
+  heat,
   onSelect,
   onCameraChange,
 }: MapProps) {
-  const colors = useColors();
   const token = mapboxToken({
     EXPO_PUBLIC_MAPBOX_TOKEN: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
   });
@@ -246,23 +260,10 @@ export function MapView({
   }, [center, zoom]);
 
   useEffect(() => {
-    sessionRef.current?.setOverlays(features, cluster, selectedId);
-  }, [features, cluster, selectedId]);
+    sessionRef.current?.setOverlays(features, cluster, selectedId, heat);
+  }, [features, cluster, selectedId, heat]);
 
-  if (!token) {
-    return (
-      <View
-        style={[
-          styles.map,
-          styles.missing,
-          { backgroundColor: colors.surface, borderColor: colors.border },
-          style,
-        ]}
-      >
-        <Text>{MISSING_MAPBOX_TOKEN_MESSAGE}</Text>
-      </View>
-    );
-  }
+  if (!token) return <MissingMapToken message={MISSING_MAPBOX_TOKEN_MESSAGE} style={style} />;
 
   return (
     <View style={[styles.map, style]}>
@@ -271,7 +272,4 @@ export function MapView({
   );
 }
 
-const styles = StyleSheet.create({
-  map: { flex: 1, minHeight: 240 },
-  missing: { borderWidth: 1, padding: 16, justifyContent: "center" },
-});
+const styles = StyleSheet.create({ map: { flex: 1, minHeight: 240 } });

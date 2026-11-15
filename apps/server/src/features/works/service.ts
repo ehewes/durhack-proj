@@ -4,10 +4,11 @@ import {
   STREET_MANAGER_TOPIC_ARNS,
   StreetManagerError,
   type StreetManagerOptions,
+  type StreetManagerPermit,
 } from "../../integrations/street-manager";
 import { permitToWork } from "./document";
 import type { StreetManagerPost } from "./post";
-import { worksRepository } from "./repo";
+import { type WorksWrite, worksRepository } from "./repo";
 
 const topics = Object.values(STREET_MANAGER_TOPIC_ARNS);
 
@@ -26,6 +27,36 @@ function failure(error: StreetManagerError): StreetManagerPost {
     return { status: 502, body: { ok: false, error: error.code } };
   }
   return { status: 403, body: { ok: false, error: error.code } };
+}
+
+export type StorePermitResult =
+  | { stored: true; permitReferenceNumber: string; nightWork: boolean; write: WorksWrite }
+  | { stored: false; permitReferenceNumber: string; reason: "outside_newcastle" };
+
+/**
+ * Keeps a Newcastle permit in `works` and drops the rest of England. Live SNS permits and
+ * the sample loaded by `seed:works` both come through here. `simulated` labels sample data
+ * and is never true for a live permit.
+ */
+export async function storePermit(
+  permit: StreetManagerPermit,
+  options: { simulated: boolean },
+): Promise<StorePermitResult> {
+  if (!isInNewcastleArea(permit.location.lat, permit.location.lon)) {
+    return {
+      stored: false,
+      permitReferenceNumber: permit.permitReferenceNumber,
+      reason: "outside_newcastle",
+    };
+  }
+  const work = permitToWork(permit, options);
+  const write = await worksRepository().upsert(work);
+  return {
+    stored: true,
+    permitReferenceNumber: work.permitReferenceNumber,
+    nightWork: work.nightWork,
+    write,
+  };
 }
 
 /**
@@ -68,30 +99,27 @@ export async function receiveStreetManagerPost(rawBody: string): Promise<StreetM
     };
   }
 
-  const permit = receipt.permit;
-  if (!isInNewcastleArea(permit.location.lat, permit.location.lon)) {
+  const result = await storePermit(receipt.permit, { simulated: false });
+  if (!result.stored) {
     return {
       status: 200,
       body: {
         ok: true,
         kind: "permit",
         stored: false,
-        permitReferenceNumber: permit.permitReferenceNumber,
-        reason: "outside_newcastle",
+        permitReferenceNumber: result.permitReferenceNumber,
+        reason: result.reason,
       },
     };
   }
-
-  const work = permitToWork(permit, { simulated: false });
-  await worksRepository().upsert(work);
   return {
     status: 200,
     body: {
       ok: true,
       kind: "permit",
       stored: true,
-      permitReferenceNumber: work.permitReferenceNumber,
-      nightWork: work.nightWork,
+      permitReferenceNumber: result.permitReferenceNumber,
+      nightWork: result.nightWork,
     },
   };
 }

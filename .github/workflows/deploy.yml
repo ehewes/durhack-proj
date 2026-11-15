@@ -1,0 +1,56 @@
+name: deploy
+
+# Ships main to the Docker host behind the Cloudflare tunnel (infra/README.md, "Deploy from GitHub
+# Actions") once ci passes on a push, or by hand. The runner reaches the host only over Tailscale,
+# as tag:ci. Server secrets stay in /opt/kip/.env on the host: this workflow carries only the ssh key.
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+# One deploy at a time. A newer push waits for the running deploy instead of cancelling it.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The commit ci checked, not whatever main points at by now
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Join the tailnet as tag:ci
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Load the deploy key and the pinned host key
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf '%s\n' 'Host *' '  IdentityFile ~/.ssh/id_ed25519' '  IdentitiesOnly yes' \
+            '  StrictHostKeyChecking yes' '  BatchMode yes' '  ConnectTimeout 30' > ~/.ssh/config
+
+      - name: Deploy
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+        run: infra/tunnel/deploy.sh HEAD

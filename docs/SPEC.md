@@ -79,13 +79,11 @@ If a P1 step isn't working at the freeze, cut it from the script rather than sli
 6. Air quality factor in the hotel score (P2).
 
 ## Open questions
-These change the plan. Until answered, the assumption in brackets holds. Two are answered; the event
-length and start time and the "35" remain open.
+These change the plan. All are answered.
 - Does one of us sleep at home in Newcastle during the event, near an Observatory noise sensor?
   ANSWERED (2026-11-14): No. The city map uses sensors near the venue, and demo step 4 uses a night
   exported from HealthKit.
-- How long is the event, and when does it start? [24 hours from about 10am.]
+- How long is the event, and when does it start? ANSWERED (2026-11-14): 24 hours, from Sat 14 Nov 2026
+  12:00 to Sun 15 Nov 2026 12:00, which is also the code freeze.
 - Is each team limited to one sponsor track? ANSWERED (2026-11-14): Yes. Enter MongoDB: see
   `docs/DECISIONS.md`.
-- What does the "35" in the team's notes mean: a dB threshold, or a 35 m radius around a site?
-  [Unknown; don't build on it.]

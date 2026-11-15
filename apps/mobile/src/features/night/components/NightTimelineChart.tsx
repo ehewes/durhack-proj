@@ -20,7 +20,12 @@ export function NightTimelineChart({
   night,
   renderEventChip,
   renderWakeUpLink,
-}: { night: NightTimeline } & NightTimelineSlots) {
+  showWakeUps = true,
+}: {
+  night: NightTimeline;
+  /** False when the caller draws wake-ups from `attribution.forNight` instead. */
+  showWakeUps?: boolean;
+} & NightTimelineSlots) {
   const colors = useColors();
   const fills = useStageColors();
   const [width, setWidth] = useState(0);
@@ -39,8 +44,12 @@ export function NightTimelineChart({
             <StageBand stages={night.stages} scale={scale} />
             <Caption text="Bedroom noise, relative dB (dots are spikes)" />
             <NoiseLine night={night} scale={scale} height={NOISE_HEIGHT} />
-            <Caption text="Wake-ups" />
-            <WakeUpRow wakeUps={night.wakeUps} scale={scale} />
+            {showWakeUps && (
+              <>
+                <Caption text="Wake-ups" />
+                <WakeUpRow wakeUps={night.wakeUps} scale={scale} />
+              </>
+            )}
             <View style={styles.axis}>
               <Caption text={clock(start)} />
               <Caption text={clock((start + end) / 2)} />
@@ -70,7 +79,7 @@ export function NightTimelineChart({
             {renderEventChip?.(e)}
           </View>
         ))}
-        {night.wakeUps.map((w) => (
+        {(showWakeUps ? night.wakeUps : []).map((w) => (
           <View key={`${w.t}-${w.source}`} style={styles.item}>
             <Text style={[type.body, { color: colors.text }]}>
               {clock(w.t)} Wake-up{w.linkedEventId ? ", followed a spike" : ""}

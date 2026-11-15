@@ -1,14 +1,23 @@
+import type { AttributionForNightOutput } from "@kip/shared/attribution";
 import type { NightTimeline } from "@kip/shared/night";
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/lib/trpc";
 import { Button, Card, Screen, Text } from "@/lib/ui";
+import { AttributionSummary, WakeMarkers } from "../../attribution";
+import { LabelChip } from "../../labels";
 import { NightTimelineChart } from "../components";
-import { fixtureNight } from "../data/fixture";
+import { WatchNightCard } from "../components/WatchNightCard";
+import { fixtureAttribution, fixtureNight } from "../data/fixture";
 
 type State =
   | { kind: "loading" }
   | { kind: "error"; retry: () => void }
-  | { kind: "night"; night: NightTimeline; simulated: boolean };
+  | {
+      kind: "night";
+      night: NightTimeline;
+      attribution: AttributionForNightOutput | null;
+      simulated: boolean;
+    };
 
 const isStub = (e: unknown) =>
   (e as { data?: { code?: string } } | null)?.data?.code === "NOT_IMPLEMENTED";
@@ -24,16 +33,28 @@ function useNight(): State {
     enabled: latest !== undefined,
     retry: false,
   });
+  const attributed = useQuery({
+    ...trpc.attribution.forNight.queryOptions({ nightId: latest ?? fixtureNight.nightId }),
+    enabled: latest !== undefined,
+    retry: false,
+  });
   if (list.isPending || (latest !== undefined && get.isPending)) return { kind: "loading" };
   const live = get.data as NightTimeline | undefined;
-  if (live) return { kind: "night", night: live, simulated: false };
+  if (live) {
+    return {
+      kind: "night",
+      night: live,
+      attribution: (attributed.data as AttributionForNightOutput | undefined) ?? null,
+      simulated: false,
+    };
+  }
   if (list.isError && !isStub(list.error)) {
     return { kind: "error", retry: () => void list.refetch() };
   }
   if (get.isError && !isStub(get.error)) {
     return { kind: "error", retry: () => void get.refetch() };
   }
-  return { kind: "night", night: fixtureNight, simulated: true };
+  return { kind: "night", night: fixtureNight, attribution: fixtureAttribution, simulated: true };
 }
 
 export function NightScreen() {
@@ -55,10 +76,26 @@ export function NightScreen() {
             {state.simulated ? " Simulated night." : ""}
           </Text>
           <Card>
-            <NightTimelineChart night={state.night} />
+            <NightTimelineChart
+              night={state.night}
+              showWakeUps={false}
+              renderEventChip={(event) => <LabelChip label={event.label} />}
+            />
+            {state.attribution && (
+              <>
+                <AttributionSummary result={state.attribution} />
+                <WakeMarkers
+                  startedAt={state.night.startedAt}
+                  endedAt={state.night.endedAt}
+                  result={state.attribution}
+                  events={state.night.events}
+                />
+              </>
+            )}
           </Card>
         </>
       )}
+      <WatchNightCard />
     </Screen>
   );
 }

@@ -12,6 +12,9 @@ export {
   NightNotFoundError,
   NightStorageError,
 } from "./errors";
+export type { NightLocation } from "./repo";
+/** Night locations for the city coverage map: read-only, nights with location consent only. */
+export { readNightLocations as nightLocations } from "./repo";
 export type { NightDeleteCounts, NightRecord, NightVitals } from "./service";
 export {
   addEventLabels,

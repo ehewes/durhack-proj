@@ -1,0 +1,46 @@
+{
+  "simulated": true,
+  "source": "Simulated night works for the Quiet Stays demo stay, loaded after the simulated Newcastle permit sample by seed:works. Not a recorded Street Manager feed. The point is an approximate position on Grey Street outside the Grey Street Hotel, on the British National Grid. 4510 and SIM1 follow the sample's placeholder codes. A permit schedules work. It is not a measured noise event.",
+  "hotel": {
+    "id": "node/2470415681",
+    "name": "Grey Street Hotel"
+  },
+  "permits": [
+    {
+      "event_reference": 900023,
+      "event_type": "PERMIT_GRANTED",
+      "object_data": {
+        "work_reference_number": "9000451000023",
+        "permit_reference_number": "9000451000023-01",
+        "promoter_swa_code": "SIM1",
+        "promoter_organisation": "Newcastle City Council",
+        "highway_authority": "NEWCASTLE CITY COUNCIL",
+        "highway_authority_swa_code": "4510",
+        "works_location_coordinates": "POINT(425020 564121)",
+        "street_name": "Grey Street",
+        "area_name": "CITY CENTRE",
+        "town": "NEWCASTLE UPON TYNE",
+        "work_category": "Major",
+        "work_category_ref": "major",
+        "traffic_management_type": "Road closure",
+        "traffic_management_type_ref": "road_closure",
+        "current_traffic_management_type": null,
+        "current_traffic_management_type_ref": null,
+        "proposed_start_date": "2026-11-20T00:00:00.000Z",
+        "proposed_start_time": "2026-11-20T22:00:00.000Z",
+        "proposed_end_date": "2026-11-22T00:00:00.000Z",
+        "proposed_end_time": "2026-11-22T06:00:00.000Z",
+        "actual_start_date_time": null,
+        "actual_end_date_time": null,
+        "work_status": "Planned",
+        "usrn": "45100001",
+        "activity_type": "Highway repair and maintenance works",
+        "works_location_type": "Carriageway"
+      },
+      "event_time": "2026-11-13T10:00:00.000Z",
+      "object_type": "PERMIT",
+      "object_reference": "9000451000023-01",
+      "version": 1
+    }
+  ]
+}

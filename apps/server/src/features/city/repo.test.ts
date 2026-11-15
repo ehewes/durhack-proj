@@ -308,6 +308,23 @@ describe("createCityRepo", () => {
       },
     ]);
   });
+
+  test("lists every sensor ordered by id", async () => {
+    const seen: { filter: unknown; options: unknown }[] = [];
+    const docs = [{ _id: "a" }, { _id: "b" }] as SensorDocument[];
+    const collection = {
+      find: (filter: unknown, options: unknown) => {
+        seen.push({ filter, options });
+        return { toArray: async () => docs };
+      },
+    };
+    const repo = createCityRepo(
+      { unsafe: async () => [] } as unknown as Sql,
+      collection as unknown as Collection<SensorDocument>,
+    );
+    expect(await repo.listSensors()).toEqual(docs);
+    expect(seen).toEqual([{ filter: {}, options: { sort: { _id: 1 } } }]);
+  });
 });
 
 function fakeSensors() {

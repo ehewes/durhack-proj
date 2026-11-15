@@ -2,8 +2,17 @@ import { describe, expect, test } from "bun:test";
 import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { trpcServer } from "@hono/trpc-server";
+import { briefingAudioPath } from "@kip/shared/briefing";
+import { Hono } from "hono";
 import { createApp } from "./app";
-import { createCallerFactory, createContext } from "./trpc/init";
+import {
+  createCallerFactory,
+  createContext,
+  notImplemented,
+  router,
+  userProcedure,
+} from "./trpc/init";
 import { appRouter } from "./trpc/router";
 
 describe("api", () => {
@@ -15,14 +24,27 @@ describe("api", () => {
     expect(await res.json()).toEqual({ ok: true });
   });
 
-  test("stub plain routes answer 501", async () => {
-    expect((await app.request("/upload/clip", { method: "POST" })).status).toBe(501);
+  test("POST /upload/clip needs a user", async () => {
+    expect((await app.request("/upload/clip", { method: "POST" })).status).toBe(401);
   });
 
   test("POST /sns/street-manager rejects an empty body", async () => {
     const res = await app.request("/sns/street-manager", { method: "POST" });
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ ok: false, error: "malformed" });
+  });
+
+  test("GET /briefing/:nightId/audio reaches the briefing route, ahead of the web build", async () => {
+    // No briefing has been voiced, so the route's own 404 answers: not Hono's
+    // default 404, and not the web build's index.html.
+    const url = briefingAudioPath("9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d", "0".repeat(32));
+    const dir = await mkdtemp(join(tmpdir(), "kip-web-"));
+    await writeFile(join(dir, "index.html"), "<!doctype html><title>Kip</title>");
+    for (const api of [app, createApp({ webDist: dir })]) {
+      const res = await api.request(url);
+      expect(res.status).toBe(404);
+      expect(await res.json()).toEqual({ error: "Briefing audio not found" });
+    }
   });
 
   test("every feature router is registered", () => {
@@ -40,15 +62,19 @@ describe("api", () => {
     ]);
   });
 
+  // Every feature procedure is built, so a throwaway router stands in for a stub.
   test("stub procedures answer NOT_IMPLEMENTED (HTTP 501)", async () => {
-    const res = await app.request("/trpc/city.sensors");
+    const stubs = router({ stub: userProcedure.query(() => notImplemented()) });
+    const stubApp = new Hono().use(
+      "/trpc/*",
+      trpcServer({ router: stubs, createContext: (_opts, c) => createContext({ req: c.req.raw }) }),
+    );
+    const userId = "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d";
+    const res = await stubApp.request("/trpc/stub", { headers: { "x-kip-user": userId } });
     expect(res.status).toBe(501);
-    const caller = createCallerFactory(appRouter)({
-      userId: "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+    await expect(createCallerFactory(stubs)({ userId }).stub()).rejects.toMatchObject({
+      code: "NOT_IMPLEMENTED",
     });
-    await expect(
-      caller.evidence.report({ nightId: "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d" }),
-    ).rejects.toMatchObject({ code: "NOT_IMPLEMENTED" });
   });
 
   test("user procedures need the x-kip-user header", async () => {

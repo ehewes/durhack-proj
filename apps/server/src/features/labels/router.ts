@@ -1,7 +1,31 @@
-import { z } from "zod";
-import { notImplemented, router, userProcedure } from "../../trpc/init";
+import { labelsForNightInput, labelsForNightOutput } from "@kip/shared/labels";
+import { TRPCError } from "@trpc/server";
+import { router, userProcedure } from "../../trpc/init";
+import { NightNotFoundError, NightStorageError } from "../night";
+import { loadLive } from "./load";
+import type { LabelsService } from "./service";
 
-// Stubs from docs/ARCHITECTURE.md (tRPC routers). The `labels` feature fills them in.
-export const labelsRouter = router({
-  forNight: userProcedure.input(z.object({ nightId: z.uuid() })).query(() => notImplemented()),
-});
+function mapLabelsError(error: unknown): never {
+  if (error instanceof NightNotFoundError) {
+    throw new TRPCError({ code: "NOT_FOUND", message: error.message });
+  }
+  if (error instanceof NightStorageError) {
+    throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: error.message });
+  }
+  throw error;
+}
+
+export function createLabelsRouter(svc?: Pick<LabelsService, "forNight">) {
+  return router({
+    forNight: userProcedure.input(labelsForNightInput).query(async ({ ctx, input }) => {
+      try {
+        const service = svc ?? (await loadLive()).liveLabels;
+        return labelsForNightOutput.parse(await service.forNight(ctx.userId, input.nightId));
+      } catch (error) {
+        mapLabelsError(error);
+      }
+    }),
+  });
+}
+
+export const labelsRouter = createLabelsRouter();
