@@ -5,10 +5,12 @@ import {
   EVIDENCE_NOTE,
   memoText,
   parseMemo,
+  type ReportOutput,
   type VerifyOutput,
 } from "@kip/shared/evidence";
 import { NightNotFoundError, type NightRecord } from "../night";
 import { EvidenceChainError } from "./errors";
+import { acceptComplaint, complaintPrompt, reportEventsOf, templateComplaint } from "./report";
 
 const EXPLORER_TX = "https://explorer.solana.com/tx/";
 
@@ -21,6 +23,8 @@ export type EvidenceDeps = {
   ): Promise<unknown>;
   writeMemo(text: string): Promise<{ signature: string; explorerUrl: string }>;
   readMemo(signature: string): Promise<string>;
+  /** One Gemini call: the prompt in, the complaint text out. Throws on failure. */
+  draftComplaint(prompt: string): Promise<string>;
   /** SHA-256 of a string as lowercase hex. Injected so this file has no Node imports. */
   sha256(text: string): string;
 };
@@ -28,6 +32,7 @@ export type EvidenceDeps = {
 export type EvidenceService = {
   anchor(userId: string, nightId: string): Promise<AnchorOutput>;
   verify(nightId: string): Promise<VerifyOutput>;
+  report(userId: string, nightId: string): Promise<ReportOutput>;
 };
 
 /**
@@ -81,6 +86,39 @@ export function createEvidenceService(deps: EvidenceDeps): EvidenceService {
         signature: receipt.signature,
         explorerUrl: receipt.explorerUrl,
         alreadyAnchored: false,
+      };
+    },
+
+    async report(userId, nightId) {
+      const record = await requireNight(nightId);
+      if (record.userId !== userId) throw new NightNotFoundError(nightId);
+      const events = reportEventsOf(record);
+      const { hash, memoSignature } = record.evidence;
+      // A memo for an older version of the log would not timestamp what the report lists.
+      const memo =
+        memoSignature && hash && hash === hashLog(record)
+          ? { signature: memoSignature, explorerUrl: `${EXPLORER_TX}${memoSignature}`, hash }
+          : null;
+      let draft: string | null = null;
+      let draftSource: "gemini" | "template" | null = null;
+      if (events.length > 0) {
+        const facts = { night: record.night, events, memo };
+        // The draft is not logged: it can repeat a phrase Kip must not say.
+        const accepted = await deps
+          .draftComplaint(complaintPrompt(facts))
+          .then(acceptComplaint)
+          .catch(() => null);
+        draft = accepted ?? templateComplaint(facts);
+        draftSource = accepted ? "gemini" : "template";
+      }
+      return {
+        nightId,
+        night: record.night,
+        events,
+        memo,
+        draft,
+        draftSource,
+        note: EVIDENCE_NOTE,
       };
     },
 

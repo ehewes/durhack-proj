@@ -33,5 +33,41 @@ export const verifyOutput = z.object({
   note: z.string(),
 });
 
+export const reportInput = z.object({ nightId: z.uuid() });
+
+/** One construction event outside the council's recommended hours. */
+export const reportEvent = z.object({
+  id: z.string(),
+  /** ISO time of the spike */
+  at: z.iso.datetime({ offset: true }),
+  /** The time as a resident reads it, Europe/London, e.g. "Mon 16 Nov, 06:41" */
+  localTime: z.string(),
+  label: z.literal("construction"),
+  /** Relative dB, never a calibrated level */
+  relativeDb: z.number(),
+});
+
+export const reportOutput = z.object({
+  nightId: z.uuid(),
+  night: z.iso.date(),
+  events: z.array(reportEvent),
+  /** The Solana memo that timestamps the log; null until anchored or after the log changed */
+  memo: z
+    .object({
+      signature: z.string(),
+      explorerUrl: z.string(),
+      hash: hex,
+    })
+    .nullable(),
+  /** Complaint text ready to send; null when there are no events to report */
+  draft: z.string().nullable(),
+  /** `gemini` when Gemini wrote it, `template` when Kip's own wording stepped in */
+  draftSource: z.enum(["gemini", "template"]).nullable(),
+  /** What the memo does and does not show. */
+  note: z.string(),
+});
+
+export type ReportEvent = z.infer<typeof reportEvent>;
+export type ReportOutput = z.infer<typeof reportOutput>;
 export type AnchorOutput = z.infer<typeof anchorOutput>;
 export type VerifyOutput = z.infer<typeof verifyOutput>;

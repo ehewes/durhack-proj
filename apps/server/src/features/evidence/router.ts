@@ -1,6 +1,13 @@
-import { anchorInput, anchorOutput, verifyInput, verifyOutput } from "@kip/shared/evidence";
+import {
+  anchorInput,
+  anchorOutput,
+  reportInput,
+  reportOutput,
+  verifyInput,
+  verifyOutput,
+} from "@kip/shared/evidence";
 import { TRPCError } from "@trpc/server";
-import { notImplemented, publicProcedure, router, userProcedure } from "../../trpc/init";
+import { publicProcedure, router, userProcedure } from "../../trpc/init";
 import { NightNotFoundError, NightStorageError } from "../night";
 import { EvidenceChainError } from "./errors";
 import { loadLive } from "./load";
@@ -36,8 +43,13 @@ export function createEvidenceRouter(svc?: EvidenceService) {
         mapEvidenceError(error);
       }
     }),
-    // Council report: a later issue.
-    report: userProcedure.input(anchorInput).query(() => notImplemented()),
+    report: userProcedure.input(reportInput).query(async ({ ctx, input }) => {
+      try {
+        return reportOutput.parse(await (await service()).report(ctx.userId, input.nightId));
+      } catch (error) {
+        mapEvidenceError(error);
+      }
+    }),
   });
 }
 
