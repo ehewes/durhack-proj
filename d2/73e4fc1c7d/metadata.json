@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "d273e4fc1c7d",
+  "strategy": "manual-commit",
+  "branch": "ehewes/144-readme-env",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "README.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d2/73e4fc1c7d/0/metadata.json",
+      "transcript": "/d2/73e4fc1c7d/0/full.jsonl",
+      "compact_transcript": "/d2/73e4fc1c7d/0/transcript.jsonl",
+      "content_hash": "/d2/73e4fc1c7d/0/content_hash.txt",
+      "prompt": "/d2/73e4fc1c7d/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 48,
+    "cache_creation_tokens": 25416,
+    "cache_read_tokens": 14391950,
+    "output_tokens": 17580,
+    "api_call_count": 22
+  },
+  "redaction": {
+    "replacements": 21,
+    "layers": {
+      "betterleaks": 6,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 4,
+      "credentialed_uri": 2,
+      "entropy": 4,
+      "key_context": 11,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
