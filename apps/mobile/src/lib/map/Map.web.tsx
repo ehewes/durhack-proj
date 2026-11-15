@@ -3,10 +3,10 @@ import mapboxgl, {
   type Map as MapboxMap,
   type MapMouseEvent,
 } from "mapbox-gl";
-import { Text, useColors } from "@/lib/ui";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useEffect, useRef } from "react";
 import { StyleSheet, View } from "react-native";
+import { MissingMapToken } from "./MissingMapToken";
 import {
   camerasMatch,
   classifyMapHit,
@@ -21,6 +21,7 @@ import {
   mapboxToken,
   mapOverlayLayers,
   NEWCASTLE,
+  pointPosition,
   pointSource,
   shapeSource,
 } from "./style";
@@ -98,23 +99,13 @@ function applyOverlays(
   return pending.cluster;
 }
 
-function clusterCenter(
-  geometry: { type?: string; coordinates?: unknown } | null | undefined,
-): MapPosition | null {
-  if (geometry?.type !== "Point" || !Array.isArray(geometry.coordinates)) return null;
-  const lng = geometry.coordinates[0];
-  const lat = geometry.coordinates[1];
-  if (typeof lng !== "number" || typeof lat !== "number") return null;
-  return [lng, lat];
-}
-
 function expandCluster(
   map: MapboxMap,
   clusterId: number,
   geometry: { type?: string; coordinates?: unknown },
 ) {
   const source = map.getSource(MAP_SOURCE.points);
-  const center = clusterCenter(geometry);
+  const center = pointPosition(geometry);
   if (source?.type !== "geojson" || !center) return;
   source.getClusterExpansionZoom(clusterId, (error, zoom) => {
     if (error || zoom == null) return;
@@ -218,7 +209,6 @@ export function MapView({
   onSelect,
   onCameraChange,
 }: MapProps) {
-  const colors = useColors();
   const token = mapboxToken({
     EXPO_PUBLIC_MAPBOX_TOKEN: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
   });
@@ -249,20 +239,7 @@ export function MapView({
     sessionRef.current?.setOverlays(features, cluster, selectedId);
   }, [features, cluster, selectedId]);
 
-  if (!token) {
-    return (
-      <View
-        style={[
-          styles.map,
-          styles.missing,
-          { backgroundColor: colors.surface, borderColor: colors.border },
-          style,
-        ]}
-      >
-        <Text>{MISSING_MAPBOX_TOKEN_MESSAGE}</Text>
-      </View>
-    );
-  }
+  if (!token) return <MissingMapToken message={MISSING_MAPBOX_TOKEN_MESSAGE} style={style} />;
 
   return (
     <View style={[styles.map, style]}>
@@ -271,7 +248,4 @@ export function MapView({
   );
 }
 
-const styles = StyleSheet.create({
-  map: { flex: 1, minHeight: 240 },
-  missing: { borderWidth: 1, padding: 16, justifyContent: "center" },
-});
+const styles = StyleSheet.create({ map: { flex: 1, minHeight: 240 } });
