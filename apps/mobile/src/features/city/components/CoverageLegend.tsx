@@ -1,6 +1,6 @@
 import type { CityCoverage } from "@kip/shared/city";
 import { StyleSheet, Switch, View } from "react-native";
-import { radius, space, Text, useColors } from "@/lib/ui";
+import { hairline, Row, Section, space, Text, useColors } from "@/lib/ui";
 import {
   COVERAGE_TITLE,
   coverageNotes,
@@ -18,41 +18,44 @@ type Props = {
 /** The key for the node-network heat beside the Observatory sensor dots, and the simulated switch. */
 export function CoverageLegend({ coverage, showSimulated, onShowSimulated }: Props) {
   const colors = useColors();
+  const notes = [...coverageNotes(coverage, showSimulated), SENSOR_DOTS].join(" ");
   return (
-    <View style={styles.root}>
-      <View style={styles.entry}>
-        <View
-          style={[
-            styles.swatch,
-            { backgroundColor: `${colors.accent}66`, borderColor: colors.border },
-          ]}
-        />
-        <Text variant="caption">{COVERAGE_TITLE}</Text>
-      </View>
-      {hasSimulated(coverage) && (
+    <Section footer={notes}>
+      <Row
+        title={COVERAGE_TITLE}
+        leading={
+          <View
+            style={[
+              styles.swatch,
+              { backgroundColor: `${colors.accent}66`, borderColor: colors.border },
+            ]}
+          />
+        }
+      />
+      {hasSimulated(coverage) ? (
         <View style={styles.switchRow}>
-          <Text variant="caption">{SIMULATED_SWITCH}</Text>
+          <Text style={styles.switchLabel}>{SIMULATED_SWITCH}</Text>
           <Switch
             accessibilityLabel={SIMULATED_SWITCH}
             value={showSimulated}
             onValueChange={onShowSimulated}
-            trackColor={{ true: colors.accent, false: colors.border }}
+            trackColor={{ true: colors.accent, false: colors.fill }}
           />
         </View>
-      )}
-      {coverageNotes(coverage, showSimulated).map((note) => (
-        <Text key={note} variant="caption">
-          {note}
-        </Text>
-      ))}
-      <Text variant="caption">{SENSOR_DOTS}</Text>
-    </View>
+      ) : null}
+    </Section>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { gap: space.xs },
-  entry: { flexDirection: "row", alignItems: "center", gap: space.xs },
-  switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  swatch: { width: 14, height: 14, borderRadius: radius.sm, borderWidth: 1 },
+  swatch: { width: 16, height: 16, borderRadius: 4, borderWidth: hairline },
+  switchRow: {
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs + 2,
+    gap: space.sm,
+  },
+  switchLabel: { flex: 1 },
 });

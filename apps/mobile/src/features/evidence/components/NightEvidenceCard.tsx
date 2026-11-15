@@ -1,7 +1,15 @@
 import type { ReportOutput, VerifyOutput } from "@kip/shared/evidence";
 import { Linking, StyleSheet, View } from "react-native";
-import { Button, Card, space, Text, useColors } from "@/lib/ui";
-import { MATCH_BODY, MISMATCH_BODY, MISMATCH_OTHER_NIGHT, NOT_ANCHORED_BODY } from "../copy";
+import { Icon, Row, Section, space, Text } from "@/lib/ui";
+import {
+  ANCHOR_ERROR,
+  MATCH_BODY,
+  MISMATCH_BODY,
+  MISMATCH_OTHER_NIGHT,
+  NOT_ANCHORED_BODY,
+  REPORT_ERROR,
+  VERIFY_ERROR,
+} from "../copy";
 import { type EvidenceNight, explorerUrl, plural, shortHash, verifyHeadline } from "../model";
 import { ReportCard } from "./ReportCard";
 
@@ -17,7 +25,13 @@ type Props = {
 };
 
 const BODY = { match: MATCH_BODY, mismatch: MISMATCH_BODY, "not-anchored": NOT_ANCHORED_BODY };
+const SEAL = {
+  match: "checkmark.seal.fill",
+  mismatch: "xmark.seal.fill",
+  "not-anchored": "seal",
+} as const;
 
+/** One night: its hash on Solana, the tamper check and the council report, as a grouped section. */
 export function NightEvidenceCard({
   night,
   verify,
@@ -28,71 +42,90 @@ export function NightEvidenceCard({
   onReport,
   onAnchor,
 }: Props) {
-  const colors = useColors();
   const { evidence } = night;
   const signature = evidence.memoSignature;
   const result = verify.result;
+  const errors = [
+    anchorFailed ? ANCHOR_ERROR : null,
+    verify.failed ? VERIFY_ERROR : null,
+    report.failed ? REPORT_ERROR : null,
+  ].filter((e): e is string => e !== null);
   return (
-    <Card>
-      <Text variant="body">{night.night}</Text>
-      <Text variant="caption">
-        {plural(night.eventCount, "noise event")}, {night.outsideRecommendedHoursCount} outside the
-        council's recommended hours
-      </Text>
-      {signature ? (
-        <>
-          {evidence.hash && <Text variant="caption">Hash {shortHash(evidence.hash)}</Text>}
-          <Button
-            variant="secondary"
-            label="Open in Solana Explorer"
-            onPress={() => void Linking.openURL(explorerUrl(signature))}
+    <>
+      <Section
+        title={night.night}
+        footer={`${plural(night.eventCount, "noise event")}, ${night.outsideRecommendedHoursCount} outside the council's recommended hours`}
+      >
+        {signature ? (
+          <>
+            {evidence.hash ? (
+              <Row title="Log hash" leading="number" value={shortHash(evidence.hash)} />
+            ) : null}
+            <Row
+              title="Open in Solana Explorer"
+              leading="arrow.up.right.square"
+              tone="accent"
+              chevron
+              accessibilityRole="link"
+              onPress={() => void Linking.openURL(explorerUrl(signature))}
+            />
+            <Row
+              title={verify.pending ? "Checking" : "Check this night"}
+              leading="checkmark.shield"
+              tone="accent"
+              onPress={verify.pending ? undefined : onVerify}
+            />
+            <Row
+              title={report.pending ? "Preparing report" : "Show report"}
+              leading="doc.text"
+              tone="accent"
+              onPress={report.pending ? undefined : onReport}
+            />
+          </>
+        ) : (
+          <Row
+            title={anchorPending ? "Anchoring" : "Anchor this night"}
+            leading="link"
+            tone="accent"
+            onPress={anchorPending ? undefined : onAnchor}
           />
-          <Button
-            label={verify.pending ? "Checking" : "Check this night"}
-            disabled={verify.pending}
-            onPress={onVerify}
-          />
-          <Button
-            variant="secondary"
-            label={report.pending ? "Preparing report" : "Show report"}
-            disabled={report.pending}
-            onPress={onReport}
-          />
-        </>
-      ) : (
-        <Button
-          label={anchorPending ? "Anchoring" : "Anchor this night"}
-          disabled={anchorPending}
-          onPress={onAnchor}
-        />
-      )}
-      {anchorFailed && <Text variant="caption">We could not anchor this night. Try again.</Text>}
-      {verify.failed && <Text variant="caption">We could not check this night. Try again.</Text>}
-      {report.failed && <Text variant="caption">We could not prepare the report. Try again.</Text>}
-      {report.result && <ReportCard report={report.result} />}
-      {result && (
-        <View
-          accessibilityLiveRegion="polite"
-          style={[
-            styles.result,
-            { borderColor: result.status === "mismatch" ? colors.text : colors.border },
-          ]}
-        >
-          <Text variant="body">{verifyHeadline(result.status)}</Text>
-          <Text variant="caption">{BODY[result.status]}</Text>
-          {result.anchoredHash ? (
-            <Text variant="caption">Anchored {shortHash(result.anchoredHash)}</Text>
-          ) : (
-            result.status === "mismatch" && <Text variant="caption">{MISMATCH_OTHER_NIGHT}</Text>
-          )}
-          <Text variant="caption">Now {shortHash(result.currentHash)}</Text>
-          <Text variant="caption">{result.note}</Text>
-        </View>
-      )}
-    </Card>
+        )}
+        {result ? (
+          <View accessibilityLiveRegion="polite" style={styles.result}>
+            <View style={styles.headline}>
+              <Icon
+                name={SEAL[result.status]}
+                size={22}
+                tone={result.status === "mismatch" ? "danger" : "accent"}
+              />
+              <Text variant="headline">{verifyHeadline(result.status)}</Text>
+            </View>
+            <Text variant="subheadline">{BODY[result.status]}</Text>
+            {result.anchoredHash ? (
+              <Text variant="footnote" numeric>{`Anchored ${shortHash(result.anchoredHash)}`}</Text>
+            ) : (
+              result.status === "mismatch" && <Text variant="footnote">{MISMATCH_OTHER_NIGHT}</Text>
+            )}
+            <Text variant="footnote" numeric>{`Now ${shortHash(result.currentHash)}`}</Text>
+            <Text variant="footnote">{result.note}</Text>
+          </View>
+        ) : null}
+        {errors.length > 0 ? (
+          <View style={styles.result}>
+            {errors.map((e) => (
+              <Text key={e} variant="subheadline" tone="danger">
+                {e}
+              </Text>
+            ))}
+          </View>
+        ) : null}
+      </Section>
+      {report.result ? <ReportCard report={report.result} /> : null}
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  result: { borderLeftWidth: 3, paddingLeft: space.sm, gap: space.xs },
+  result: { padding: space.md, gap: space.xs },
+  headline: { flexDirection: "row", alignItems: "center", gap: space.sm },
 });

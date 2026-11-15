@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { type LayoutChangeEvent, StyleSheet, View } from "react-native";
-import { Button, Card, space, Text } from "@/lib/ui";
+import { Row, Section, StatusView, space, Text } from "@/lib/ui";
+import { NIGHT_COPY } from "../copy";
 import { useWatchNight } from "../hooks/useWatchNight";
 import type { NightRead } from "../native/watch-sleep";
 import { nightLabel, WATCH_COPY, watchRows, watchTitle } from "../watch-copy";
@@ -11,60 +12,57 @@ import { StageBand } from "./StageBand";
 export function WatchNightCard() {
   const state = useWatchNight();
   if (state.status === "unavailable") return null;
-  return (
-    <Card>
-      {state.status === "loading" && <Text variant="caption">{WATCH_COPY.loading}</Text>}
-      {state.status === "no-consent" && (
-        <>
-          <Text>{WATCH_COPY.offTitle}</Text>
-          <Text variant="caption">{WATCH_COPY.off}</Text>
-        </>
-      )}
-      {state.status === "no-data" && (
-        <>
-          <Text>{WATCH_COPY.noData}</Text>
-          <Text variant="caption">{nightLabel(state.night)}</Text>
-          <Text variant="caption">{WATCH_COPY.noDataHint}</Text>
-          <Button label={WATCH_COPY.retry} variant="secondary" onPress={state.retry} />
-        </>
-      )}
-      {state.status === "error" && (
-        <>
-          <Text>{WATCH_COPY.error}</Text>
-          <Button label={WATCH_COPY.retry} variant="secondary" onPress={state.retry} />
-        </>
-      )}
-      {state.status === "ok" && (
-        <>
-          <WatchNight read={state} night={state.night} />
-          {/* Stages can reach Apple Health after the heart rate does. */}
-          <Button label={WATCH_COPY.readAgain} variant="secondary" onPress={state.retry} />
-        </>
-      )}
-    </Card>
-  );
-}
-
-function WatchNight({ read, night }: { read: NightRead; night: string }) {
-  return (
-    <>
-      <Text>{watchTitle(read)}</Text>
-      <Text variant="caption">{nightLabel(night)}</Text>
-      {read.sleep.stages.length > 0 ? (
-        <Stages read={read} />
-      ) : (
-        <Text variant="caption">{WATCH_COPY.noStagesYet}</Text>
-      )}
-      <View style={styles.rows}>
-        {watchRows(read).map((row) => (
-          <View key={row.label} style={styles.row}>
-            <Text variant="caption">{row.label}</Text>
-            <Text>{row.value}</Text>
-          </View>
+  if (state.status === "ok") {
+    return (
+      <Section title={NIGHT_COPY.watchTitle} footer={WATCH_COPY.source}>
+        <View style={styles.pad}>
+          <Text variant="headline">{watchTitle(state)}</Text>
+          <Text variant="footnote">{nightLabel(state.night)}</Text>
+          {state.sleep.stages.length > 0 ? (
+            <Stages read={state} />
+          ) : (
+            <Text variant="footnote">{WATCH_COPY.noStagesYet}</Text>
+          )}
+        </View>
+        {watchRows(state).map((row) => (
+          <Row key={row.label} title={row.label} subtitle={row.value} />
         ))}
+        {/* Stages can reach Apple Health after the heart rate does. */}
+        <Row
+          title={WATCH_COPY.readAgain}
+          tone="accent"
+          leading="arrow.clockwise"
+          onPress={state.retry}
+        />
+      </Section>
+    );
+  }
+  return (
+    <Section title={NIGHT_COPY.watchTitle}>
+      <View style={styles.pad}>
+        {state.status === "loading" && <StatusView kind="loading" message={WATCH_COPY.loading} />}
+        {state.status === "no-consent" && (
+          <StatusView kind="empty" title={WATCH_COPY.offTitle} message={WATCH_COPY.off} />
+        )}
+        {state.status === "no-data" && (
+          <StatusView
+            kind="empty"
+            title={WATCH_COPY.noData}
+            message={`${nightLabel(state.night)}. ${WATCH_COPY.noDataHint}`}
+            actionLabel={WATCH_COPY.retry}
+            onAction={state.retry}
+          />
+        )}
+        {state.status === "error" && (
+          <StatusView
+            kind="error"
+            message={WATCH_COPY.error}
+            retryLabel={WATCH_COPY.retry}
+            onRetry={state.retry}
+          />
+        )}
       </View>
-      <Text variant="caption">{WATCH_COPY.source}</Text>
-    </>
+    </Section>
   );
 }
 
@@ -83,15 +81,18 @@ function Stages({ read }: { read: NightRead }) {
     <View onLayout={onLayout}>
       {width > 0 && <StageBand stages={read.sleep.stages} scale={scale} />}
       <View style={styles.axis}>
-        <Text variant="caption">{clock(start)}</Text>
-        <Text variant="caption">{clock(end)}</Text>
+        <Text variant="caption2" tone="secondary" numeric>
+          {clock(start)}
+        </Text>
+        <Text variant="caption2" tone="secondary" numeric>
+          {clock(end)}
+        </Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  rows: { gap: space.xs },
-  row: { flexDirection: "row", justifyContent: "space-between", gap: space.md },
+  pad: { padding: space.md, gap: space.xs },
   axis: { flexDirection: "row", justifyContent: "space-between", marginTop: space.xs },
 });

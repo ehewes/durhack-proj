@@ -1,15 +1,21 @@
 import type { TravellerProfile } from "@kip/shared/domain";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ScrollView, type ScrollViewInstance, StyleSheet, View } from "react-native";
+import {
+  ScrollView,
+  type ScrollViewInstance,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { space, Text, useColors } from "@/lib/ui";
+import { hairline, Notice, radius, StatusView, space, Text, useColors } from "@/lib/ui";
 import { HotelMap } from "../components/HotelMap";
 import { HotelRow } from "../components/HotelRow";
 import { ProfilePicker } from "../components/ProfilePicker";
 import { StayDates } from "../components/StayDates";
 import {
-  DATES_TITLE,
   EMPTY,
+  EMPTY_ACTION,
   INTRO,
   LIST_TITLE,
   LOADING,
@@ -31,6 +37,7 @@ import {
 /** Quiet Stays: hotels ranked for a traveller profile and stay dates, listed and mapped together. */
 export function StaysScreen() {
   const colors = useColors();
+  const { height } = useWindowDimensions();
   const [profile, setProfile] = useState<TravellerProfile>(DEFAULT_PROFILE);
   const [stay, setStay] = useState({ checkIn: DEFAULT_CHECK_IN, nights: DEFAULT_NIGHTS });
   const [pickedId, setPickedId] = useState<string | null>(null);
@@ -44,10 +51,12 @@ export function StaysScreen() {
   const selectedId = resolveSelection(hotels, pickedId);
 
   const panel = useRef<ScrollViewInstance>(null);
+  const listY = useRef(0);
   const rowY = useRef(new Map<string, number>());
   const scrollTo = useCallback((id: string) => {
     const y = rowY.current.get(id);
-    if (y !== undefined) panel.current?.scrollTo({ y, animated: true });
+    // Rows report y inside the list; the list sits under its title in the scroll content.
+    if (y !== undefined) panel.current?.scrollTo({ y: listY.current + y, animated: true });
   }, []);
   const selectedRef = useRef<string | null>(null);
   selectedRef.current = selectedId;
@@ -56,48 +65,102 @@ export function StaysScreen() {
   }, [selectedId, scrollTo]);
 
   return (
-    <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={["top"]}>
-      <View style={styles.header}>
-        <Text variant="title">{TITLE}</Text>
-        <Text variant="caption">{INTRO}</Text>
-        {state.kind === "ranked" && state.sample && <Text variant="caption">{SAMPLE_LABEL}</Text>}
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        edges={["top"]}
+        style={[
+          styles.header,
+          { backgroundColor: colors.background, borderBottomColor: colors.border },
+        ]}
+      >
+        <Text variant="title2">{TITLE}</Text>
+        <Text variant="footnote">{INTRO}</Text>
+      </SafeAreaView>
+      <HotelMap
+        hotels={hotels}
+        selectedId={selectedId}
+        onSelect={setPickedId}
+        style={{ height: Math.round(height * 0.42), flex: 0 }}
+      />
+      <ScrollView
+        ref={panel}
+        style={[styles.panel, { borderTopColor: colors.border }]}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={styles.panelContent}
+      >
+        {state.kind === "ranked" && state.sample && <Notice message={SAMPLE_LABEL} icon="flask" />}
         {state.kind === "ranked" && state.leavesOutStation && (
-          <Text variant="caption">{SAMPLE_STATION_NOTE}</Text>
+          <Notice message={SAMPLE_STATION_NOTE} />
         )}
-        {state.kind === "loading" && <Text variant="caption">{LOADING}</Text>}
-      </View>
-      <HotelMap hotels={hotels} selectedId={selectedId} onSelect={setPickedId} style={styles.map} />
-      <ScrollView ref={panel} style={styles.panel} contentContainerStyle={styles.panelContent}>
-        <Text variant="caption">{PROFILE_TITLE}</Text>
-        <ProfilePicker profile={profile} onChange={setProfile} />
-        <Text variant="caption">{DATES_TITLE}</Text>
+        <View style={styles.group}>
+          <Text variant="footnote" accessibilityRole="header" style={styles.groupTitle}>
+            {PROFILE_TITLE}
+          </Text>
+          <ProfilePicker profile={profile} onChange={setProfile} />
+        </View>
         <StayDates checkIn={stay.checkIn} nights={stay.nights} onChange={setStay} />
-        <Text variant="caption">{LIST_TITLE}</Text>
-        {state.kind === "ranked" && hotels.length === 0 && <Text variant="caption">{EMPTY}</Text>}
-        {hotels.length > 0 && selectedId === null && <Text variant="caption">{NO_SELECTION}</Text>}
-        {hotels.map((hotel, index) => (
-          <HotelRow
-            key={hotel.hotelId}
-            hotel={hotel}
-            rank={index + 1}
-            selected={hotel.hotelId === selectedId}
-            onPress={() => setPickedId(hotel.hotelId === selectedId ? null : hotel.hotelId)}
-            onLayoutY={(y) => {
-              rowY.current.set(hotel.hotelId, y);
-              // The old selection collapsing moves this row; follow it to its new place.
-              if (hotel.hotelId === selectedRef.current) scrollTo(hotel.hotelId);
-            }}
-          />
-        ))}
+        <View
+          style={styles.group}
+          onLayout={(event) => {
+            listY.current = event.nativeEvent.layout.y;
+          }}
+        >
+          <Text variant="footnote" accessibilityRole="header" style={styles.groupTitle}>
+            {LIST_TITLE}
+          </Text>
+          {state.kind === "loading" ? <StatusView kind="loading" message={LOADING} /> : null}
+          {state.kind === "ranked" && hotels.length === 0 ? (
+            <StatusView
+              kind="empty"
+              title={EMPTY}
+              message={NO_SELECTION}
+              actionLabel={EMPTY_ACTION}
+              onAction={() => setStay({ checkIn: DEFAULT_CHECK_IN, nights: DEFAULT_NIGHTS })}
+            />
+          ) : null}
+          {hotels.length > 0 ? (
+            <View
+              style={[styles.list, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            >
+              {hotels.map((hotel, index) => (
+                <HotelRow
+                  key={hotel.hotelId}
+                  hotel={hotel}
+                  rank={index + 1}
+                  separated={index > 0}
+                  selected={hotel.hotelId === selectedId}
+                  onPress={() => setPickedId(hotel.hotelId === selectedId ? null : hotel.hotelId)}
+                  onLayoutY={(y) => {
+                    rowY.current.set(hotel.hotelId, y);
+                    // The old selection collapsing moves this row; follow it to its new place.
+                    if (hotel.hotelId === selectedRef.current) scrollTo(hotel.hotelId);
+                  }}
+                />
+              ))}
+            </View>
+          ) : null}
+          {hotels.length > 0 && selectedId === null ? (
+            <Text variant="footnote" style={styles.groupTitle}>
+              {NO_SELECTION}
+            </Text>
+          ) : null}
+        </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  header: { paddingHorizontal: space.md, paddingBottom: space.sm, gap: space.xs },
-  map: { flex: 2 },
-  panel: { flex: 3 },
-  panelContent: { padding: space.md, gap: space.md },
+  header: {
+    paddingHorizontal: space.md + space.xs,
+    paddingBottom: space.sm,
+    gap: 2,
+    borderBottomWidth: hairline,
+  },
+  panel: { flex: 1, borderTopWidth: hairline },
+  panelContent: { padding: space.md, gap: space.lg },
+  group: { gap: space.xs + 2 },
+  groupTitle: { paddingHorizontal: space.md },
+  list: { borderRadius: radius.md, borderWidth: hairline, overflow: "hidden" },
 });

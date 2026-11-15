@@ -1,6 +1,6 @@
 import type { HotelScore } from "@kip/shared/stays";
 import { Linking, Pressable, StyleSheet, View } from "react-native";
-import { Button, radius, space, Text, useColors } from "@/lib/ui";
+import { Button, hairline, haptics, Icon, space, Text, useColors } from "@/lib/ui";
 import {
   BOOKING_ACTION,
   BOOKING_NOTE,
@@ -17,41 +17,66 @@ type Props = {
   selected: boolean;
   onPress: () => void;
   onLayoutY?: (y: number) => void;
+  /** Draw a separator above this row (every row but the first). */
+  separated?: boolean;
 };
 
 function Breakdown({ hotel }: { hotel: HotelScore }) {
+  const colors = useColors();
   const penalty = worksPenalty(hotel);
   const { sensors, permits, realNights } = hotel.sources;
   return (
-    <View style={styles.details}>
-      <Text variant="caption">{ESTIMATE_LABEL}</Text>
+    <View style={[styles.details, { borderTopColor: colors.separator }]}>
+      <Text variant="footnote">{ESTIMATE_LABEL}</Text>
       {breakdownRows(hotel).map((row) => (
-        <Text key={row.key} variant="caption">
-          {`${row.label}: ${row.value} of 100, weight ${row.weightPct}%, ${row.points} points`}
-        </Text>
+        <View key={row.key} style={styles.input}>
+          <View style={styles.inputHead}>
+            <Text variant="subheadline">{row.label}</Text>
+            <Text variant="subheadline" numeric tone="secondary">
+              {`${row.value} of 100 · ${row.weightPct}% · ${row.points} pts`}
+            </Text>
+          </View>
+          <View
+            style={[styles.track, { backgroundColor: colors.fill }]}
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+          >
+            <View
+              style={[
+                styles.fill,
+                {
+                  width: `${Math.max(0, Math.min(100, row.value))}%`,
+                  backgroundColor: colors.accent,
+                },
+              ]}
+            />
+          </View>
+        </View>
       ))}
       {penalty && (
-        <Text variant="caption">
+        <Text variant="footnote">
           {`Works penalty: ${penalty.points} points lost to ${penalty.permits} ${penalty.permits === 1 ? "permit" : "permits"} overlapping your dates.`}
         </Text>
       )}
-      {hotel.simulated && <Text variant="caption">{SIMULATED_NIGHTS}</Text>}
-      <Text variant="caption">{SOURCES_TITLE}</Text>
-      {sensors.length === 0 && <Text variant="caption">{NO_SENSORS}</Text>}
+      {hotel.simulated && <Text variant="footnote">{SIMULATED_NIGHTS}</Text>}
+      <Text variant="footnote" tone="primary" style={styles.sourcesTitle}>
+        {SOURCES_TITLE}
+      </Text>
+      {sensors.length === 0 && <Text variant="footnote">{NO_SENSORS}</Text>}
       {sensors.map((sensor) => (
-        <Text key={sensor.id} variant="caption">
+        <Text key={sensor.id} variant="footnote" numeric>
           {`Sensor ${sensor.id}, ${Math.round(sensor.distanceM)} m away`}
         </Text>
       ))}
       {permits.map((permit) => (
-        <Text key={permit.ref} variant="caption">
+        <Text key={permit.ref} variant="footnote" numeric>
           {`Permit ${permit.ref}, ${Math.round(permit.distanceM)} m away${permit.nightWork ? ", night work" : ""}${permit.overlapsStay ? ", overlaps your dates" : ""}`}
         </Text>
       ))}
-      <Text variant="caption">
+      <Text variant="footnote" numeric>
         {`${realNights.count} ${realNights.simulated ? "simulated " : ""}nights nearby`}
       </Text>
-      <Text variant="caption">{BOOKING_NOTE}</Text>
+      <Text variant="footnote">{BOOKING_NOTE}</Text>
       <Button
         label={BOOKING_ACTION}
         variant="secondary"
@@ -62,7 +87,7 @@ function Breakdown({ hotel }: { hotel: HotelScore }) {
 }
 
 /** One ranked hotel. Selecting it expands the per-input breakdown, the same hotel the map outlines. */
-export function HotelRow({ hotel, rank, selected, onPress, onLayoutY }: Props) {
+export function HotelRow({ hotel, rank, selected, onPress, onLayoutY, separated = false }: Props) {
   const colors = useColors();
   const price = hotel.pricePerNightGbp ? `, £${hotel.pricePerNightGbp} a night` : "";
   return (
@@ -70,22 +95,38 @@ export function HotelRow({ hotel, rank, selected, onPress, onLayoutY }: Props) {
       onLayout={(event) => onLayoutY?.(event.nativeEvent.layout.y)}
       style={[
         styles.row,
-        { borderColor: selected ? colors.accent : colors.border, backgroundColor: colors.surface },
+        separated && { borderTopWidth: hairline, borderTopColor: colors.separator },
+        selected && { backgroundColor: colors.fill },
       ]}
     >
       <Pressable
         accessibilityRole="button"
-        accessibilityState={{ selected }}
+        accessibilityState={{ selected, expanded: selected }}
         accessibilityLabel={`${rank}. ${hotel.name}, estimated score ${hotel.score}${price}`}
-        onPress={onPress}
+        onPress={() => {
+          haptics.selection();
+          onPress();
+        }}
         style={styles.head}
       >
-        <Text variant="caption">{String(rank)}</Text>
+        <Text variant="footnote" numeric style={styles.rank}>
+          {String(rank)}
+        </Text>
         <View style={styles.name}>
-          <Text>{hotel.name}</Text>
-          <Text variant="caption">{`Estimate${price}${hotel.simulated ? ", includes simulated data" : ""}`}</Text>
+          <Text variant="headline" numberOfLines={2}>
+            {hotel.name}
+          </Text>
+          <Text variant="footnote">{`Estimate${price}${hotel.simulated ? ", includes simulated data" : ""}`}</Text>
         </View>
-        <Text>{String(hotel.score)}</Text>
+        <Text variant="title2" tone="accent" numeric>
+          {String(hotel.score)}
+        </Text>
+        <Icon
+          name={selected ? "chevron.up" : "chevron.down"}
+          size={12}
+          tone="textTertiary"
+          weight="semibold"
+        />
       </Pressable>
       {selected && <Breakdown hotel={hotel} />}
     </View>
@@ -93,8 +134,14 @@ export function HotelRow({ hotel, rank, selected, onPress, onLayoutY }: Props) {
 }
 
 const styles = StyleSheet.create({
-  row: { borderWidth: 1, borderRadius: radius.md, padding: space.md, gap: space.sm },
-  head: { flexDirection: "row", alignItems: "center", gap: space.md },
+  row: { paddingHorizontal: space.md, paddingVertical: space.sm + 3, gap: space.sm },
+  head: { minHeight: 44, flexDirection: "row", alignItems: "center", gap: space.md - 4 },
+  rank: { width: 18 },
   name: { flex: 1, gap: 2 },
-  details: { gap: space.xs },
+  details: { gap: space.sm, borderTopWidth: hairline, paddingTop: space.sm, marginLeft: 30 },
+  input: { gap: space.xs },
+  inputHead: { flexDirection: "row", justifyContent: "space-between", gap: space.sm },
+  track: { height: 4, borderRadius: 2, overflow: "hidden" },
+  fill: { height: 4 },
+  sourcesTitle: { fontWeight: "600", marginTop: space.xs },
 });

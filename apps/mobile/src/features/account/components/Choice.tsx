@@ -1,5 +1,5 @@
-import { Pressable, Text as RNText, StyleSheet, View } from "react-native";
-import { radius, space, type, useColors } from "@/lib/ui";
+import { Pressable, StyleSheet, View } from "react-native";
+import { haptics, Icon, space, Text, useColors } from "@/lib/ui";
 
 type Props = {
   label: string;
@@ -11,12 +11,12 @@ type Props = {
 };
 
 /**
- * One answer in a group (wrap the group in a `radiogroup` View). Nothing is selected until the
- * user taps, and yes and no look the same, so neither answer is nudged.
+ * One answer in a group (wrap the group in a `radiogroup` View inside a Section). An iOS
+ * checkmark row: nothing is ticked until the user taps, and yes and no look the same, so neither
+ * answer is nudged.
  */
 export function Choice({ label, detail, selected, onPress, disabled = false }: Props) {
   const colors = useColors();
-  const ring = selected ? colors.accent : colors.textSecondary;
   return (
     <Pressable
       accessibilityRole="radio"
@@ -24,24 +24,22 @@ export function Choice({ label, detail, selected, onPress, disabled = false }: P
       aria-checked={selected}
       accessibilityLabel={detail ? `${label}. ${detail}` : label}
       disabled={disabled}
-      onPress={onPress}
+      onPress={() => {
+        haptics.selection();
+        onPress();
+      }}
       style={({ pressed }) => [
         styles.row,
-        {
-          backgroundColor: colors.background,
-          borderColor: selected ? colors.accent : colors.border,
-        },
-        (pressed || disabled) && { opacity: disabled ? 0.5 : 0.85 },
+        pressed && { backgroundColor: colors.fill },
+        disabled && { opacity: 0.5 },
       ]}
     >
-      <View style={[styles.ring, { borderColor: ring }]}>
-        {selected ? <View style={[styles.dot, { backgroundColor: colors.accent }]} /> : null}
-      </View>
       <View style={styles.words}>
-        <RNText style={[type.body, styles.label, { color: colors.text }]}>{label}</RNText>
-        {detail ? (
-          <RNText style={[type.caption, { color: colors.textSecondary }]}>{detail}</RNText>
-        ) : null}
+        <Text>{label}</Text>
+        {detail ? <Text variant="footnote">{detail}</Text> : null}
+      </View>
+      <View style={styles.mark}>
+        {selected ? <Icon name="checkmark" size={17} tone="accent" weight="semibold" /> : null}
       </View>
     </Pressable>
   );
@@ -49,25 +47,13 @@ export function Choice({ label, detail, selected, onPress, disabled = false }: P
 
 const styles = StyleSheet.create({
   row: {
-    minHeight: 48,
+    minHeight: 44,
     flexDirection: "row",
     alignItems: "center",
     gap: space.sm,
     paddingHorizontal: space.md,
-    paddingVertical: space.sm,
-    borderWidth: 1,
-    borderRadius: radius.sm,
+    paddingVertical: space.sm + 3,
   },
-  // The radio mark is a control, not a pill around text.
-  ring: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dot: { width: 10, height: 10, borderRadius: 5 },
   words: { flex: 1, gap: 2 },
-  label: { fontWeight: "600" },
+  mark: { width: 20, alignItems: "center" },
 });

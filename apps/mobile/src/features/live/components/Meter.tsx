@@ -2,11 +2,12 @@ import type { LiveSample } from "@kip/shared/live";
 import { Text as RNText, View } from "react-native";
 import { useColors } from "@/lib/ui";
 import { formatLevel, levelLine, METER_CAPTION, meterFraction, WAITING_LEVEL } from "../copy";
-import { meterStyle, room } from "./room";
+import { meterStyle, useRoom } from "./room";
 
 /** Current relative dB, large enough to read from the back of the room. */
 export function Meter({ db, samples }: { db: number | null; samples: readonly LiveSample[] }) {
   const colors = useColors();
+  const room = useRoom();
   const fraction = db === null ? 0 : meterFraction(db);
   const latest = samples.at(-1);
   return (

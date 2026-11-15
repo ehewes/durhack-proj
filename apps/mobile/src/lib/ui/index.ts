@@ -1,5 +1,13 @@
 export { Button } from "./Button";
 export { Card } from "./Card";
+export { haptics } from "./haptics";
+export { Icon } from "./Icon";
+export { Notice } from "./Notice";
+export { useLargeTitleOptions } from "./navigation";
+export { Row } from "./Row";
 export { Screen } from "./Screen";
-export { Text } from "./Text";
-export { radius, space, type, useColors } from "./theme";
+export { Section } from "./Section";
+export { SegmentedControl } from "./SegmentedControl";
+export { StatusView } from "./StatusView";
+export { Text, type TextTone } from "./Text";
+export { type Colors, hairline, radius, space, type TypeVariant, type, useColors } from "./theme";

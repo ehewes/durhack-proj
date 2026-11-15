@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Screen, Text } from "@/lib/ui";
+import { Screen, StatusView } from "@/lib/ui";
 import { LOADING } from "../copy";
 import { useAccount } from "../hooks/useAccount";
 import { Onboarding } from "./Onboarding";
@@ -14,7 +14,7 @@ export function ConsentGate({ children }: { children: ReactNode }) {
   if (account.status === "loading") {
     return (
       <Screen>
-        <Text variant="caption">{LOADING}</Text>
+        <StatusView kind="loading" message={LOADING} />
       </Screen>
     );
   }

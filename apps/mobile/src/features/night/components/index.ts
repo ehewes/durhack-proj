@@ -1,1 +1,1 @@
-export { NightTimelineChart, type NightTimelineSlots } from "./NightTimelineChart";
+export { NightEventRows, NightTimelineChart, type NightTimelineSlots } from "./NightTimelineChart";

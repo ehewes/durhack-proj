@@ -16,7 +16,11 @@ import {
 export function useAccount(): AccountState {
   const trpc = useTRPC();
   const me = useQuery({ ...trpc.account.me.queryOptions(), retry: 1 });
-  return accountState(me.data, me.isError, () => void me.refetch());
+  // A query that has never succeeded goes back to "pending" on every refetch, and each tab that
+  // mounts starts one. Once it has failed, keep treating it as failed until data arrives, or the
+  // gate would swap the tabs for its loading screen and remount them in a loop.
+  const failed = me.isError || (me.data === undefined && me.errorUpdatedAt > 0);
+  return accountState(me.data, failed, () => void me.refetch());
 }
 
 export type ConsentState = {

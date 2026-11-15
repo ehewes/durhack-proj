@@ -118,6 +118,12 @@ export const DELETE_ERROR =
   "Kip could not finish deleting. Some of your data may already be gone, and new nights may not save until a delete finishes. Try again.";
 export const DELETED_TITLE = "Everything is deleted";
 
+export const DEMO_HEADING = "Demo";
+export const DEMO_EVIDENCE = "Evidence log";
+export const DEMO_EVIDENCE_DETAIL = "Anchored nights, the council report and the tamper check";
+export const DEMO_LIVE = "Live noise";
+export const DEMO_LIVE_DETAIL = "The room view for the live demo";
+
 const counted = new Intl.NumberFormat("en-GB");
 
 function count(n: number, one: string, many: string): string {
@@ -185,4 +191,9 @@ export const ALL_COPY: readonly string[] = [
   DELETING,
   DELETE_ERROR,
   DELETED_TITLE,
+  DEMO_HEADING,
+  DEMO_EVIDENCE,
+  DEMO_EVIDENCE_DETAIL,
+  DEMO_LIVE,
+  DEMO_LIVE_DETAIL,
 ];

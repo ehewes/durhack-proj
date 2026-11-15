@@ -1,41 +1,35 @@
-import { Button, Card, Screen, Text } from "@/lib/ui";
+import { StyleSheet, View } from "react-native";
+import { Screen, Section, StatusView, space } from "@/lib/ui";
 import { AccountSettings } from "../components/AccountSettings";
-import { ConsentGate } from "../components/ConsentGate";
-import { ACCOUNT_TITLE, LOAD_ERROR, LOADING, TRY_AGAIN } from "../copy";
+import { LOAD_ERROR, LOADING, TRY_AGAIN } from "../copy";
 import { useAccount } from "../hooks/useAccount";
 
 /**
- * The Account tab. ConsentGate shows onboarding until the user has made their consent choices,
- * here and (once a route wraps the tabs in it) app-wide, so there is one onboarding.
+ * The Account tab. The tabs layout already wraps every tab in ConsentGate, so onboarding is done
+ * by the time this shows; errors come through here.
  */
 export function AccountScreen() {
-  return (
-    <ConsentGate>
-      <AccountTab />
-    </ConsentGate>
-  );
-}
-
-/** Settings once the user has answered; the gate lets errors through, so they show here. */
-function AccountTab() {
   const account = useAccount();
   return (
-    <Screen>
+    <Screen underHeader>
       {account.status === "ready" ? (
         <AccountSettings view={account.view} />
+      ) : account.status === "error" ? (
+        <Section>
+          <View style={styles.pad}>
+            <StatusView
+              kind="error"
+              message={LOAD_ERROR}
+              retryLabel={TRY_AGAIN}
+              onRetry={account.retry}
+            />
+          </View>
+        </Section>
       ) : (
-        <>
-          <Text variant="title">{ACCOUNT_TITLE}</Text>
-          {account.status === "error" ? (
-            <Card>
-              <Text>{LOAD_ERROR}</Text>
-              <Button label={TRY_AGAIN} onPress={account.retry} />
-            </Card>
-          ) : (
-            <Text variant="caption">{LOADING}</Text>
-          )}
-        </>
+        <StatusView kind="loading" message={LOADING} />
       )}
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({ pad: { paddingHorizontal: space.md } });

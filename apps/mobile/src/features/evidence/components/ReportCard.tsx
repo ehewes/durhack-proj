@@ -1,36 +1,44 @@
 import type { ReportOutput } from "@kip/shared/evidence";
-import { Card, Text } from "@/lib/ui";
+import { StyleSheet, View } from "react-native";
+import { Row, Section, space, Text } from "@/lib/ui";
 import { DRAFT_GEMINI, DRAFT_TEMPLATE, REPORT_NO_EVENTS, REPORT_TITLE } from "../copy";
 import { plural } from "../model";
 
+/** The council report for one night: the qualifying events as rows, then the complaint draft. */
 export function ReportCard({ report }: { report: ReportOutput }) {
+  const empty = report.events.length === 0;
   return (
-    <Card>
-      <Text variant="body">{REPORT_TITLE}</Text>
-      {report.events.length === 0 ? (
-        <Text>{REPORT_NO_EVENTS}</Text>
-      ) : (
-        <>
-          <Text>
-            {plural(report.events.length, "construction event")} outside the council's recommended
-            hours:
+    <Section
+      title={
+        empty
+          ? REPORT_TITLE
+          : `${REPORT_TITLE}: ${plural(report.events.length, "construction event")} outside the council's recommended hours`
+      }
+      footer={report.note}
+    >
+      {empty ? (
+        <View style={styles.pad}>
+          <Text variant="subheadline">{REPORT_NO_EVENTS}</Text>
+        </View>
+      ) : null}
+      {report.events.map((e) => (
+        <Row
+          key={e.id}
+          title={e.localTime}
+          leading="hammer"
+          value={`${Math.round(e.relativeDb)} relative dB`}
+        />
+      ))}
+      {!empty && report.draft ? (
+        <View style={styles.pad}>
+          <Text variant="subheadline">{report.draft}</Text>
+          <Text variant="footnote">
+            {report.draftSource === "gemini" ? DRAFT_GEMINI : DRAFT_TEMPLATE}
           </Text>
-          {report.events.map((e) => (
-            <Text key={e.id}>
-              {e.localTime}, {Math.round(e.relativeDb)} relative dB
-            </Text>
-          ))}
-          {report.draft && (
-            <>
-              <Text>{report.draft}</Text>
-              <Text variant="caption">
-                {report.draftSource === "gemini" ? DRAFT_GEMINI : DRAFT_TEMPLATE}
-              </Text>
-            </>
-          )}
-        </>
-      )}
-      <Text variant="caption">{report.note}</Text>
-    </Card>
+        </View>
+      ) : null}
+    </Section>
   );
 }
+
+const styles = StyleSheet.create({ pad: { padding: space.md, gap: space.sm } });
