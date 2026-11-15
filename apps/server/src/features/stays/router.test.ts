@@ -17,7 +17,6 @@ describe("stays.rank input", () => {
     expect(rankInput.parse(stay)).toEqual(stay);
     const parser = staysRouter._def.procedures.rank._def.inputs[0];
     expect(parser).toBe(rankInput);
-    await expect(caller.rank(stay)).rejects.toMatchObject({ code: "NOT_IMPLEMENTED" });
   });
 
   test("rejects lng, swapped axes, out-of-range coordinates and a reversed stay", async () => {

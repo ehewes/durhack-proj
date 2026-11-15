@@ -1,7 +1,7 @@
 import { rankInput } from "@kip/shared/stays";
-import { notImplemented, publicProcedure, router } from "../../trpc/init";
+import { publicProcedure, router } from "../../trpc/init";
+import { rank } from "./service";
 
-// Stubs from docs/ARCHITECTURE.md (tRPC routers). The `stays` feature fills them in.
 export const staysRouter = router({
-  rank: publicProcedure.input(rankInput).query(() => notImplemented()),
+  rank: publicProcedure.input(rankInput).query(({ input }) => rank(input)),
 });

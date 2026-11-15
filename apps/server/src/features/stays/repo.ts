@@ -1,4 +1,4 @@
-import type { AnyBulkWriteOperation, Collection } from "mongodb";
+import type { AnyBulkWriteOperation, Collection, Document } from "mongodb";
 import { mongo } from "../../db/mongo";
 
 /** Mongo collections from docs/ARCHITECTURE.md. Both carry a 2dsphere index on `location`. */
@@ -75,4 +75,56 @@ export function createStaysRepo(): StaysRepo {
       return a > b ? a : b;
     },
   };
+}
+
+type Near = { distanceM: number };
+
+/** One hotel from the ranking pipeline, with everything the lookups found around it. */
+export type RankRow = {
+  _id: string;
+  name: string | null;
+  location: GeoPoint;
+  bookingLink: PlaceholderBookingLink;
+  /** Metres from the `$geoNear` origin: the `near` point, else the city centre. */
+  distanceFromOriginM: number;
+  sensors: Array<Near & { _id: string; lnight30: number }>;
+  works: Array<
+    Near & {
+      permitReferenceNumber: string;
+      proposedStart: { date: string | null; time: string | null };
+      proposedEnd: { date: string | null; time: string | null };
+      actualStart: string | null;
+      actualEnd: string | null;
+      trafficManagementType: string;
+      currentTrafficManagementType: string | null;
+      nightWork: boolean;
+      simulated: boolean;
+    }
+  >;
+  venues: Array<Near & { venueKind: "nightlife" | "sight" }>;
+  nights: Array<{ _id: string }>;
+};
+
+export type RankRepo = {
+  aggregate(pipeline: Document[]): Promise<RankRow[]>;
+  /** The query planner output for the pipeline, to show the 2dsphere index at work. */
+  explain(pipeline: Document[]): Promise<Document>;
+};
+
+export function createRankRepo(): RankRepo {
+  const hotels = () => mongo().collection<HotelDocument>(HOTELS_COLLECTION);
+  return {
+    async aggregate(pipeline) {
+      return hotels().aggregate<RankRow>(pipeline).toArray();
+    },
+    async explain(pipeline) {
+      return hotels().aggregate(pipeline).explain("queryPlanner");
+    },
+  };
+}
+
+/** True when the plan's `$geoNear` ran on the hotels' 2dsphere index. */
+export function usesGeoIndex(explain: Document): boolean {
+  const text = JSON.stringify(explain);
+  return text.includes("GEO_NEAR_2DSPHERE") && text.includes("2dsphere");
 }
