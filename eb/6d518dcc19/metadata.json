@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "eb6d518dcc19",
+  "strategy": "manual-commit",
+  "branch": "ehewes/185-node-coverage",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/mobile/src/features/city/components/CoverageLegend.tsx",
+    "apps/mobile/src/features/city/components/SensorMap.tsx",
+    "apps/mobile/src/features/city/components/index.ts",
+    "apps/mobile/src/features/city/coverage.test.ts",
+    "apps/mobile/src/features/city/coverage.ts",
+    "apps/mobile/src/features/city/hooks/useCityCoverage.ts",
+    "apps/mobile/src/features/city/screens/CityScreen.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/eb/6d518dcc19/0/metadata.json",
+      "transcript": "/eb/6d518dcc19/0/full.jsonl",
+      "compact_transcript": "/eb/6d518dcc19/0/transcript.jsonl",
+      "content_hash": "/eb/6d518dcc19/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2,
+    "cache_creation_tokens": 961,
+    "cache_read_tokens": 437781,
+    "output_tokens": 969,
+    "api_call_count": 1
+  },
+  "redaction": {
+    "replacements": 5,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 4,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
