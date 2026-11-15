@@ -87,6 +87,49 @@ Expo (iPhone and web) · TypeScript and Bun · tRPC on Hono · Tiger Data (Times
 Atlas · Gemini · ElevenLabs · Solana · PyTorch and ONNX · Mapbox · Urban Observatory · Street
 Manager · OpenStreetMap · Entire
 
+## How Kip uses the sponsor tracks
+**Solana: a timestamp nobody can quietly edit.** A noise complaint is only as strong as its log,
+so Kip makes each night's log provable:
+- The API serialises the night's log canonically, hashes it with SHA-256 and writes the hash to
+  Solana with the Memo program (#71). We use plain JSON-RPC with no Anchor, so a transaction costs
+  a fraction of a cent and confirms in seconds (#109).
+- The council report links the memo on the Solana explorer (#72).
+- The tamper check runs on stage: edit one value in a log, re-hash it, and it no longer matches its
+  memo (#73).
+- The memo proves when the log existed, not that the noise happened. The demo writes to devnet,
+  and the same client targets mainnet by changing `SOLANA_RPC_URL`.
+
+**ElevenLabs: Kip's voice and its second pair of ears.** Text to speech (`eleven_multilingual_v2`)
+reads the morning briefing aloud in the app (#134, #133, #53). Scribe (`scribe_v3`) tags each
+clip's audio events as a second classifier. Where it disagrees with Gemini, the event is marked
+"uncertain", so your own snoring isn't blamed on the building site (#50). Sound Effects
+(`eleven_text_to_sound_v3`) made the demo's drilling and siren clips (#58).
+
+**Gemini: labels and words.** Gemini (`gemini-3.5-flash`, schema-checked JSON) labels every noise
+clip as construction, traffic, siren, snoring or other, with a confidence, and the audio is deleted
+once it is labelled (#94, #44). It does the same for live spikes in seconds (#55). It writes the
+40-word morning briefing, and drafts that break Kip's wording rules are rejected (#134). It also
+drafts the out-of-hours report for the council (#72).
+
+**Tiger Data: every timestamped value.** Observatory readings land in the `sensor_readings`
+hypertable every 5 minutes (#105), with 30+ nights backfilled (#33), next to each night's relative
+dB, sleep stages and vitals (#107). The `sensor_lnight_daily` continuous aggregate computes each
+sensor's Lnight per London night (23:00 to 07:00) as an energy average,
+`10 * log10(mean(10^(L/10)))`, correct across clock changes and with real-time aggregation on top.
+A 30-night query over it feeds the city estimate (#119). Deleting your account deletes your
+series too (#130).
+
+**MongoDB Atlas: users, nights, hotels and scores.** One `$geoNear` aggregation pipeline scores
+every Newcastle hotel and re-ranks it for the chosen profile (#64).
+
+**Entire: how two people ran many agents.** Every agent session is saved as a checkpoint, and
+squash merges keep their `Entire-Checkpoint` trailers, so `entire why <file>:<line>` leads from a
+line on `main` to the session that wrote it. Each PR gets a Trail. On larger issues, `entire
+review` runs a Claude Code reviewer and a Codex reviewer with a Codex judge before the PR earns
+`review:pass`. Agents run `entire brain brief` and `entire graph query` before changing code, and
+record lasting decisions with `entire brain remember`. The Entire setup is pre-event tooling
+(below). The sessions, Trails, reviews and memories are event work.
+
 ## How we built it
 Two people, many agents. Ellis and Nick ran Claude Code, Cursor and Codex agents in parallel: one
 GitHub issue, branch and pull request each, with Entire recording every session. More than 80
