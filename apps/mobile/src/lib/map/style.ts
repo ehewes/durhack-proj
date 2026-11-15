@@ -200,7 +200,7 @@ function selectedColor(selectedId: string | null): unknown[] {
   return ["case", ["==", ["get", "id"], selectedId ?? ""], ACCENT, INK];
 }
 
-/** Overlay layers. Point clusters use one ink, not a colour scale. */
+/** Overlay layers. Clusters use one ink; a single point takes its feature's `color`, else ink. */
 export function mapOverlayLayers(selectedId: string | null): MapLayerSpec[] {
   return [
     {
@@ -260,7 +260,7 @@ export function mapOverlayLayers(selectedId: string | null): MapLayerSpec[] {
       source: MAP_SOURCE.points,
       filter: ["!", ["has", "point_count"]],
       paint: {
-        "circle-color": INK,
+        "circle-color": ["coalesce", ["get", "color"], INK],
         "circle-radius": 6,
         "circle-stroke-color": ACCENT,
         "circle-stroke-width": selectedCase(selectedId, 3, 0),

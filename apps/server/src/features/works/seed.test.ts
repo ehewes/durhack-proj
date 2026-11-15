@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { isInNightWindow, nightOf, WORKS_RADIUS_M } from "@kip/shared/domain";
-import type { WorkRecord } from "@kip/shared/works";
+import type { WorksNearItem } from "@kip/shared/works";
 import lightSleeper from "../../../../../packages/shared/src/stays/fixtures/rank-light-sleeper.json";
 import newcastleOverpass from "../../integrations/fixtures/newcastle-overpass.json";
 import sample from "../../integrations/fixtures/street-manager/newcastle-permits.json";
@@ -25,7 +25,7 @@ function stayNights(checkIn: string, checkOut: string): string[] {
 }
 
 /** Nights whose 23:00 to 07:00 London window the permit's proposed times reach. */
-function scheduledNights(work: WorkRecord): Set<string> {
+function scheduledNights(work: WorksNearItem): Set<string> {
   const nights = new Set<string>();
   const start = Date.parse(work.proposedStart.time ?? "");
   const end = Date.parse(work.proposedEnd.time ?? "");
@@ -96,7 +96,8 @@ describe.serial("seed:works", () => {
       to,
     });
     const everyNight = works.filter(
-      (work) => work.nightWork && nights.every((night) => scheduledNights(work).has(night)),
+      (work) =>
+        work.nightWork === "scheduled" && nights.every((night) => scheduledNights(work).has(night)),
     );
     expect(everyNight.map((work) => work.permitReferenceNumber)).toEqual(
       demo.permits.map((permit) => permit.object_reference),

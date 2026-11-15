@@ -1,36 +1,50 @@
-import { useIsFocused } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MAP_INK, MapView } from "@/lib/map";
-import { space, type as typeScale } from "@/lib/ui";
+import { space, Text, useColors } from "@/lib/ui";
+import { SensorLegend, SensorList, SensorMap } from "../components";
+import { LIST_TITLE, LOADING, SAMPLE_LABEL, TITLE } from "../copy";
+import { useCitySensors } from "../hooks/useCitySensors";
+import { sortSensors } from "../sensors";
 
-/** The Kip Map: Newcastle full screen, with the title floating over it. */
+/** The Kip Map: Newcastle's sensors shaded by indicative disturbance, with a linked list. */
 export function CityScreen() {
-  const focused = useIsFocused();
+  const colors = useColors();
+  const state = useCitySensors();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const now = useMemo(() => Date.now(), []);
+  const sensors = state.kind === "sensors" ? state.sensors : [];
+  const sorted = useMemo(() => sortSensors(sensors, now), [sensors, now]);
+
   return (
-    <View style={styles.root}>
-      {/* The map stays light in dark mode, so the status bar over it needs dark content. */}
-      {focused ? <StatusBar style="dark" /> : null}
-      <MapView style={StyleSheet.absoluteFill} />
-      <SafeAreaView edges={["top"]} style={styles.header}>
-        <Text style={[typeScale.title, styles.title]}>Kip Map</Text>
-      </SafeAreaView>
-    </View>
+    <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={["top"]}>
+      <View style={styles.header}>
+        <Text variant="title">{TITLE}</Text>
+        {state.kind === "sensors" && state.simulated && (
+          <Text variant="caption">{SAMPLE_LABEL}</Text>
+        )}
+        {state.kind === "loading" && <Text variant="caption">{LOADING}</Text>}
+      </View>
+      <SensorMap
+        sensors={sensors}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+        now={now}
+        style={styles.map}
+      />
+      <ScrollView style={styles.panel} contentContainerStyle={styles.panelContent}>
+        <SensorLegend />
+        <Text variant="caption">{LIST_TITLE}</Text>
+        <SensorList sensors={sorted} selectedId={selectedId} now={now} onSelect={setSelectedId} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  // The title floats over the map and lets touches through to it.
-  header: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: space.md,
-    pointerEvents: "box-none",
-  },
-  // Map ink, not the theme's text colour: the map, and its missing-token stand-in, stay light.
-  title: { color: MAP_INK },
+  header: { paddingHorizontal: space.md, paddingBottom: space.sm, gap: space.xs },
+  map: { flex: 3 },
+  panel: { flex: 2 },
+  panelContent: { padding: space.md, gap: space.md },
 });

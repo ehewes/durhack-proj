@@ -16,8 +16,8 @@ describe("api", () => {
     expect(await res.json()).toEqual({ ok: true });
   });
 
-  test("stub plain routes answer 501", async () => {
-    expect((await app.request("/upload/clip", { method: "POST" })).status).toBe(501);
+  test("POST /upload/clip needs a user", async () => {
+    expect((await app.request("/upload/clip", { method: "POST" })).status).toBe(401);
   });
 
   test("POST /sns/street-manager rejects an empty body", async () => {

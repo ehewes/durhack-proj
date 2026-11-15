@@ -102,6 +102,14 @@ describe("overlay model", () => {
     expect(pointSource(collections.points, false).cluster).toBe(false);
   });
 
+  test("points take their feature colour, falling back to ink; clusters stay one ink", () => {
+    const layers = mapOverlayLayers(null);
+    const paint = (id: string) => layers.find((layer) => layer.id === id)?.paint;
+    const fill = paint("kip-points")?.["circle-color"];
+    expect(fill).toEqual(["coalesce", ["get", "color"], "#1a1a18"]);
+    expect(paint("kip-clusters")?.["circle-color"]).toBe("#1a1a18");
+  });
+
   test("selection changes stroke width and the palette stays one ink plus one accent", () => {
     const idle = mapOverlayLayers(null);
     const selected = mapOverlayLayers("sensor-1");
@@ -176,7 +184,7 @@ describe("native map model", () => {
 
     const find = (id: string) => layers.find((layer) => layer.id === id);
     expect(find("kip-points")?.style).toEqual({
-      circleColor: INK,
+      circleColor: ["coalesce", ["get", "color"], INK],
       circleRadius: 6,
       circleStrokeColor: ACCENT,
       circleStrokeWidth: ["case", ["==", ["get", "id"], "sensor-1"], 3, 0],

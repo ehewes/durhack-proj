@@ -20,7 +20,12 @@ import { createCallerFactory } from "../../trpc/init";
 import { appRouter } from "../../trpc/router";
 import { permitToWork } from "./document";
 import { worksNear } from "./query";
-import { createMongoWorksRepository, memoryWorksRepository, setWorksRepository } from "./repo";
+import {
+  createMongoWorksRepository,
+  distanceToWork,
+  memoryWorksRepository,
+  setWorksRepository,
+} from "./repo";
 import { setStreetManagerOptions } from "./service";
 
 const fixturesDir = join(
@@ -409,5 +414,60 @@ describe.serial("works.near", () => {
     await expect(
       worksNear({ lat, lon, radiusM: 200, from: "2026-11-16", to: "2026-11-15" }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  test("returns a real extent, a point, an unknown schedule and counts bad geometry", async () => {
+    const works = samplePermits().map((permit) =>
+      permitToWork(parsePermitNotification(permit), { simulated: true }),
+    );
+    const neville = works.find((work) => work.streetName === "Neville Street");
+    if (neville?.geometry.type !== "LineString") throw new Error("Neville Street");
+    const [lon, lat] = neville.geometry.coordinates[0] ?? [0, 0];
+    const dateOnly = {
+      ...neville,
+      permitReferenceNumber: "date-only",
+      nightWork: false,
+      proposedStart: { date: neville.proposedStart.date, time: null },
+      proposedEnd: { date: neville.proposedEnd.date, time: null },
+      geometry: { type: "Point", coordinates: [lon, lat] },
+    };
+    const absent = { ...neville, permitReferenceNumber: "absent", geometry: undefined };
+    const malformed = {
+      ...neville,
+      permitReferenceNumber: "bad",
+      geometry: { type: "Point", coordinates: [lon, 154] },
+    };
+    setWorksRepository({
+      upsert: async () => "inserted",
+      findNear: async () => [neville, dateOnly, absent, malformed],
+    });
+    const from = neville.proposedStart.date?.slice(0, 10) ?? "";
+    const result = await worksNear({ lat, lon, radiusM: 200, from, to: from });
+    const byRef = new Map(result.works.map((work) => [work.permitReferenceNumber, work]));
+    expect(byRef.get(neville.permitReferenceNumber)).toMatchObject({
+      precision: "extent",
+      geometry: { type: "LineString" },
+    });
+    expect(byRef.get("date-only")).toMatchObject({ precision: "point", nightWork: "unknown" });
+    expect(byRef.has("absent")).toBe(false);
+    expect(byRef.has("bad")).toBe(false);
+    expect(result.omitted).toEqual({ absentGeometry: 1, malformedGeometry: 1 });
+  });
+
+  test("distance to a polygon is zero inside and measured to the edge outside", () => {
+    const [sample] = samplePermits();
+    if (!sample) throw new Error("sample");
+    const base = permitToWork(parsePermitNotification(sample), { simulated: true });
+    const ring: Array<[number, number]> = [
+      [-1.62, 54.97],
+      [-1.61, 54.97],
+      [-1.61, 54.98],
+      [-1.62, 54.98],
+      [-1.62, 54.97],
+    ];
+    const area = { ...base, geometry: { type: "Polygon" as const, coordinates: [ring] } };
+    expect(distanceToWork(54.975, -1.615, area)).toBe(0);
+    expect(distanceToWork(54.969, -1.615, area)).toBeGreaterThan(100);
+    expect(distanceToWork(54.969, -1.615, area)).toBeLessThan(120);
   });
 });
