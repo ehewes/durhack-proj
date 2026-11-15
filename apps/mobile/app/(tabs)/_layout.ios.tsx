@@ -1,4 +1,5 @@
 import { NativeTabs } from "expo-router/native-tabs";
+import { ConsentGate } from "@/features/account";
 import { useColors } from "@/lib/ui";
 
 // iOS tab bar: the native UITabBar, which iOS 26 and later draw in Liquid Glass over the content.
@@ -18,13 +19,15 @@ const TABS = [
 export default function TabsLayout() {
   const colors = useColors();
   return (
-    <NativeTabs tintColor={colors.accent}>
-      {TABS.map((tab) => (
-        <NativeTabs.Trigger key={tab.name} name={tab.name}>
-          <NativeTabs.Trigger.Label>{tab.label}</NativeTabs.Trigger.Label>
-          <NativeTabs.Trigger.Icon sf={{ default: tab.icon, selected: tab.selectedIcon }} />
-        </NativeTabs.Trigger>
-      ))}
-    </NativeTabs>
+    <ConsentGate>
+      <NativeTabs tintColor={colors.accent}>
+        {TABS.map((tab) => (
+          <NativeTabs.Trigger key={tab.name} name={tab.name}>
+            <NativeTabs.Trigger.Label>{tab.label}</NativeTabs.Trigger.Label>
+            <NativeTabs.Trigger.Icon sf={{ default: tab.icon, selected: tab.selectedIcon }} />
+          </NativeTabs.Trigger>
+        ))}
+      </NativeTabs>
+    </ConsentGate>
   );
 }
