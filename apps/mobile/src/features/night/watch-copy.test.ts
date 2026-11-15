@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { bannedWording } from "@kip/shared/domain";
 import type { NightRead } from "./native/watch-sleep";
-import { WATCH_COPY, watchRows, watchTitle } from "./watch-copy";
+import { nightLabel, WATCH_COPY, watchRows, watchTitle } from "./watch-copy";
 
 const stage = (
   start: string,
@@ -65,6 +65,11 @@ describe("watch card copy", () => {
       { label: "Recorded", value: "23:00 to 07:05, no sleep stages" },
       { label: "Heart rate", value: "48 to 71 bpm, 3 readings" },
     ]);
+  });
+
+  test("names the night it shows by its evening", () => {
+    expect(nightLabel("2026-11-14")).toBe("Night of Sat 14 Nov");
+    expect(nightLabel("2026-03-01")).toBe("Night of Sun 1 Mar");
   });
 
   test("follows the wording rules", () => {

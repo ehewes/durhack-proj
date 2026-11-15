@@ -1,4 +1,5 @@
-import { nightOf, toLocalTime } from "@kip/shared/domain";
+import type { AccountView } from "@kip/shared/account";
+import { NIGHT_END_MINUTES, NIGHT_START_MINUTES, nightOf, toLocalTime } from "@kip/shared/domain";
 import type { NightUpload } from "@kip/shared/night";
 
 // The Apple Watch as a sensor: what it tracked overnight, read from HealthKit once the night
@@ -43,10 +44,10 @@ export const SLEEP_VALUE = {
   asleepREM: 5,
 } as const;
 
+// `asleepUnspecified` (watchOS 8 and older, some apps) has no stage in NightUpload, so it is left
+// out rather than shown as a stage the device never measured.
 const STAGE_BY_VALUE: Record<number, SleepStage> = {
   [SLEEP_VALUE.inBed]: "inBed",
-  // Asleep with no stage (watchOS 8 and older, some apps). Core is the closest stage Kip has.
-  [SLEEP_VALUE.asleepUnspecified]: "core",
   [SLEEP_VALUE.awake]: "awake",
   [SLEEP_VALUE.asleepCore]: "core",
   [SLEEP_VALUE.asleepDeep]: "deep",
@@ -100,9 +101,20 @@ export function nightWindow(night: string): SleepWindow {
   return { start: londonMoment(night, 18 * 60), end: londonMoment(addDays(night, 1), 12 * 60) };
 }
 
-/** The night most recently slept: in the morning the one just ended, and still that one all day. */
+/** 23:00 to 07:00 London, the Lnight window: where a night without sleep stages keeps its vitals. */
+export function quietWindow(night: string): SleepWindow {
+  return {
+    start: londonMoment(night, NIGHT_START_MINUTES),
+    end: londonMoment(addDays(night, 1), NIGHT_END_MINUTES),
+  };
+}
+
+/**
+ * The night most recently slept. `nightOf` splits at noon; reading 18 hours back moves the split
+ * to 06:00, so in the small hours a night still in progress is not yet "last night".
+ */
 export function lastNight(now: Date): string {
-  return nightOf(new Date(now.getTime() - 12 * HOUR));
+  return nightOf(new Date(now.getTime() - 18 * HOUR));
 }
 
 /** `count` nights back from `lastNight`, newest first. */
@@ -119,22 +131,24 @@ const toSecond = (ms: number) => Math.floor(ms / SECOND) * SECOND;
 const byStart = (a: Segment, b: Segment) => a.start - b.start || a.end - b.end;
 
 /**
- * Prefer the Watch: the iPhone's "in bed" and other apps' guesses overlap its stages. Without a
- * Watch, keep the one source with the most samples, so two apps never interleave.
+ * One source per series, so two never interleave. The Watch's own tracking (Apple's
+ * `com.apple.health.*` sources on a Watch) beats sleep apps on the Watch, which beat the iPhone's
+ * "in bed" and other apps. Within the winner, the source with the most samples.
  */
 function preferWatch(samples: readonly HealthSample[]): {
   picked: HealthSample[];
   fromWatch: boolean;
 } {
   const watch = samples.filter((sample) => sample.fromWatch);
-  if (watch.length > 0) return { picked: watch, fromWatch: true };
+  const apple = watch.filter((sample) => sample.sourceId.startsWith("com.apple.health"));
+  const pool = apple.length > 0 ? apple : watch.length > 0 ? watch : samples;
   const counts = new Map<string, number>();
-  for (const sample of samples) counts.set(sample.sourceId, (counts.get(sample.sourceId) ?? 0) + 1);
+  for (const sample of pool) counts.set(sample.sourceId, (counts.get(sample.sourceId) ?? 0) + 1);
   let top: string | undefined;
   for (const [source, count] of counts) {
     if (top === undefined || count > (counts.get(top) ?? 0)) top = source;
   }
-  return { picked: samples.filter((sample) => sample.sourceId === top), fromWatch: false };
+  return { picked: pool.filter((sample) => sample.sourceId === top), fromWatch: watch.length > 0 };
 }
 
 /** Each segment starts where the previous one ended, so no two stages overlap. */
@@ -218,37 +232,52 @@ function vitalsIn(samples: readonly HealthSample[], window: SleepWindow) {
 /** One night of Watch data, shaped for `NightUpload.sleep`. */
 export type NightRead = {
   sleep: NightSleep;
-  /** First and last moment with data, as London datetimes */
+  /** The sleep session (first to last stage), or first to last vital without stages, London time */
   startedAt: string;
   endedAt: string;
   /** The stages (or, with no stages, the first vital) came from an Apple Watch */
   fromWatch: boolean;
 };
 
-/** Null when HealthKit has nothing for the window, so the upload leaves `sleep` out. */
-export function toNightRead(raw: RawHealth, window: SleepWindow): NightRead | null {
+/**
+ * Null when HealthKit has nothing, so the upload leaves `sleep` out. Vitals are kept only inside
+ * the sleep session, so waking hours (an evening workout, the morning commute) never count as
+ * sleep. A night without stages keeps the vitals inside `quiet`, by default the whole window.
+ */
+export function toNightRead(
+  raw: RawHealth,
+  window: SleepWindow,
+  quiet: SleepWindow = window,
+): NightRead | null {
   const stages = stagesIn(raw.stages, window);
+  const first = stages.segments[0];
+  const last = stages.segments[stages.segments.length - 1];
+  const session: SleepWindow =
+    first && last
+      ? { start: new Date(first.start), end: new Date(last.end + SECOND) }
+      : {
+          start: new Date(Math.max(window.start.getTime(), quiet.start.getTime())),
+          end: new Date(Math.min(window.end.getTime(), quiet.end.getTime())),
+        };
   const vitals = [raw.heartRate, raw.hrv, raw.respiratoryRate].map((samples) =>
-    vitalsIn(samples, window),
+    vitalsIn(samples, session),
   );
   const [heartRate, hrv, respiratoryRate] = vitals;
   if (!heartRate || !hrv || !respiratoryRate) return null;
 
-  let first = Number.POSITIVE_INFINITY;
-  let last = Number.NEGATIVE_INFINITY;
-  for (const segment of stages.segments) {
-    first = Math.min(first, segment.start);
-    last = Math.max(last, segment.end);
-  }
-  for (const { points } of vitals) {
-    for (const [t] of points) {
-      first = Math.min(first, t * SECOND);
-      last = Math.max(last, t * SECOND);
+  let from = first?.start ?? Number.POSITIVE_INFINITY;
+  let to = last?.end ?? Number.NEGATIVE_INFINITY;
+  if (!first) {
+    for (const { points } of vitals) {
+      for (const [t] of points) {
+        from = Math.min(from, t * SECOND);
+        to = Math.max(to, t * SECOND);
+      }
     }
   }
-  if (first === Number.POSITIVE_INFINITY) return null;
+  if (from === Number.POSITIVE_INFINITY) return null;
 
-  const firstSeries = stages.segments.length > 0 ? stages : vitals.find((v) => v.points.length > 0);
+  const firstSeries = first ? stages : vitals.find((v) => v.points.length > 0);
   return {
     sleep: {
       stages: stages.segments.map((segment) => ({
@@ -260,8 +289,8 @@ export function toNightRead(raw: RawHealth, window: SleepWindow): NightRead | nu
       hrv: hrv.points,
       respiratoryRate: respiratoryRate.points,
     },
-    startedAt: londonIso(new Date(first)),
-    endedAt: londonIso(new Date(last)),
+    startedAt: londonIso(new Date(from)),
+    endedAt: londonIso(new Date(to)),
     fromWatch: firstSeries?.fromWatch ?? false,
   };
 }
@@ -274,11 +303,21 @@ export type HealthPort = {
   isAvailable(): boolean;
   /** Shows the iOS Health sheet the first time. iOS never says whether reading was allowed. */
   requestRead(): Promise<unknown>;
-  read(window: SleepWindow): Promise<RawHealth>;
+  /** Samples overlapping any of the windows, in one query per data type */
+  read(windows: readonly SleepWindow[]): Promise<RawHealth>;
 };
 
-/** The user's health consent in Kip: `useConsent().consent` from the account feature. */
+/** The user's health consent in Kip. */
 export type HealthConsent = { health: boolean };
+
+/**
+ * Health consent as the account says right now: off until the user has answered. Read it when a
+ * HealthKit read starts, not when the screen rendered: "delete everything" resets every query,
+ * and a reset refetches before the account has loaded again.
+ */
+export function healthConsentOf(view: AccountView | undefined): HealthConsent {
+  return { health: view !== undefined && view.consentUpdatedAt !== null && view.consent.health };
+}
 
 type NotRead =
   | { status: "no-consent" }
@@ -295,7 +334,7 @@ export type WatchSleepReader = {
   readWindow(window: SleepWindow, consent: HealthConsent): Promise<WatchNight>;
   /** A night by its evening's London date, over its `nightWindow` */
   readNight(night: string, consent: HealthConsent): Promise<WatchNight>;
-  /** The nights that have data, newest first, from one HealthKit read: for pooling */
+  /** The nights that have data, newest first, from one read of their windows: for pooling */
   readPastNights(nights: readonly string[], consent: HealthConsent): Promise<PastNights>;
 };
 
@@ -318,28 +357,27 @@ export function createWatchSleepReader(port: HealthPort | null): WatchSleepReade
     }
   }
 
-  function readWindow(window: SleepWindow, consent: HealthConsent): Promise<WatchNight> {
-    return withHealth(consent, async (health): Promise<WatchNight> => {
-      const read = toNightRead(await health.read(window), window);
-      return read ? { status: "ok", ...read } : { status: "no-data" };
-    });
-  }
+  const asWatchNight = (read: NightRead | null): WatchNight =>
+    read ? { status: "ok", ...read } : { status: "no-data" };
 
   return {
-    readWindow,
-    readNight: (night, consent) => readWindow(nightWindow(night), consent),
+    readWindow: (window, consent) =>
+      withHealth(consent, async (health) =>
+        asWatchNight(toNightRead(await health.read([window]), window)),
+      ),
+    readNight: (night, consent) =>
+      withHealth(consent, async (health) => {
+        const window = nightWindow(night);
+        return asWatchNight(toNightRead(await health.read([window]), window, quietWindow(night)));
+      }),
     readPastNights: (nights, consent) =>
       withHealth(consent, async (health): Promise<PastNights> => {
         const newest = [...new Set(nights)].sort().reverse();
-        const latest = newest[0];
-        const oldest = newest[newest.length - 1];
-        if (!latest || !oldest) return { status: "no-data" };
-        const raw = await health.read({
-          start: nightWindow(oldest).start,
-          end: nightWindow(latest).end,
-        });
+        if (newest.length === 0) return { status: "no-data" };
+        // Only the nights' own windows, never the afternoons between them.
+        const raw = await health.read(newest.map(nightWindow));
         const found = newest.flatMap((night): PastNight[] => {
-          const read = toNightRead(raw, nightWindow(night));
+          const read = toNightRead(raw, nightWindow(night), quietWindow(night));
           return read ? [{ night, ...read }] : [];
         });
         return found.length > 0 ? { status: "ok", nights: found } : { status: "no-data" };

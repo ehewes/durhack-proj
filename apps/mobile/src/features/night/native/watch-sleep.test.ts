@@ -1,16 +1,21 @@
 import { describe, expect, test } from "bun:test";
+import { type AccountView, accountView } from "@kip/shared/account";
 import { nightUpload } from "@kip/shared/night";
+import { QueryClient } from "@tanstack/react-query";
 import nightUploadFixture from "../../../../../../packages/shared/src/night/fixtures/night-upload.json";
 import {
   createWatchSleepReader,
   type HealthPort,
   type HealthSample,
+  healthConsentOf,
   lastNight,
   londonIso,
   nightWindow,
+  quietWindow,
   type RawHealth,
   recentNights,
   SLEEP_VALUE,
+  type SleepWindow,
   stageOf,
   toNightRead,
 } from "./watch-sleep";
@@ -18,6 +23,8 @@ import {
 const WATCH = "com.apple.health.5F1C0A2B";
 const PHONE = "com.apple.health";
 const APP = "com.example.sleepapp";
+/** A sleep app running on the Watch: a Watch sample, but not Apple's own tracking. */
+const WATCH_APP = "com.example.sleepapp.watchkitapp";
 
 function sample(start: string, end: string, value: number, source = WATCH): HealthSample {
   return {
@@ -25,7 +32,7 @@ function sample(start: string, end: string, value: number, source = WATCH): Heal
     end: new Date(end),
     value,
     sourceId: source,
-    fromWatch: source === WATCH,
+    fromWatch: source === WATCH || source === WATCH_APP,
   };
 }
 
@@ -58,7 +65,21 @@ describe("London time", () => {
     expect(change.end.toISOString()).toBe("2026-10-25T12:00:00.000Z");
   });
 
-  test("last night is the night just ended, morning or evening", () => {
+  test("the quiet window is 23:00 to 07:00 London time", () => {
+    expect(quietWindow("2026-11-14")).toEqual({
+      start: new Date("2026-11-14T23:00:00Z"),
+      end: new Date("2026-11-15T07:00:00Z"),
+    });
+    expect(quietWindow("2026-07-14")).toEqual({
+      start: new Date("2026-07-14T22:00:00Z"),
+      end: new Date("2026-07-15T06:00:00Z"),
+    });
+  });
+
+  test("last night is the one slept, from 06:00 until the next 06:00", () => {
+    expect(lastNight(new Date("2026-11-16T00:30:00Z"))).toBe("2026-11-14");
+    expect(lastNight(new Date("2026-11-15T05:59:00Z"))).toBe("2026-11-13");
+    expect(lastNight(new Date("2026-11-15T06:00:00Z"))).toBe("2026-11-14");
     expect(lastNight(new Date("2026-11-15T09:00:00Z"))).toBe("2026-11-14");
     expect(lastNight(new Date("2026-11-15T20:00:00Z"))).toBe("2026-11-14");
     expect(lastNight(new Date("2026-11-15T11:59:00Z"))).toBe("2026-11-14");
@@ -71,13 +92,13 @@ describe("London time", () => {
 });
 
 describe("sleep stages", () => {
-  test("maps every HealthKit sleep value, and unspecified sleep to core", () => {
+  test("maps every staged HealthKit value, and leaves unstaged sleep out", () => {
     expect(stageOf(inBed)).toBe("inBed");
     expect(stageOf(awake)).toBe("awake");
     expect(stageOf(asleepCore)).toBe("core");
     expect(stageOf(asleepDeep)).toBe("deep");
     expect(stageOf(asleepREM)).toBe("rem");
-    expect(stageOf(asleepUnspecified)).toBe("core");
+    expect(stageOf(asleepUnspecified)).toBeNull();
     expect(stageOf(42)).toBeNull();
   });
 
@@ -97,6 +118,23 @@ describe("sleep stages", () => {
     expect(read?.sleep.stages).toEqual([
       { start: "2026-11-14T23:10:00+00:00", end: "2026-11-15T01:00:00+00:00", stage: "core" },
       { start: "2026-11-15T01:00:00+00:00", end: "2026-11-15T01:04:00+00:00", stage: "awake" },
+    ]);
+  });
+
+  test("Apple's own Watch tracking beats a sleep app on the Watch", () => {
+    const read = toNightRead(
+      raw({
+        stages: [
+          sample("2026-11-14T23:00:00Z", "2026-11-15T00:00:00Z", asleepCore, WATCH_APP),
+          sample("2026-11-15T00:00:00Z", "2026-11-15T02:00:00Z", asleepREM, WATCH_APP),
+          sample("2026-11-14T23:10:00Z", "2026-11-15T01:00:00Z", asleepDeep),
+        ],
+      }),
+      WINDOW,
+    );
+    expect(read?.fromWatch).toBe(true);
+    expect(read?.sleep.stages).toEqual([
+      { start: "2026-11-14T23:10:00+00:00", end: "2026-11-15T01:00:00+00:00", stage: "deep" },
     ]);
   });
 
@@ -191,6 +229,40 @@ describe("vitals", () => {
     expect(read?.endedAt).toBe("2026-11-15T06:40:00+00:00");
   });
 
+  test("keeps vitals inside the sleep session, so waking hours never count as sleep", () => {
+    const read = toNightRead(
+      raw({
+        stages: [sample("2026-11-14T23:00:00Z", "2026-11-15T07:00:00Z", asleepCore)],
+        heartRate: [
+          point("2026-11-14T18:05:00Z", 150),
+          point("2026-11-15T01:00:00Z", 55),
+          point("2026-11-15T07:00:00Z", 60),
+          point("2026-11-15T11:50:00Z", 95),
+        ],
+      }),
+      WINDOW,
+    );
+    expect(read?.sleep.heartRate.map(([, bpm]) => bpm)).toEqual([55, 60]);
+    expect(read?.startedAt).toBe("2026-11-14T23:00:00+00:00");
+    expect(read?.endedAt).toBe("2026-11-15T07:00:00+00:00");
+  });
+
+  test("a night without stages keeps only the vitals of its quiet window", () => {
+    const read = toNightRead(
+      raw({
+        heartRate: [
+          point("2026-11-14T19:00:00Z", 120),
+          point("2026-11-15T02:00:00Z", 54),
+          point("2026-11-15T09:00:00Z", 80),
+        ],
+      }),
+      WINDOW,
+      quietWindow("2026-11-14"),
+    );
+    expect(read?.sleep.heartRate.map(([, bpm]) => bpm)).toEqual([54]);
+    expect(read?.startedAt).toBe("2026-11-15T02:00:00+00:00");
+  });
+
   test("no Watch data at all is null, so the upload leaves sleep out", () => {
     expect(toNightRead(raw({}), WINDOW)).toBeNull();
     expect(toNightRead(raw({ heartRate: [point("2026-11-14T12:00:00Z", 60)] }), WINDOW)).toBeNull();
@@ -217,6 +289,14 @@ describe("vitals", () => {
   });
 });
 
+const untouchable: HealthPort = {
+  isAvailable: () => {
+    throw new Error("asked HealthKit before consent");
+  },
+  requestRead: () => Promise.reject(new Error("asked HealthKit before consent")),
+  read: () => Promise.reject(new Error("read HealthKit before consent")),
+};
+
 describe("reader", () => {
   const CONSENTED = { health: true };
   const ONE_NIGHT = raw({
@@ -226,7 +306,7 @@ describe("reader", () => {
 
   function fakePort(data: RawHealth, available = true) {
     const calls: string[] = [];
-    const windows: { start: Date; end: Date }[] = [];
+    const reads: (readonly SleepWindow[])[] = [];
     const port: HealthPort = {
       isAvailable: () => {
         calls.push("available");
@@ -235,22 +315,14 @@ describe("reader", () => {
       requestRead: async () => {
         calls.push("request");
       },
-      read: async (window) => {
+      read: async (windows) => {
         calls.push("read");
-        windows.push(window);
+        reads.push(windows);
         return data;
       },
     };
-    return { port, calls, windows };
+    return { port, calls, reads };
   }
-
-  const untouchable: HealthPort = {
-    isAvailable: () => {
-      throw new Error("asked HealthKit before consent");
-    },
-    requestRead: () => Promise.reject(new Error("asked HealthKit before consent")),
-    read: () => Promise.reject(new Error("read HealthKit before consent")),
-  };
 
   test("never touches HealthKit without health consent", async () => {
     const reader = createWatchSleepReader(untouchable);
@@ -274,10 +346,10 @@ describe("reader", () => {
   });
 
   test("asks iOS for read access, then reads the night's window", async () => {
-    const { port, calls, windows } = fakePort(ONE_NIGHT);
+    const { port, calls, reads } = fakePort(ONE_NIGHT);
     const result = await createWatchSleepReader(port).readNight("2026-11-14", CONSENTED);
     expect(calls).toEqual(["available", "request", "read"]);
-    expect(windows).toEqual([WINDOW]);
+    expect(reads).toEqual([[WINDOW]]);
     expect(result.status).toBe("ok");
     if (result.status === "ok") expect(result.sleep.stages).toHaveLength(1);
   });
@@ -294,8 +366,8 @@ describe("reader", () => {
     });
   });
 
-  test("exports past nights for pooling from one read, newest first, skipping empty nights", async () => {
-    const { port, windows } = fakePort(
+  test("exports past nights for pooling from one read of their windows, newest first", async () => {
+    const { port, reads } = fakePort(
       raw({
         stages: [
           sample("2026-11-12T23:00:00Z", "2026-11-13T06:00:00Z", asleepCore),
@@ -307,12 +379,41 @@ describe("reader", () => {
       ["2026-11-12", "2026-11-14", "2026-11-13"],
       CONSENTED,
     );
-    expect(windows).toEqual([{ start: nightWindow("2026-11-12").start, end: WINDOW.end }]);
+    expect(reads).toEqual([["2026-11-14", "2026-11-13", "2026-11-12"].map(nightWindow)]);
     expect(result.status).toBe("ok");
     if (result.status !== "ok") return;
     expect(result.nights.map((n) => [n.night, n.sleep.stages[0]?.stage])).toEqual([
       ["2026-11-14", "deep"],
       ["2026-11-12", "core"],
     ]);
+  });
+});
+
+describe("consent when a read starts", () => {
+  const view = (health: boolean, answered = true): AccountView =>
+    accountView.parse({
+      userId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      consent: { microphone: true, health, location: false },
+      consentUpdatedAt: answered ? "2026-11-14T20:00:00+00:00" : null,
+      profile: null,
+    });
+
+  test("is on only once the user has answered yes", () => {
+    expect(healthConsentOf(undefined)).toEqual({ health: false });
+    expect(healthConsentOf(view(true, false))).toEqual({ health: false });
+    expect(healthConsentOf(view(false))).toEqual({ health: false });
+    expect(healthConsentOf(view(true))).toEqual({ health: true });
+  });
+
+  test("after delete everything resets the cache, a read finds no consent and skips HealthKit", async () => {
+    const client = new QueryClient();
+    const key = ["account", "me"];
+    client.setQueryData(key, view(true));
+    expect(healthConsentOf(client.getQueryData<AccountView>(key))).toEqual({ health: true });
+    await client.resetQueries();
+    const consent = healthConsentOf(client.getQueryData<AccountView>(key));
+    expect(await createWatchSleepReader(untouchable).readNight("2026-11-14", consent)).toEqual({
+      status: "no-consent",
+    });
   });
 });

@@ -3,7 +3,7 @@ import { type LayoutChangeEvent, StyleSheet, View } from "react-native";
 import { Button, Card, space, Text } from "@/lib/ui";
 import { useWatchNight } from "../hooks/useWatchNight";
 import type { NightRead } from "../native/watch-sleep";
-import { WATCH_COPY, watchRows, watchTitle } from "../watch-copy";
+import { nightLabel, WATCH_COPY, watchRows, watchTitle } from "../watch-copy";
 import { clock, type Scale } from "./geometry";
 import { StageBand } from "./StageBand";
 
@@ -23,6 +23,7 @@ export function WatchNightCard() {
       {state.status === "no-data" && (
         <>
           <Text>{WATCH_COPY.noData}</Text>
+          <Text variant="caption">{nightLabel(state.night)}</Text>
           <Text variant="caption">{WATCH_COPY.noDataHint}</Text>
           <Button label={WATCH_COPY.retry} variant="secondary" onPress={state.retry} />
         </>
@@ -33,15 +34,22 @@ export function WatchNightCard() {
           <Button label={WATCH_COPY.retry} variant="secondary" onPress={state.retry} />
         </>
       )}
-      {state.status === "ok" && <WatchNight read={state} />}
+      {state.status === "ok" && (
+        <>
+          <WatchNight read={state} night={state.night} />
+          {/* Stages can reach Apple Health after the heart rate does. */}
+          <Button label={WATCH_COPY.readAgain} variant="secondary" onPress={state.retry} />
+        </>
+      )}
     </Card>
   );
 }
 
-function WatchNight({ read }: { read: NightRead }) {
+function WatchNight({ read, night }: { read: NightRead; night: string }) {
   return (
     <>
       <Text>{watchTitle(read)}</Text>
+      <Text variant="caption">{nightLabel(night)}</Text>
       {read.sleep.stages.length > 0 && <Stages read={read} />}
       <View style={styles.rows}>
         {watchRows(read).map((row) => (

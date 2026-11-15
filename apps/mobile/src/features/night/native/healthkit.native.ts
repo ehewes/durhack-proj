@@ -45,22 +45,25 @@ function toSample(sample: Sample, value: number): HealthSample {
   };
 }
 
-/** Samples that overlap the window. `limit: 0` reads all of them. */
-const during = (window: SleepWindow) => ({
-  limit: 0,
-  ascending: true,
-  filter: { date: { startDate: window.start, endDate: window.end } },
-});
+/** Samples that overlap any of the windows, in one query. `limit: 0` reads all of them. */
+function during(windows: readonly SleepWindow[]) {
+  const dates = windows.map((window) => ({
+    date: { startDate: window.start, endDate: window.end },
+  }));
+  const [only] = dates;
+  return { limit: 0, ascending: true, filter: dates.length === 1 && only ? only : { OR: dates } };
+}
 
 const healthKit: HealthPort = {
   isAvailable: () => isHealthDataAvailable(),
   requestRead: () => requestAuthorization({ toRead: [SLEEP, HEART_RATE, HRV, BREATHING] }),
-  async read(window) {
+  async read(windows) {
+    const options = during(windows);
     const [stages, heartRate, hrv, breathing] = await Promise.all([
-      queryCategorySamples(SLEEP, during(window)),
-      queryQuantitySamples(HEART_RATE, { ...during(window), unit: "count/min" }),
-      queryQuantitySamples(HRV, { ...during(window), unit: "ms" }),
-      queryQuantitySamples(BREATHING, { ...during(window), unit: "count/min" }),
+      queryCategorySamples(SLEEP, options),
+      queryQuantitySamples(HEART_RATE, { ...options, unit: "count/min" }),
+      queryQuantitySamples(HRV, { ...options, unit: "ms" }),
+      queryQuantitySamples(BREATHING, { ...options, unit: "count/min" }),
     ]);
     return {
       stages: stages.map((sample) => toSample(sample, sample.value)),

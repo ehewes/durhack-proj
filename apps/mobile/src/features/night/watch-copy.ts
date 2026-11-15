@@ -14,10 +14,20 @@ export const WATCH_COPY = {
     "Apple Health adds the stages after you wake, if you wore your Watch to bed with sleep tracking on. If Kip's access is off, turn it on in the Health app under Sharing, then Apps.",
   error: "Kip could not read Apple Health.",
   retry: "Try again",
+  readAgain: "Read again",
   source: "Read from Apple Health on this iPhone.",
 } as const;
 
 export type WatchRow = { label: string; value: string };
+
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** "Night of Sat 14 Nov", for a night named by its evening's date, so it is never mistaken for another. */
+export function nightLabel(night: string): string {
+  const day = new Date(`${night}T12:00:00Z`);
+  return `Night of ${DAYS[day.getUTCDay()]} ${day.getUTCDate()} ${MONTHS[day.getUTCMonth()]}`;
+}
 
 const ASLEEP = ["deep", "core", "rem"] as const;
 const ASLEEP_LABELS = { deep: "Deep", core: "Core", rem: "REM" } as const;
