@@ -19,7 +19,7 @@ export function ProfilePicker({ profile, onChange }: Props) {
           <Pressable
             key={option}
             accessibilityRole="radio"
-            accessibilityState={{ selected }}
+            accessibilityState={{ checked: selected }}
             onPress={() => onChange(option)}
             style={[
               styles.option,

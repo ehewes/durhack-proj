@@ -104,7 +104,10 @@ export function worksPenalty(hotel: HotelScore): { points: number; permits: numb
   const permits = hotel.sources.permits.filter((permit) => permit.overlapsStay).length;
   if (permits === 0) return null;
   const { value, weight } = hotel.breakdown.roadworks;
-  return { points: Math.round(weight * (100 - value) * 10) / 10, permits };
+  const { points } = hotel.breakdown.roadworks;
+  // Best value scales every line by a price factor; read it back so the penalty matches the row.
+  const factor = value > 0 && weight > 0 ? points / (value * weight) : 1;
+  return { points: Math.round(weight * (100 - value) * factor * 10) / 10, permits };
 }
 
 export type RankSamples = { lightSleeper: RankResult; nightOut: RankResult };
@@ -120,7 +123,10 @@ export function sampleRank(
 ): { result: RankResult; leavesOutStation: boolean } {
   const own = input.profile === "lightSleeper" || input.profile === "nightOut";
   const source = input.profile === "nightOut" ? samples.nightOut : samples.lightSleeper;
-  const hotels = own ? source.hotels : source.hotels.map((hotel) => reweigh(hotel, input.profile));
+  const sameDates = input.checkIn === source.checkIn && input.checkOut === source.checkOut;
+  // The sample's permits were placed against its own dates, so they only overlap those dates.
+  const dated = sameDates ? source.hotels : source.hotels.map(clearOverlap);
+  const hotels = own ? dated : dated.map((hotel) => reweigh(hotel, input.profile));
   const sorted = [...hotels].sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
   return {
     result: {
@@ -131,6 +137,11 @@ export function sampleRank(
     },
     leavesOutStation: input.profile === "business",
   };
+}
+
+function clearOverlap(hotel: HotelScore): HotelScore {
+  const permits = hotel.sources.permits.map((permit) => ({ ...permit, overlapsStay: false }));
+  return { ...hotel, sources: { ...hotel.sources, permits } };
 }
 
 function reweigh(hotel: HotelScore, profile: TravellerProfile): HotelScore {

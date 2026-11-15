@@ -1,5 +1,5 @@
 import type { TravellerProfile } from "@kip/shared/domain";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, type ScrollViewInstance, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { space, Text, useColors } from "@/lib/ui";
@@ -45,10 +45,15 @@ export function StaysScreen() {
 
   const panel = useRef<ScrollViewInstance>(null);
   const rowY = useRef(new Map<string, number>());
-  useEffect(() => {
-    const y = selectedId === null ? undefined : rowY.current.get(selectedId);
+  const scrollTo = useCallback((id: string) => {
+    const y = rowY.current.get(id);
     if (y !== undefined) panel.current?.scrollTo({ y, animated: true });
-  }, [selectedId]);
+  }, []);
+  const selectedRef = useRef<string | null>(null);
+  selectedRef.current = selectedId;
+  useEffect(() => {
+    if (selectedId !== null) scrollTo(selectedId);
+  }, [selectedId, scrollTo]);
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={["top"]}>
@@ -77,7 +82,11 @@ export function StaysScreen() {
             rank={index + 1}
             selected={hotel.hotelId === selectedId}
             onPress={() => setPickedId(hotel.hotelId === selectedId ? null : hotel.hotelId)}
-            onLayoutY={(y) => rowY.current.set(hotel.hotelId, y)}
+            onLayoutY={(y) => {
+              rowY.current.set(hotel.hotelId, y);
+              // The old selection collapsing moves this row; follow it to its new place.
+              if (hotel.hotelId === selectedRef.current) scrollTo(hotel.hotelId);
+            }}
           />
         ))}
       </ScrollView>

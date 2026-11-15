@@ -66,27 +66,29 @@ export function HotelRow({ hotel, rank, selected, onPress, onLayoutY }: Props) {
   const colors = useColors();
   const price = hotel.pricePerNightGbp ? `, £${hotel.pricePerNightGbp} a night` : "";
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      accessibilityLabel={`${rank}. ${hotel.name}, estimated score ${hotel.score}${price}`}
-      onPress={onPress}
+    <View
       onLayout={(event) => onLayoutY?.(event.nativeEvent.layout.y)}
       style={[
         styles.row,
         { borderColor: selected ? colors.accent : colors.border, backgroundColor: colors.surface },
       ]}
     >
-      <View style={styles.head}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ selected }}
+        accessibilityLabel={`${rank}. ${hotel.name}, estimated score ${hotel.score}${price}`}
+        onPress={onPress}
+        style={styles.head}
+      >
         <Text variant="caption">{String(rank)}</Text>
         <View style={styles.name}>
           <Text>{hotel.name}</Text>
           <Text variant="caption">{`Estimate${price}${hotel.simulated ? ", includes simulated data" : ""}`}</Text>
         </View>
         <Text>{String(hotel.score)}</Text>
-      </View>
+      </Pressable>
       {selected && <Breakdown hotel={hotel} />}
-    </Pressable>
+    </View>
   );
 }
 

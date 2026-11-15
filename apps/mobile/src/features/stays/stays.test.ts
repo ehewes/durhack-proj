@@ -92,6 +92,19 @@ describe("sampleRank", () => {
     expect(a.map((h) => h.hotelId)).not.toEqual(b.map((h) => h.hotelId));
   });
 
+  test("moved dates clear the sample's permit overlap", () => {
+    const moved = sampleRank({ profile: "lightSleeper", ...dates }, rankSamples).result.hotels;
+    expect(moved.every((h) => worksPenalty(h) === null)).toBe(true);
+  });
+
+  test("best value scores are quiet points scaled by price", () => {
+    const { result } = sampleRank({ profile: "bestValue", ...dates }, rankSamples);
+    for (const h of result.hotels) {
+      const sum = Object.values(h.breakdown).reduce((s, p) => s + p.points, 0);
+      expect(h.score).toBe(Math.round(Math.min(sum, 100)));
+    }
+  });
+
   test("only business flags the missing station", () => {
     expect(sampleRank({ profile: "business", ...dates }, rankSamples).leavesOutStation).toBe(true);
     expect(sampleRank({ profile: "bestValue", ...dates }, rankSamples).leavesOutStation).toBe(
