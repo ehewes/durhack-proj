@@ -64,6 +64,16 @@ Before setting `MONGO_URI`, allow the host's public IPv4 in the Atlas access lis
 this only for Vultr), and in Tiger Cloud if its allow list is on. Otherwise the API gives up after
 its connection retries and restarts in a loop.
 
+The web map's Mapbox token works differently. Expo bakes `EXPO_PUBLIC_` variables into the web
+build, so `remote-deploy.sh` passes `EXPO_PUBLIC_MAPBOX_TOKEN` from `/opt/kip/.env` to
+`docker build` as a build argument. Changing it needs a redeploy; `$c up -d` is not enough.
+- Use a public `pk.` token restricted to `https://kip.edenmatrix.xyz` (the deploy) and
+  `http://localhost:8081` (the Expo web dev server). It is also a repo Actions variable:
+  `gh variable get EXPO_PUBLIC_MAPBOX_TOKEN`. Never put a secret `sk.` token in it.
+- Without it the map shows "Set EXPO_PUBLIC_MAPBOX_TOKEN…" and the deploy prints a warning.
+- Tiles missing with a token set: open the browser's Network tab. A Mapbox 401 means a wrong or
+  revoked token; a 403 means the page's origin is missing from the token's URL restrictions.
+
 ### Logs, rollback, stop
 With `c` set as above, from `/opt/kip`:
 - Status and logs: `$c ps`, `$c logs -f api`, `$c logs cloudflared`.
@@ -113,7 +123,8 @@ worker and Caddy. Outputs: `api_ip`, `api_url`, `registry_urn`.
 
 ### Ship a new build
 ```bash
-docker build --platform linux/amd64 -t <registry_urn>/kip:latest . && docker push <registry_urn>/kip:latest
+docker build --platform linux/amd64 --build-arg EXPO_PUBLIC_MAPBOX_TOKEN="$(gh variable get EXPO_PUBLIC_MAPBOX_TOKEN)" \
+  -t <registry_urn>/kip:latest . && docker push <registry_urn>/kip:latest
 ssh root@$(terraform -chdir=infra output -raw api_ip) 'cd /opt/kip && docker compose pull && docker compose up -d'
 ```
 
