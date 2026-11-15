@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "3f0fba7cc94e",
+  "strategy": "manual-commit",
+  "branch": "ehewes/189-scatter-cohort",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/server/src/features/night/seed.test.ts",
+    "apps/server/src/features/night/seed.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/3f/0fba7cc94e/0/metadata.json",
+      "transcript": "/3f/0fba7cc94e/0/full.jsonl",
+      "compact_transcript": "/3f/0fba7cc94e/0/transcript.jsonl",
+      "content_hash": "/3f/0fba7cc94e/0/content_hash.txt",
+      "prompt": "/3f/0fba7cc94e/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 46,
+    "cache_creation_tokens": 58449,
+    "cache_read_tokens": 10867789,
+    "output_tokens": 41374,
+    "api_call_count": 22
+  },
+  "redaction": {
+    "replacements": 6,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 4,
+      "key_context": 2,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
