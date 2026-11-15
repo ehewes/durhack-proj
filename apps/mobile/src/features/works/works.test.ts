@@ -57,6 +57,11 @@ describe("worksFeatures", () => {
     expect(features.map((f) => f.id)).toEqual(["P-1", "highlight:P-1", "P-2"]);
     expect(features[1]?.properties).toEqual({ color: "#2f5bd3" });
   });
+  test("colours a highlighted point itself instead of stacking a second marker", () => {
+    const { features } = worksFeatures([point], ["P-2"]);
+    expect(features.map((f) => f.id)).toEqual(["P-2"]);
+    expect(features[0]?.properties?.color).toBe("#2f5bd3");
+  });
   test("maps a highlight marker back to its permit", () => {
     expect(permitRefOfFeature("highlight:P-1")).toBe("P-1");
     expect(permitRefOfFeature("P-1")).toBe("P-1");
@@ -66,6 +71,15 @@ describe("worksFeatures", () => {
 describe("representativePoint", () => {
   test("uses the middle vertex of a line and the mean of a ring", () => {
     expect(representativePoint(line.geometry)).toEqual([-1.611, 54.971]);
+    expect(
+      representativePoint({
+        type: "LineString",
+        coordinates: [
+          [0, 0],
+          [2, 2],
+        ],
+      }),
+    ).toEqual([1, 1]);
     expect(
       representativePoint({
         type: "Polygon",
@@ -111,6 +125,10 @@ describe("describeWork", () => {
 });
 
 describe("formatWhen", () => {
+  test("falls back to the date when the time does not parse", () => {
+    expect(formatWhen({ date: "2026-07-03", time: "not a time" })).toBe("3 Jul 2026");
+    expect(formatWhen({ date: "2026-07-03", time: null })).toBe("3 Jul 2026");
+  });
   test("is null with no date and no time", () => {
     expect(formatWhen({ date: null, time: null })).toBeNull();
   });

@@ -14,12 +14,15 @@ export const HIGHLIGHT_COLOR = "#2f5bd3";
 
 const HIGHLIGHT_PREFIX = "highlight:";
 
-/** A representative point: the point itself, the middle vertex of a line, or a ring's mean. */
+/** A representative point: the point itself, the middle of a line, or a ring's mean. */
 export function representativePoint(geometry: WorksNearItem["geometry"]): MapPosition {
   if (geometry.type === "Point") return geometry.coordinates;
   if (geometry.type === "LineString") {
-    const middle = geometry.coordinates[Math.floor(geometry.coordinates.length / 2)];
-    return middle ?? geometry.coordinates[0] ?? [0, 0];
+    const { coordinates } = geometry;
+    const upper = coordinates[Math.floor(coordinates.length / 2)];
+    const lower = coordinates[Math.ceil(coordinates.length / 2) - 1];
+    if (!upper || !lower) return coordinates[0] ?? [0, 0];
+    return [(upper[0] + lower[0]) / 2, (upper[1] + lower[1]) / 2];
   }
   const ring = (geometry.coordinates[0] ?? []).slice(0, -1);
   if (ring.length === 0) return [0, 0];
@@ -40,13 +43,18 @@ export function worksFeatures(
   const highlighted = new Set(highlightRefs);
   const features: MapFeature[] = [];
   for (const work of works) {
+    const marked = highlighted.has(work.permitReferenceNumber);
     features.push({
       type: "Feature",
       id: work.permitReferenceNumber,
       geometry: work.geometry,
-      properties: { nightWork: work.nightWork, precision: work.precision },
+      properties: {
+        nightWork: work.nightWork,
+        precision: work.precision,
+        ...(marked && work.geometry.type === "Point" ? { color: HIGHLIGHT_COLOR } : {}),
+      },
     });
-    if (highlighted.has(work.permitReferenceNumber)) {
+    if (marked && work.geometry.type !== "Point") {
       features.push({
         type: "Feature",
         id: `${HIGHLIGHT_PREFIX}${work.permitReferenceNumber}`,

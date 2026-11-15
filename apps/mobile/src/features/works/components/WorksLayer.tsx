@@ -1,7 +1,7 @@
 import { toLocalTime } from "@kip/shared/domain";
 import type { WorksNearItem } from "@kip/shared/works";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { StyleProp, ViewStyle } from "react-native";
 import { StyleSheet, View } from "react-native";
 import type { MapPosition } from "@/lib/map";
@@ -17,6 +17,8 @@ import {
   WORKS_RETRY,
 } from "../copy";
 import { describeWork, permitRefOfFeature, worksFeatures } from "../model";
+
+const NO_REFS: readonly string[] = [];
 
 export type WorksLayerProps = {
   /** [longitude, latitude]; defaults to Newcastle. Also the centre of the permit search. */
@@ -43,7 +45,7 @@ export function WorksLayer({
   radiusM = 2000,
   from,
   to,
-  selectedPermitRefs = [],
+  selectedPermitRefs = NO_REFS,
   style,
   onSelect,
 }: WorksLayerProps) {
@@ -54,12 +56,17 @@ export function WorksLayer({
       lat: center[1],
       lon: center[0],
       radiusM,
-      from: from ?? today,
+      from: from ?? to ?? today,
       to: to ?? from ?? today,
     }),
     retry: 1,
   });
   const [selected, setSelected] = useState<string | null>(null);
+
+  const select = (ref: string | null) => {
+    setSelected(ref);
+    onSelect?.(ref);
+  };
 
   const items = works.data?.works;
   const features = useMemo(
@@ -67,6 +74,13 @@ export function WorksLayer({
     [items, selectedPermitRefs],
   );
   const work = items?.find((w) => w.permitReferenceNumber === selected);
+  useEffect(() => {
+    // The selected permit left the results (new radius or dates): clear it for the parent too.
+    if (selected && items && !work) {
+      setSelected(null);
+      onSelect?.(null);
+    }
+  }, [selected, items, work, onSelect]);
   const omitted = works.data
     ? works.data.omitted.absentGeometry + works.data.omitted.malformedGeometry
     : 0;
@@ -79,11 +93,7 @@ export function WorksLayer({
         zoom={zoom}
         features={features}
         selectedId={selected}
-        onSelect={(selection) => {
-          const ref = selection ? permitRefOfFeature(selection.id) : null;
-          setSelected(ref);
-          onSelect?.(ref);
-        }}
+        onSelect={(selection) => select(selection ? permitRefOfFeature(selection.id) : null)}
       />
       <View style={styles.panel}>
         {works.isPending ? (
@@ -97,7 +107,7 @@ export function WorksLayer({
             <Button label={WORKS_RETRY} onPress={() => void works.refetch()} />
           </Card>
         ) : null}
-        {work ? <WorkCard work={work} onClose={() => setSelected(null)} /> : null}
+        {work ? <WorkCard work={work} onClose={() => select(null)} /> : null}
         {!work && omitted > 0 ? (
           <Card>
             <Text variant="caption">{OMITTED_NOTE}</Text>
