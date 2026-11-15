@@ -1,0 +1,7 @@
+<task-notification>
+<task-id>b1234nm77</task-id>
+<tool-use-id>toolu_01QxoB34bi8BXeSQY9YqFERf</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-porto-novo/e67c95ea-6674-436a-b3fa-91a77c4313b1/tasks/b1234nm77.output</output-file>
+<status>completed</status>
+<summary>Background command "Re-run the Entire review on the fixed PR" completed (exit code 0)</summary>
+</task-notification>
