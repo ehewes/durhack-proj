@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/lib/trpc";
 import { Button, Card, Screen, Text } from "@/lib/ui";
 import { NightTimelineChart } from "../components";
+import { WatchNightCard } from "../components/WatchNightCard";
 import { fixtureNight } from "../data/fixture";
 
 type State =
@@ -59,6 +60,7 @@ export function NightScreen() {
           </Card>
         </>
       )}
+      <WatchNightCard />
     </Screen>
   );
 }
