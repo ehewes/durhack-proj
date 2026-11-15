@@ -8,6 +8,7 @@ import {
   type HealthPort,
   type HealthSample,
   healthConsentOf,
+  healthKitFilter,
   lastNight,
   londonIso,
   nightWindow,
@@ -18,6 +19,7 @@ import {
   type SleepWindow,
   stageOf,
   toNightRead,
+  watchNightStaleMs,
 } from "./watch-sleep";
 
 const WATCH = "com.apple.health.5F1C0A2B";
@@ -81,6 +83,11 @@ describe("London time", () => {
     expect(lastNight(new Date("2026-11-15T05:59:00Z"))).toBe("2026-11-13");
     expect(lastNight(new Date("2026-11-15T06:00:00Z"))).toBe("2026-11-14");
     expect(lastNight(new Date("2026-11-15T09:00:00Z"))).toBe("2026-11-14");
+    // Clocks go forward at 01:00 GMT on 29 March and back at 01:00 GMT on 25 October 2026.
+    expect(lastNight(new Date("2026-03-29T06:30:00+01:00"))).toBe("2026-03-28");
+    expect(lastNight(new Date("2026-03-29T05:30:00+01:00"))).toBe("2026-03-27");
+    expect(lastNight(new Date("2026-10-25T05:30:00Z"))).toBe("2026-10-23");
+    expect(lastNight(new Date("2026-10-25T06:00:00Z"))).toBe("2026-10-24");
     expect(lastNight(new Date("2026-11-15T20:00:00Z"))).toBe("2026-11-14");
     expect(lastNight(new Date("2026-11-15T11:59:00Z"))).toBe("2026-11-14");
     expect(recentNights(3, new Date("2026-11-15T09:00:00Z"))).toEqual([
@@ -163,18 +170,18 @@ describe("sleep stages", () => {
     const read = toNightRead(
       raw({
         stages: [
-          sample("2026-11-15T10:00:00Z", "2026-11-15T13:00:00Z", asleepREM),
-          sample("2026-11-15T02:00:00Z", "2026-11-15T03:00:00Z", asleepCore),
-          sample("2026-11-15T02:30:00Z", "2026-11-15T03:30:00Z", asleepDeep),
-          sample("2026-11-15T03:30:00Z", "2026-11-15T04:00:00Z", asleepDeep),
+          sample("2026-11-15T11:00:00Z", "2026-11-15T13:00:00Z", asleepREM),
+          sample("2026-11-15T09:00:00Z", "2026-11-15T10:00:00Z", asleepCore),
+          sample("2026-11-15T09:30:00Z", "2026-11-15T10:30:00Z", asleepDeep),
+          sample("2026-11-15T10:30:00Z", "2026-11-15T11:00:00Z", asleepDeep),
         ],
       }),
       WINDOW,
     );
     expect(read?.sleep.stages).toEqual([
-      { start: "2026-11-15T02:00:00+00:00", end: "2026-11-15T03:00:00+00:00", stage: "core" },
-      { start: "2026-11-15T03:00:00+00:00", end: "2026-11-15T04:00:00+00:00", stage: "deep" },
-      { start: "2026-11-15T10:00:00+00:00", end: "2026-11-15T12:00:00+00:00", stage: "rem" },
+      { start: "2026-11-15T09:00:00+00:00", end: "2026-11-15T10:00:00+00:00", stage: "core" },
+      { start: "2026-11-15T10:00:00+00:00", end: "2026-11-15T11:00:00+00:00", stage: "deep" },
+      { start: "2026-11-15T11:00:00+00:00", end: "2026-11-15T12:00:00+00:00", stage: "rem" },
     ]);
   });
 
@@ -245,6 +252,21 @@ describe("vitals", () => {
     expect(read?.sleep.heartRate.map(([, bpm]) => bpm)).toEqual([55, 60]);
     expect(read?.startedAt).toBe("2026-11-14T23:00:00+00:00");
     expect(read?.endedAt).toBe("2026-11-15T07:00:00+00:00");
+  });
+
+  test("an evening nap stays out, and so do the vitals between it and the night", () => {
+    const read = toNightRead(
+      raw({
+        stages: [
+          sample("2026-11-14T19:00:00Z", "2026-11-14T19:40:00Z", asleepCore),
+          sample("2026-11-14T23:00:00Z", "2026-11-15T07:00:00Z", asleepCore),
+        ],
+        heartRate: [point("2026-11-14T19:20:00Z", 58), point("2026-11-14T21:00:00Z", 110)],
+      }),
+      WINDOW,
+    );
+    expect(read?.sleep.stages.map((s) => s.start)).toEqual(["2026-11-14T23:00:00+00:00"]);
+    expect(read?.sleep.heartRate).toEqual([]);
   });
 
   test("a night without stages keeps only the vitals of its quiet window", () => {
@@ -415,5 +437,27 @@ describe("consent when a read starts", () => {
     expect(await createWatchSleepReader(untouchable).readNight("2026-11-14", consent)).toEqual({
       status: "no-consent",
     });
+  });
+});
+
+describe("HealthKit query and freshness", () => {
+  test("one window is one date range; several are one OR query", () => {
+    expect(healthKitFilter([WINDOW])).toEqual({
+      date: { startDate: WINDOW.start, endDate: WINDOW.end },
+    });
+    const earlier = nightWindow("2026-11-13");
+    expect(healthKitFilter([WINDOW, earlier])).toEqual({
+      OR: [
+        { date: { startDate: WINDOW.start, endDate: WINDOW.end } },
+        { date: { startDate: earlier.start, endDate: earlier.end } },
+      ],
+    });
+  });
+
+  test("only a night with data stays fresh, so a no-consent or no-data read is read again", () => {
+    expect(watchNightStaleMs({ status: "ok" })).toBe(600_000);
+    expect(watchNightStaleMs({ status: "no-consent" })).toBe(0);
+    expect(watchNightStaleMs({ status: "no-data" })).toBe(0);
+    expect(watchNightStaleMs(undefined)).toBe(0);
   });
 });

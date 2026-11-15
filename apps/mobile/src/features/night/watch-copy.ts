@@ -15,6 +15,8 @@ export const WATCH_COPY = {
   error: "Kip could not read Apple Health.",
   retry: "Try again",
   readAgain: "Read again",
+  noStagesYet:
+    "No sleep stages yet. Apple Health adds them after you wake, if sleep tracking is on for your Watch.",
   source: "Read from Apple Health on this iPhone.",
 } as const;
 

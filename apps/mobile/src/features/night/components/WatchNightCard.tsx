@@ -50,7 +50,11 @@ function WatchNight({ read, night }: { read: NightRead; night: string }) {
     <>
       <Text>{watchTitle(read)}</Text>
       <Text variant="caption">{nightLabel(night)}</Text>
-      {read.sleep.stages.length > 0 && <Stages read={read} />}
+      {read.sleep.stages.length > 0 ? (
+        <Stages read={read} />
+      ) : (
+        <Text variant="caption">{WATCH_COPY.noStagesYet}</Text>
+      )}
       <View style={styles.rows}>
         {watchRows(read).map((row) => (
           <View key={row.label} style={styles.row}>

@@ -8,7 +8,7 @@ import {
   createWatchSleepReader,
   type HealthPort,
   type HealthSample,
-  type SleepWindow,
+  healthKitFilter,
   type WatchSleepReader,
 } from "./watch-sleep";
 
@@ -45,20 +45,12 @@ function toSample(sample: Sample, value: number): HealthSample {
   };
 }
 
-/** Samples that overlap any of the windows, in one query. `limit: 0` reads all of them. */
-function during(windows: readonly SleepWindow[]) {
-  const dates = windows.map((window) => ({
-    date: { startDate: window.start, endDate: window.end },
-  }));
-  const [only] = dates;
-  return { limit: 0, ascending: true, filter: dates.length === 1 && only ? only : { OR: dates } };
-}
-
 const healthKit: HealthPort = {
   isAvailable: () => isHealthDataAvailable(),
   requestRead: () => requestAuthorization({ toRead: [SLEEP, HEART_RATE, HRV, BREATHING] }),
   async read(windows) {
-    const options = during(windows);
+    // Samples that overlap any of the windows, in one query. `limit: 0` reads all of them.
+    const options = { limit: 0, ascending: true, filter: healthKitFilter(windows) };
     const [stages, heartRate, hrv, breathing] = await Promise.all([
       queryCategorySamples(SLEEP, options),
       queryQuantitySamples(HEART_RATE, { ...options, unit: "count/min" }),

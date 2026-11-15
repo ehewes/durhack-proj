@@ -1,5 +1,5 @@
 import type { AccountView } from "@kip/shared/account";
-import { NIGHT_END_MINUTES, NIGHT_START_MINUTES, nightOf, toLocalTime } from "@kip/shared/domain";
+import { NIGHT_END_MINUTES, NIGHT_START_MINUTES, toLocalTime } from "@kip/shared/domain";
 import type { NightUpload } from "@kip/shared/night";
 
 // The Apple Watch as a sensor: what it tracked overnight, read from HealthKit once the night
@@ -62,7 +62,6 @@ export function stageOf(value: number): SleepStage | null {
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
-const HOUR = 60 * MINUTE;
 
 /** Minutes London is ahead of UTC at `at`: 0 in winter, 60 in summer. */
 function londonOffsetMinutes(at: Date): number {
@@ -109,12 +108,17 @@ export function quietWindow(night: string): SleepWindow {
   };
 }
 
+/** London clock time from which the night just slept counts as "last night". */
+const LAST_NIGHT_FROM_MINUTES = 6 * 60;
+
 /**
- * The night most recently slept. `nightOf` splits at noon; reading 18 hours back moves the split
- * to 06:00, so in the small hours a night still in progress is not yet "last night".
+ * The night most recently slept, by London's calendar: from 06:00 it is the one that began
+ * yesterday evening, and in the small hours, while a night is still in progress, the one before.
+ * Calendar dates, not elapsed hours, so the clock changes do not move the 06:00 switch.
  */
 export function lastNight(now: Date): string {
-  return nightOf(new Date(now.getTime() - 18 * HOUR));
+  const local = toLocalTime(now);
+  return addDays(local.date, local.minutes >= LAST_NIGHT_FROM_MINUTES ? -1 : -2);
 }
 
 /** `count` nights back from `lastNight`, newest first. */
@@ -210,7 +214,34 @@ function stagesIn(samples: readonly HealthSample[], window: SleepWindow) {
   const asleep = trimOverlaps(segments.filter((segment) => segment.stage !== "inBed"));
   const inBed = joinRuns(segments.filter((segment) => segment.stage === "inBed").sort(byStart));
   const gaps = inBed.flatMap((segment) => subtract(segment, asleep));
-  return { segments: joinRuns([...asleep, ...gaps].sort(byStart)), fromWatch };
+  return { segments: mainSession(joinRuns([...asleep, ...gaps].sort(byStart))), fromWatch };
+}
+
+/** A break this long between stages starts a new sleep session, e.g. an evening nap. */
+const SESSION_GAP_MS = 90 * MINUTE;
+
+/**
+ * The night's main sleep session: the run of stages with the most time asleep. An evening nap
+ * or a session clipped at 18:00 stays out, so the hours between never count as sleep.
+ */
+function mainSession(segments: readonly Segment[]): Segment[] {
+  const sessions: Segment[][] = [];
+  for (const segment of segments) {
+    const current = sessions[sessions.length - 1];
+    const previous = current?.[current.length - 1];
+    if (current && previous && segment.start - previous.end < SESSION_GAP_MS) current.push(segment);
+    else sessions.push([segment]);
+  }
+  const asleepMs = (session: readonly Segment[]) =>
+    session.reduce(
+      (sum, s) => (s.stage === "inBed" || s.stage === "awake" ? sum : sum + s.end - s.start),
+      0,
+    );
+  let best: Segment[] = [];
+  for (const session of sessions) {
+    if (best.length === 0 || asleepMs(session) > asleepMs(best)) best = session;
+  }
+  return best;
 }
 
 /** [epoch seconds, value] by start time, one per second, to 0.1 of the unit. */
@@ -307,6 +338,23 @@ export type HealthPort = {
   read(windows: readonly SleepWindow[]): Promise<RawHealth>;
 };
 
+/** A HealthKit sample filter for the windows: one date range, or an OR of several in one query. */
+export function healthKitFilter(windows: readonly SleepWindow[]) {
+  const dates = windows.map((window) => ({
+    date: { startDate: window.start, endDate: window.end },
+  }));
+  const [only] = dates;
+  return dates.length === 1 && only ? only : { OR: dates };
+}
+
+/**
+ * How long a read stays fresh. Only a night with data keeps for 10 minutes. Anything else
+ * (no consent while the account reloads, no data before stages sync) is read again next time.
+ */
+export function watchNightStaleMs(result: { status: string } | undefined): number {
+  return result?.status === "ok" ? 10 * MINUTE : 0;
+}
+
 /** The user's health consent in Kip. */
 export type HealthConsent = { health: boolean };
 
@@ -324,7 +372,10 @@ type NotRead =
   | { status: "unavailable" }
   | { status: "error"; message: string };
 
-/** `no-data`: no Watch worn, Health access off in iOS, or the sleep session has not ended yet. */
+/**
+ * `no-data`: no Watch worn, or Health access off in iOS. Before the sleep session ends a night
+ * can be `ok` with vitals and no stages yet: stages reach Apple Health once the user wakes.
+ */
 export type WatchNight = NotRead | { status: "no-data" } | ({ status: "ok" } & NightRead);
 export type PastNight = NightRead & { night: string };
 export type PastNights = NotRead | { status: "no-data" } | { status: "ok"; nights: PastNight[] };
