@@ -1,5 +1,6 @@
 import type { AnyBulkWriteOperation, Collection, Document } from "mongodb";
 import { mongo } from "../../db/mongo";
+import { tiger } from "../../db/tiger";
 
 /** Mongo collections from docs/ARCHITECTURE.md. Both carry a 2dsphere index on `location`. */
 export const HOTELS_COLLECTION = "hotels";
@@ -88,6 +89,8 @@ export type RankRow = {
   /** Metres from the `$geoNear` origin: the `near` point, else the city centre. */
   distanceFromOriginM: number;
   sensors: Array<Near & { _id: string; lnight30: number }>;
+  /** Sensors within range that report NO2 or PM2.5. Their night readings come from `nightAir`. */
+  airSensors: Array<Near & { _id: string }>;
   works: Array<
     Near & {
       permitReferenceNumber: string;
@@ -106,8 +109,27 @@ export type RankRow = {
   nights: Array<{ _id: string; simulated?: boolean }>;
 };
 
+/** Mean night-time reading per sensor over the last 30 days, in µg/m³. A metric a sensor lacks is absent. */
+export type SensorNightAir = { sensorId: string; no2?: number; pm25?: number };
+
+/** Days of readings behind the night-time mean. */
+export const NIGHT_AIR_DAYS = 30;
+
+/** Mean NO2 and PM2.5 between 23:00 and 07:00 London time, per sensor. */
+export const NIGHT_AIR_SQL = [
+  "select sensor_id, metric, avg(value) as mean",
+  "from sensor_readings",
+  "where sensor_id = any($1) and metric in ('no2', 'pm25')",
+  `and time >= now() - interval '${NIGHT_AIR_DAYS} days'`,
+  "and (extract(hour from time at time zone 'Europe/London') >= 23",
+  "or extract(hour from time at time zone 'Europe/London') < 7)",
+  "group by sensor_id, metric",
+].join(" ");
+
 export type RankRepo = {
   aggregate(pipeline: Document[]): Promise<RankRow[]>;
+  /** Night-time NO2 and PM2.5 for these Observatory sensors. */
+  nightAir(sensorIds: string[]): Promise<SensorNightAir[]>;
   /** The query planner output for the pipeline, to show the 2dsphere index at work. */
   explain(pipeline: Document[]): Promise<Document>;
 };
@@ -120,6 +142,23 @@ export function createRankRepo(): RankRepo {
     },
     async explain(pipeline) {
       return hotels().aggregate(pipeline).explain("queryPlanner");
+    },
+    async nightAir(sensorIds) {
+      if (sensorIds.length === 0) return [];
+      const rows = (await tiger().unsafe(NIGHT_AIR_SQL, [sensorIds])) as unknown as Array<{
+        sensor_id: string;
+        metric: "no2" | "pm25";
+        mean: number | string | null;
+      }>;
+      const bySensor = new Map<string, SensorNightAir>();
+      for (const { sensor_id, metric, mean } of rows) {
+        const value = Number(mean);
+        if (mean === null || !Number.isFinite(value)) continue;
+        const entry = bySensor.get(sensor_id) ?? { sensorId: sensor_id };
+        entry[metric] = value;
+        bySensor.set(sensor_id, entry);
+      }
+      return [...bySensor.values()];
     },
   };
 }
