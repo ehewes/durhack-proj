@@ -39,6 +39,16 @@ export type MapFeatureCollection = {
   features: MapFeature[];
 };
 
+/**
+ * One weighted point for the heat layer. It draws a soft area, never a marker, so feature code
+ * can show roughly where something happens without pinning it.
+ */
+export type MapHeatPoint = {
+  position: MapPosition;
+  /** 0 to 1. Values outside are clamped. */
+  weight: number;
+};
+
 export type MapCamera = {
   center: MapPosition;
   zoom: number;
@@ -57,6 +67,8 @@ export type MapProps = {
   features?: MapFeatureCollection;
   /** Cluster point features. Lines and polygons are never clustered. */
   cluster?: boolean;
+  /** A heat layer drawn under every feature. Never selectable, never clustered. */
+  heat?: readonly MapHeatPoint[];
   /** Feature id to draw as selected. */
   selectedId?: string | null;
   onSelect?: (selection: MapSelection | null) => void;

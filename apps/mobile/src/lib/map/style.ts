@@ -3,6 +3,7 @@ import type {
   MapFeatureCollection,
   MapFeatureProperties,
   MapGeometry,
+  MapHeatPoint,
   MapPosition,
 } from "./types";
 
@@ -57,12 +58,14 @@ export function mobileMapboxToken(env?: {
 }
 
 export const MAP_SOURCE = {
+  heat: "kip-heat",
   points: "kip-points",
   lines: "kip-lines",
   polygons: "kip-polygons",
 } as const;
 
 export const MAP_LAYER = {
+  heat: "kip-heat",
   polygons: "kip-polygons",
   polygonLine: "kip-polygon-line",
   lines: "kip-lines",
@@ -71,7 +74,10 @@ export const MAP_LAYER = {
   points: "kip-points",
 } as const;
 
-/** Later entries draw above earlier ones. */
+/**
+ * Later entries draw above earlier ones. These are the layers a click or tap can select; the heat
+ * layer sits below all of them and is never selectable.
+ */
 export const MAP_LAYER_ORDER = [
   MAP_LAYER.polygons,
   MAP_LAYER.polygonLine,
@@ -103,8 +109,10 @@ export type MapGeoJsonSourceSpec = {
 
 export type MapLayerSpec = {
   id: string;
-  type: "fill" | "line" | "circle" | "symbol";
+  type: "fill" | "line" | "circle" | "symbol" | "heatmap";
   source: string;
+  /** The layer is hidden from this zoom in. */
+  maxzoom?: number;
   filter?: unknown[];
   layout?: Record<string, string | number | unknown[]>;
   paint?: Record<string, string | number | unknown[]>;
@@ -176,6 +184,22 @@ export function featuresToCollections(features: MapFeatureCollection | undefined
     }
   }
   return { points, lines, polygons };
+}
+
+/** Heat points as the heat source's features. Invalid positions are dropped, weights clamped to 0 to 1. */
+export function heatCollection(heat: readonly MapHeatPoint[] | undefined): DrawnCollection {
+  const collection = emptyCollection();
+  for (const point of heat ?? []) {
+    if (!isPosition(point?.position) || !Number.isFinite(point.weight)) continue;
+    const id = `heat-${collection.features.length}`;
+    collection.features.push({
+      type: "Feature",
+      id,
+      properties: { id, weight: Math.min(Math.max(point.weight, 0), 1) },
+      geometry: { type: "Point", coordinates: point.position },
+    });
+  }
+  return collection;
 }
 
 export function shapeSource(data: DrawnCollection): MapGeoJsonSourceSpec {
@@ -269,6 +293,51 @@ export function mapOverlayLayers(selectedId: string | null): MapLayerSpec[] {
   ];
 }
 
+/** The heat layer stops drawing from this zoom in, so it never reads as street-precise. */
+export const HEAT_MAX_ZOOM = 15;
+
+/** The accent at a given opacity. The heat ramp is this one hue, from clear to solid. */
+const accentAt = (alpha: number) => `rgba(47, 91, 211, ${alpha})`;
+
+/**
+ * A soft heat layer, one hue. Its radius doubles with each zoom level, so a point always covers
+ * about 300 m around it (roughly a 500 m area) at Newcastle's latitude, and it fades out before
+ * street level.
+ */
+export function heatLayer(): MapLayerSpec {
+  return {
+    id: MAP_LAYER.heat,
+    type: "heatmap",
+    source: MAP_SOURCE.heat,
+    maxzoom: HEAT_MAX_ZOOM,
+    paint: {
+      "heatmap-weight": ["coalesce", ["get", "weight"], 0],
+      "heatmap-intensity": 1,
+      "heatmap-radius": ["interpolate", ["exponential", 2], ["zoom"], 10, 7, 15, 224],
+      "heatmap-color": [
+        "interpolate",
+        ["linear"],
+        ["heatmap-density"],
+        0,
+        accentAt(0),
+        0.3,
+        accentAt(0.3),
+        1,
+        accentAt(0.6),
+      ],
+      "heatmap-opacity": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        HEAT_MAX_ZOOM - 1,
+        1,
+        HEAT_MAX_ZOOM,
+        0,
+      ],
+    },
+  };
+}
+
 /** A click target from a rendered feature. Clusters zoom; other hits select. */
 export function classifyMapHit(
   properties: Record<string, unknown> | null | undefined,
@@ -318,6 +387,8 @@ export type NativeLayerSpec = {
    * it, so the stack matches MAP_LAYER_ORDER whatever order they mount in.
    */
   aboveLayerID?: string;
+  /** The layer is hidden from this zoom in. */
+  maxZoomLevel?: number;
   style: Record<string, unknown>;
 };
 
@@ -325,23 +396,31 @@ function camelCase(key: string): string {
   return key.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
 }
 
+function toNative(layer: MapLayerSpec, aboveLayerID: string | undefined): NativeLayerSpec {
+  const style: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries({ ...layer.layout, ...layer.paint })) {
+    style[camelCase(key)] = value;
+  }
+  return {
+    id: layer.id,
+    type: layer.type,
+    source: layer.source,
+    filter: layer.filter,
+    aboveLayerID,
+    maxZoomLevel: layer.maxzoom,
+    style,
+  };
+}
+
 /** The web overlay layers translated for the native SDK, so the iPhone draws the same map. */
 export function nativeOverlayLayers(selectedId: string | null): NativeLayerSpec[] {
   const layers = mapOverlayLayers(selectedId);
-  return layers.map((layer, index) => {
-    const style: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries({ ...layer.layout, ...layer.paint })) {
-      style[camelCase(key)] = value;
-    }
-    return {
-      id: layer.id,
-      type: layer.type,
-      source: layer.source,
-      filter: layer.filter,
-      aboveLayerID: layers[index - 1]?.id,
-      style,
-    };
-  });
+  return layers.map((layer, index) => toNative(layer, layers[index - 1]?.id));
+}
+
+/** The heat layer for the native SDK. The map mounts its source first, so it draws lowest. */
+export function nativeHeatLayer(): NativeLayerSpec {
+  return toNative(heatLayer(), undefined);
 }
 
 /** A tapped feature as the native SDK reports it: top-most first. */

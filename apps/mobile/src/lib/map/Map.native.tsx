@@ -4,6 +4,8 @@ import Mapbox, {
   type CircleLayerStyle,
   FillLayer,
   type FillLayerStyle,
+  HeatmapLayer,
+  type HeatmapLayerStyle,
   LineLayer,
   type LineLayerStyle,
   MapView as MapboxMapView,
@@ -18,12 +20,14 @@ import { MissingMapToken } from "./MissingMapToken";
 import {
   cameraTracker,
   featuresToCollections,
+  heatCollection,
   MAP_SOURCE,
   MAPBOX_STYLE,
   MISSING_MOBILE_MAPBOX_TOKEN_MESSAGE,
   mobileMapboxToken,
   type NativeLayerSpec,
   NEWCASTLE,
+  nativeHeatLayer,
   nativeOverlayLayers,
   pointPosition,
   pointSource,
@@ -51,6 +55,7 @@ function OverlayLayer({ layer }: { layer: NativeLayerSpec }) {
     id: layer.id,
     sourceID: layer.source,
     aboveLayerID: layer.aboveLayerID,
+    maxZoomLevel: layer.maxZoomLevel,
     filter: layer.filter as LayerFilter,
   };
   switch (layer.type) {
@@ -62,8 +67,12 @@ function OverlayLayer({ layer }: { layer: NativeLayerSpec }) {
       return <CircleLayer {...common} style={layer.style as CircleLayerStyle} />;
     case "symbol":
       return <SymbolLayer {...common} style={layer.style as SymbolLayerStyle} />;
+    case "heatmap":
+      return <HeatmapLayer {...common} style={layer.style as HeatmapLayerStyle} />;
   }
 }
+
+const HEAT_LAYER = nativeHeatLayer();
 
 function NativeMap({
   center = NEWCASTLE,
@@ -72,6 +81,7 @@ function NativeMap({
   features,
   cluster = false,
   selectedId = null,
+  heat,
   onSelect,
   onCameraChange,
 }: MapProps) {
@@ -83,6 +93,7 @@ function NativeMap({
   const [camera] = useState(() => cameraTracker({ center, zoom }));
 
   const collections = useMemo(() => featuresToCollections(features), [features]);
+  const heatShape = useMemo(() => heatCollection(heat), [heat]);
   const layers = useMemo(() => nativeOverlayLayers(selectedId), [selectedId]);
   const points = pointSource(collections.points, cluster);
 
@@ -145,6 +156,11 @@ function NativeMap({
       onMapIdle={mapIdle}
     >
       <Camera ref={cameraRef} defaultSettings={initial} />
+      {/* Mounted first, empty when unused, so the heat always draws below every feature. No
+          onPress: heat is never selectable. */}
+      <ShapeSource id={MAP_SOURCE.heat} shape={heatShape}>
+        <OverlayLayer layer={HEAT_LAYER} />
+      </ShapeSource>
       <ShapeSource id={MAP_SOURCE.polygons} shape={collections.polygons} onPress={pressSource}>
         {layersOf(MAP_SOURCE.polygons)}
       </ShapeSource>

@@ -4,6 +4,10 @@ import {
   cameraTracker,
   classifyMapHit,
   featuresToCollections,
+  HEAT_MAX_ZOOM,
+  heatCollection,
+  heatLayer,
+  MAP_LAYER,
   MAP_LAYER_ORDER,
   MAP_SOURCE,
   MAPBOX_STYLE,
@@ -13,6 +17,7 @@ import {
   mapOverlayLayers,
   mobileMapboxToken,
   NEWCASTLE,
+  nativeHeatLayer,
   nativeOverlayLayers,
   pointPosition,
   pointSource,
@@ -67,6 +72,59 @@ const sample: MapFeatureCollection = {
     },
   ],
 };
+
+describe("heat layer", () => {
+  test("heat points become weighted features; bad positions drop and weights clamp", () => {
+    const heat = heatCollection([
+      { position: [-1.61, 54.97], weight: 0.5 },
+      { position: [Number.NaN, 54.97], weight: 1 },
+      { position: [-1.62, 54.98], weight: 7 },
+      { position: [-1.63, 54.99], weight: -2 },
+      { position: [-1.64, 54.99], weight: Number.NaN },
+    ]);
+    expect(heat.features.map((f) => [f.id, f.properties.weight])).toEqual([
+      ["heat-0", 0.5],
+      ["heat-1", 1],
+      ["heat-2", 0],
+    ]);
+    expect(heatCollection(undefined).features).toHaveLength(0);
+  });
+
+  test("is one accent hue, clear at zero, gone before street level and never clickable", () => {
+    const layer = heatLayer();
+    expect(layer).toMatchObject({
+      id: MAP_LAYER.heat,
+      type: "heatmap",
+      source: MAP_SOURCE.heat,
+      maxzoom: HEAT_MAX_ZOOM,
+    });
+    const colours = JSON.stringify(layer.paint?.["heatmap-color"]).match(/rgba\([^)]*\)/g) ?? [];
+    expect(colours).toHaveLength(3);
+    expect([...new Set(colours.map((c) => c.replace(/,\s*[\d.]+\)$/, ")")))]).toEqual([
+      "rgba(47, 91, 211)",
+    ]);
+    expect(colours[0]).toBe("rgba(47, 91, 211, 0)");
+    expect(MAP_LAYER_ORDER).not.toContain(MAP_LAYER.heat);
+  });
+
+  test("the iPhone draws the same heat, hidden past the same zoom", () => {
+    const layer = nativeHeatLayer();
+    expect(layer).toMatchObject({
+      id: MAP_LAYER.heat,
+      type: "heatmap",
+      source: MAP_SOURCE.heat,
+      maxZoomLevel: HEAT_MAX_ZOOM,
+    });
+    expect(layer.aboveLayerID).toBeUndefined();
+    expect(Object.keys(layer.style).sort()).toEqual([
+      "heatmapColor",
+      "heatmapIntensity",
+      "heatmapOpacity",
+      "heatmapRadius",
+      "heatmapWeight",
+    ]);
+  });
+});
 
 describe("mapbox token", () => {
   test("a blank token is missing", () => {
@@ -429,8 +487,12 @@ describe("web map session", () => {
       expect(geoCalls).toBe(0);
       expect(map.controls).toHaveLength(1);
 
-      session.setOverlays(sample, true, null);
+      session.setOverlays(sample, true, null, [{ position: NEWCASTLE, weight: 1 }]);
       fire(map, "load");
+      expect(map.sources.get(MAP_SOURCE.heat)?.data).toMatchObject({
+        features: [expect.objectContaining({ id: "heat-0" })],
+      });
+      expect([...map.layers.keys()][0]).toBe(MAP_LAYER.heat);
       const points = map.sources.get(MAP_SOURCE.points);
       expect(points?.spec.cluster).toBe(true);
       expect(points?.data).toMatchObject({

@@ -9,6 +9,7 @@ export type {
   MapFeatureCollection,
   MapFeatureProperties,
   MapGeometry,
+  MapHeatPoint,
   MapPosition,
   MapProps,
   MapSelection,
