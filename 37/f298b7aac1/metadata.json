@@ -1,0 +1,77 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "37f298b7aac1",
+  "strategy": "manual-commit",
+  "branch": "ehewes/162-map-review-fixes",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/mobile/src/features/briefing/audio-url.ts",
+    "apps/mobile/src/features/briefing/briefing.test.ts",
+    "apps/mobile/src/features/briefing/components/BriefingPlayer.tsx",
+    "apps/mobile/src/features/briefing/copy.ts",
+    "apps/mobile/src/features/briefing/index.ts",
+    "apps/mobile/src/features/briefing/playback.ts",
+    "apps/mobile/src/features/briefing/playback.web.ts",
+    "apps/mobile/src/features/city/city.test.ts",
+    "apps/mobile/src/features/city/components/SensorLegend.tsx",
+    "apps/mobile/src/features/city/components/SensorList.tsx",
+    "apps/mobile/src/features/city/components/SensorMap.tsx",
+    "apps/mobile/src/features/city/components/index.ts",
+    "apps/mobile/src/features/city/copy.ts",
+    "apps/mobile/src/features/city/data/fixture.ts",
+    "apps/mobile/src/features/city/hooks/useCitySensors.ts",
+    "apps/mobile/src/features/city/index.ts",
+    "apps/mobile/src/features/city/screens/CityScreen.tsx",
+    "apps/mobile/src/features/city/sensors.ts",
+    "apps/mobile/src/lib/map/map.test.ts",
+    "apps/mobile/src/lib/map/style.ts",
+    "apps/server/src/app.test.ts",
+    "apps/server/src/features/labels/http.ts",
+    "apps/server/src/features/labels/labels.test.ts",
+    "apps/server/src/features/labels/live.ts",
+    "apps/server/src/features/labels/load.ts",
+    "apps/server/src/features/labels/router.ts",
+    "apps/server/src/features/labels/service.ts",
+    "apps/server/src/features/stays/jobs.test.ts",
+    "apps/server/src/features/stays/jobs.ts",
+    "apps/server/src/features/stays/repo.ts",
+    "apps/server/src/features/works/query.ts",
+    "apps/server/src/features/works/repo.ts",
+    "apps/server/src/features/works/seed.test.ts",
+    "apps/server/src/features/works/works.test.ts",
+    "packages/shared/src/labels/index.ts",
+    "packages/shared/src/labels/schema.ts",
+    "packages/shared/src/works/index.ts",
+    "packages/shared/src/works/works.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/37/f298b7aac1/0/metadata.json",
+      "transcript": "/37/f298b7aac1/0/full.jsonl",
+      "compact_transcript": "/37/f298b7aac1/0/transcript.jsonl",
+      "content_hash": "/37/f298b7aac1/0/content_hash.txt",
+      "prompt": "/37/f298b7aac1/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 20,
+    "cache_creation_tokens": 13054,
+    "cache_read_tokens": 5057013,
+    "output_tokens": 10127,
+    "api_call_count": 9
+  },
+  "redaction": {
+    "replacements": 137,
+    "layers": {
+      "betterleaks": 17,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 96,
+      "credentialed_uri": 3,
+      "entropy": 21,
+      "key_context": 11,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
