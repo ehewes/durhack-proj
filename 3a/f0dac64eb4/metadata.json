@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "3af0dac64eb4",
+  "strategy": "manual-commit",
+  "branch": "ehewes/58-demo-clips",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "docs/demo/assets/clips.json",
+    "docs/demo/assets/drilling.mp3",
+    "docs/demo/assets/siren.mp3",
+    "docs/demo/scripts/generate-clips.test.ts",
+    "docs/demo/scripts/generate-clips.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/3a/f0dac64eb4/0/metadata.json",
+      "transcript": "/3a/f0dac64eb4/0/full.jsonl",
+      "compact_transcript": "/3a/f0dac64eb4/0/transcript.jsonl",
+      "content_hash": "/3a/f0dac64eb4/0/content_hash.txt",
+      "prompt": "/3a/f0dac64eb4/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 60,
+    "cache_creation_tokens": 630022,
+    "cache_read_tokens": 15469962,
+    "output_tokens": 30270,
+    "api_call_count": 26
+  },
+  "redaction": {
+    "replacements": 18,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 4,
+      "credentialed_uri": 0,
+      "entropy": 4,
+      "key_context": 10,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
