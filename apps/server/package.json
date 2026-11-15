@@ -11,6 +11,7 @@
     "typecheck": "tsc -p .",
     "migrate": "bun src/db/migrate.ts",
     "seed:works": "bun src/features/works/seed.ts",
+    "backfill:city": "bun src/features/city/backfill.ts",
     "indexes": "bun src/db/indexes.ts"
   },
   "dependencies": {

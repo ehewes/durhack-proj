@@ -27,14 +27,15 @@ export const CITY_RADIUS_KM = 3;
  */
 export const LOOKBACK_HOURS = 3;
 
-const LIVE_VARIABLES = [
+/** The series Kip stores. The live pull and the backfill ask for the same three. */
+export const LIVE_VARIABLES = [
   OBSERVATORY_VARIABLES.sound,
   OBSERVATORY_VARIABLES.no2,
   OBSERVATORY_VARIABLES.pm25,
 ] as const;
 
 /** Sound is the noise series. Max Sound is a different catalogue variable and is not stored. */
-const METRIC_BY_VARIABLE: Record<string, SensorMetric> = {
+export const METRIC_BY_VARIABLE: Record<string, SensorMetric> = {
   [OBSERVATORY_VARIABLES.sound]: "noise_db",
   [OBSERVATORY_VARIABLES.no2]: "no2",
   [OBSERVATORY_VARIABLES.pm25]: "pm25",
@@ -45,7 +46,11 @@ export type ObservatoryPull = {
   sensors: SensorUpsert[];
 };
 
-function remember(
+/**
+ * Keeps one sample as a reading and its sensor, with the live pull's rules: inside the city
+ * circle, not flagged, finite. Shared with the backfill so both store the same sensors.
+ */
+export function remember(
   sample: ObservatorySample,
   now: Date,
   readings: Map<string, SensorReadingInsert>,
