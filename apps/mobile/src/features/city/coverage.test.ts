@@ -22,13 +22,23 @@ describe("node-network heat", () => {
     expect(
       coverageHeat([
         { lat: 54.97, lon: -1.61, people: 4, simulatedPeople: 0 },
-        { lat: 54.98, lon: -1.62, people: 0, simulatedPeople: 1 },
+        { lat: 54.98, lon: -1.62, people: 0, simulatedPeople: 4 },
+        { lat: 54.99, lon: -1.63, people: 0, simulatedPeople: 1 },
       ]),
     ).toEqual([
       { position: [-1.61, 54.97], weight: 1 },
-      { position: [-1.62, 54.98], weight: 0.55 },
+      { position: [-1.62, 54.98], weight: 1 },
+      { position: [-1.63, 54.99], weight: 0.55 },
     ]);
     expect(coverageHeat([])).toEqual([]);
+  });
+
+  test("a big simulated cohort never pushes real cells down", () => {
+    const heat = coverageHeat([
+      { lat: 54.97, lon: -1.61, people: 3, simulatedPeople: 0 },
+      { lat: 54.98, lon: -1.62, people: 0, simulatedPeople: 40 },
+    ]);
+    expect(heat.map((point) => point.weight)).toEqual([1, 1]);
   });
 
   test("with simulated people switched off, only real cells are drawn", () => {

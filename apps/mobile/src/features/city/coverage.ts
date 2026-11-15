@@ -4,25 +4,33 @@ import type { MapHeatPoint } from "@/lib/map";
 
 // The Kip node network on the city map: where phones and Watches sensed, as rough heat.
 
-/** The lightest a cell gets, so an area one person sensed still shows. */
+/**
+ * The weight of the lightest cell drawn, so it still shows. Real cells only reach the map once 3
+ * or more people sensed there.
+ */
 const MIN_WEIGHT = 0.4;
 
-/** People counted in a cell: real ones, plus simulated ones while they are shown. */
-const counted = (cell: CityCoverage["cells"][number], simulated: boolean) =>
-  cell.people + (simulated ? cell.simulatedPeople : 0);
-
 /**
- * One heat point per cell centre, heavier where more people sensed. With simulated people hidden,
- * only cells with real people are drawn.
+ * One heat point per cell centre, heavier where more people sensed. Real and simulated people are
+ * scaled apart, each against its own busiest cell, so a large simulated cohort never pushes real
+ * cells down. With simulated people hidden, only cells with real people are drawn.
  */
 export function coverageHeat(cells: CityCoverage["cells"], showSimulated = true): MapHeatPoint[] {
-  const shown = cells.filter((cell) => counted(cell, showSimulated) > 0);
-  const most = shown.reduce((top, cell) => Math.max(top, counted(cell, showSimulated)), 0);
-  if (most === 0) return [];
-  return shown.map((cell) => ({
-    position: [cell.lon, cell.lat],
-    weight: MIN_WEIGHT + (1 - MIN_WEIGHT) * (counted(cell, showSimulated) / most),
-  }));
+  const maxReal = cells.reduce((top, cell) => Math.max(top, cell.people), 0);
+  const maxSimulated = showSimulated
+    ? cells.reduce((top, cell) => Math.max(top, cell.simulatedPeople), 0)
+    : 0;
+  const share = (cell: CityCoverage["cells"][number]) =>
+    Math.max(
+      maxReal > 0 ? cell.people / maxReal : 0,
+      maxSimulated > 0 ? cell.simulatedPeople / maxSimulated : 0,
+    );
+  return cells
+    .filter((cell) => share(cell) > 0)
+    .map((cell) => ({
+      position: [cell.lon, cell.lat],
+      weight: MIN_WEIGHT + (1 - MIN_WEIGHT) * share(cell),
+    }));
 }
 
 export const COVERAGE_TITLE = "Kip node network";
