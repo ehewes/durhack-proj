@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.13.4",
+  "checkpoint_id": "d8fd106ef8e4",
+  "strategy": "manual-commit",
+  "branch": "ehewes/162-map-review-fixes",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/mobile/.gitignore"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d8/fd106ef8e4/0/metadata.json",
+      "transcript": "/d8/fd106ef8e4/0/full.jsonl",
+      "compact_transcript": "/d8/fd106ef8e4/0/transcript.jsonl",
+      "content_hash": "/d8/fd106ef8e4/0/content_hash.txt",
+      "prompt": "/d8/fd106ef8e4/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 10718,
+    "cache_read_tokens": 3850803,
+    "output_tokens": 9599,
+    "api_call_count": 7
+  },
+  "redaction": {
+    "replacements": 120,
+    "layers": {
+      "betterleaks": 17,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 80,
+      "credentialed_uri": 3,
+      "entropy": 21,
+      "key_context": 10,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
