@@ -57,7 +57,9 @@ describe("api", () => {
   test("stub procedures answer NOT_IMPLEMENTED (HTTP 501)", async () => {
     const nightId = "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d";
     const input = encodeURIComponent(JSON.stringify({ json: { nightId } }));
-    const res = await app.request(`/trpc/evidence.verify?input=${input}`);
+    const res = await app.request(`/trpc/evidence.report?input=${input}`, {
+      headers: { "x-kip-user": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d" },
+    });
     expect(res.status).toBe(501);
     const caller = createCallerFactory(appRouter)({
       userId: "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",

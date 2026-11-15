@@ -1,9 +1,44 @@
-import { z } from "zod";
+import { anchorInput, anchorOutput, verifyInput, verifyOutput } from "@kip/shared/evidence";
+import { TRPCError } from "@trpc/server";
 import { notImplemented, publicProcedure, router, userProcedure } from "../../trpc/init";
+import { NightNotFoundError, NightStorageError } from "../night";
+import { EvidenceChainError } from "./errors";
+import { loadLive } from "./load";
+import type { EvidenceService } from "./service";
 
-// Stubs from docs/ARCHITECTURE.md (tRPC routers). The `evidence` feature fills them in.
-export const evidenceRouter = router({
-  anchor: userProcedure.input(z.object({ nightId: z.uuid() })).mutation(() => notImplemented()),
-  verify: publicProcedure.input(z.object({ nightId: z.uuid() })).query(() => notImplemented()),
-  report: userProcedure.input(z.object({ nightId: z.uuid() })).query(() => notImplemented()),
-});
+function mapEvidenceError(error: unknown): never {
+  if (error instanceof NightNotFoundError) {
+    throw new TRPCError({ code: "NOT_FOUND", message: error.message });
+  }
+  if (error instanceof EvidenceChainError) {
+    throw new TRPCError({ code: "BAD_GATEWAY", message: error.message });
+  }
+  if (error instanceof NightStorageError) {
+    throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: error.message });
+  }
+  throw error;
+}
+
+export function createEvidenceRouter(svc?: EvidenceService) {
+  const service = async () => svc ?? (await loadLive()).liveEvidence;
+  return router({
+    anchor: userProcedure.input(anchorInput).mutation(async ({ ctx, input }) => {
+      try {
+        return anchorOutput.parse(await (await service()).anchor(ctx.userId, input.nightId));
+      } catch (error) {
+        mapEvidenceError(error);
+      }
+    }),
+    verify: publicProcedure.input(verifyInput).query(async ({ input }) => {
+      try {
+        return verifyOutput.parse(await (await service()).verify(input.nightId));
+      } catch (error) {
+        mapEvidenceError(error);
+      }
+    }),
+    // Council report: a later issue.
+    report: userProcedure.input(anchorInput).query(() => notImplemented()),
+  });
+}
+
+export const evidenceRouter = createEvidenceRouter();
