@@ -1,0 +1,71 @@
+yes add simulated users to production scattered around the areas and think properly about that but make it so its turn off able
+
+---
+
+how long
+
+---
+
+ship it
+
+---
+
+https://github.com/ehewes/durhack-proj/pull/188 ci is green now
+
+---
+
+i think our dev server is down for mobil
+
+---
+
+<task-notification>
+<task-id>b3qdeia0u</task-id>
+<tool-use-id>toolu_01NhjyVY9q1thFzpGL7wGnKX</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-porto-novo/e67c95ea-6674-436a-b3fa-91a77c4313b1/tasks/b3qdeia0u.output</output-file>
+<status>completed</status>
+<summary>Monitor "PR 188 Entire review finishing" stream ended</summary>
+<event>review output ready: 11 findings listed</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bf12y4tfh</task-id>
+<tool-use-id>toolu_011KtBoPAx5dr1WgCDgnZVFW</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-porto-novo/e67c95ea-6674-436a-b3fa-91a77c4313b1/tasks/bf12y4tfh.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the Entire review on PR 188 in the background" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b2eiak6uc</task-id>
+<tool-use-id>toolu_01Wga3TDtNznTctEdN6hQPoL</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-porto-novo/e67c95ea-6674-436a-b3fa-91a77c4313b1/tasks/b2eiak6uc.output</output-file>
+<status>completed</status>
+<summary>Background command "Start Metro for this workspace on port 8090" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bs3603kqt</task-id>
+<tool-use-id>toolu_01JKBbp1vQHSvF4jvD6f7nZY</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-porto-novo/e67c95ea-6674-436a-b3fa-91a77c4313b1/tasks/bs3603kqt.output</output-file>
+<status>completed</status>
+<summary>Monitor "Metro on 8081 coming up" stream ended</summary>
+<event>status: packager-status:running
+@kip/mobile start: Error: xcrun simctl help exited with non-zero code: 72
+@kip/mobile start: Waiting on http://localhost:8081</event>
+If this event is something the user would act on now, send a PushNotification. Routine or benign output doesn't need one.
+</task-notification>
+
+---
+
+i cant see the heatmaps
+
+---
+
+hurry up please
