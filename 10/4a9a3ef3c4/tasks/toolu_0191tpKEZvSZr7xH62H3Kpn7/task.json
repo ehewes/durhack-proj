@@ -1,0 +1,14 @@
+{
+  "tool_use_id": "toolu_0191tpKEZvSZr7xH62H3Kpn7",
+  "agent_id": "a26f9d2ead64a95b4",
+  "task_description": "Work issue #90",
+  "token_usage": {
+    "input_tokens": 38,
+    "cache_creation_tokens": 44907,
+    "cache_read_tokens": 767653,
+    "output_tokens": 11690,
+    "api_call_count": 19
+  },
+  "started_at": "2026-11-15T09:54:53.116935Z",
+  "completed_at": "2026-11-15T09:57:03.714893Z"
+}
