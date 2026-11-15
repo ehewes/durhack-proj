@@ -11,7 +11,14 @@ if [ ! -f .env ]; then
   exit 1
 fi
 
-docker build -t "kip/server:${sha}" src
+# Expo bakes EXPO_PUBLIC_ variables into the web build, so the public Mapbox web token is a build
+# argument read from the same .env. Without it the deployed map shows its missing-token message.
+mapbox_token=$(sed -n 's/^EXPO_PUBLIC_MAPBOX_TOKEN=//p' .env | tail -n 1 | tr -d "\"'")
+if [ -z "$mapbox_token" ]; then
+  echo "warning: no EXPO_PUBLIC_MAPBOX_TOKEN in /opt/kip/.env, so the web map shows its token message" >&2
+fi
+
+docker build --build-arg "EXPO_PUBLIC_MAPBOX_TOKEN=${mapbox_token}" -t "kip/server:${sha}" src
 docker tag "kip/server:${sha}" kip/server:live
 
 install -d deploy

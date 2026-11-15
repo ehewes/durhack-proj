@@ -14,6 +14,8 @@ COPY packages/shared packages/shared
 COPY apps/mobile apps/mobile
 # Empty API URL: the web build calls the API on its own origin
 ENV EXPO_PUBLIC_API_URL=""
+# Public Mapbox web token (pk.), baked into the web build. Without it the map shows its token message
+ARG EXPO_PUBLIC_MAPBOX_TOKEN=""
 RUN cd apps/mobile && CI=1 bun x expo export --platform web --output-dir dist
 
 FROM oven/bun:1.4 AS server-deps
