@@ -1,2 +1,4 @@
 // Zod schemas and types for the `evidence` feature's tRPC inputs and outputs.
-export {};
+export { canonicalJson, memoText, parseMemo } from "./canonical";
+export type { AnchorOutput, VerifyOutput } from "./schema";
+export { anchorInput, anchorOutput, EVIDENCE_NOTE, verifyInput, verifyOutput } from "./schema";
