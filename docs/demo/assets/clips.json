@@ -1,0 +1,17 @@
+{
+  "tool": "ElevenLabs Sound Effects (POST /v1/sound-generation, mp3_44100_128)",
+  "clips": [
+    {
+      "file": "drilling.mp3",
+      "seconds": 10,
+      "expectedLabel": "construction",
+      "prompt": "A heavy hammer drill and a concrete breaker on a building site at night, short hard bursts with brief pauses between them, heard through a closed bedroom window across a narrow city street. Close and harsh. No voices, no music."
+    },
+    {
+      "file": "siren.mp3",
+      "seconds": 10,
+      "expectedLabel": "siren",
+      "prompt": "A UK ambulance siren passing along a city street at night, wailing then yelping as it approaches and fades away, heard from inside a bedroom with the window shut. No voices, no music."
+    }
+  ]
+}
