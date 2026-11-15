@@ -1,0 +1,11 @@
+<task-notification>
+<task-id>bixbu961j</task-id>
+<tool-use-id>toolu_01Tj6VTd4Gto5DGyV3xjAxAx</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-ellishewes-conductor-workspaces-durhack-proj-porto-novo/e67c95ea-6674-436a-b3fa-91a77c4313b1/tasks/bixbu961j.output</output-file>
+<status>completed</status>
+<summary>Background command "Export the web build and check HealthKit stays out" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+what i also want is so like when people are actiely using their phone or watch like as a sensor on the map it is like showing heatmaos riugyhly not exact locations of people of like where people are also collecting data and i want to show like the observatory sensors from the newcastle project in the other branch locaitons too as u can see reatively like what areas we are collecting alternatively rom our node network of other people
