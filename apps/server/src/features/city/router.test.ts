@@ -75,3 +75,29 @@ describe("city.sensors", () => {
     ]);
   });
 });
+
+describe("city.coverage", () => {
+  test("returns rough cells from the last 30 nights, with real people hidden under 3", async () => {
+    const asked: string[] = [];
+    const near = (userId: string, dLat: number, simulated = false) => ({
+      userId,
+      lat: 54.9746 + dLat / 111_320,
+      lon: -1.6132,
+      simulated,
+    });
+    const caller = createCallerFactory(
+      createCityRouter(
+        async () => [],
+        async (since) => {
+          asked.push(since);
+          return [near("a", 0), near("b", 5), near("c", 3000, true)];
+        },
+      ),
+    )({ userId: null });
+    const coverage = await caller.coverage();
+    expect(asked).toHaveLength(1);
+    expect(coverage.minPeople).toBe(3);
+    expect(coverage.cells).toHaveLength(1);
+    expect(coverage.cells[0]).toMatchObject({ people: 0, simulatedPeople: 1 });
+  });
+});

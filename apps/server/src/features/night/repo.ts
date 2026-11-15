@@ -231,6 +231,36 @@ async function deleteUser(userId: string): Promise<NightDeleteCounts> {
 }
 
 /** Tiger + Mongo. Connecting waits until the first call, so imports stay side-effect free. */
+/** Where a night was recorded, for the coverage map. Never leaves the server as is. */
+export type NightLocation = { userId: string; lat: number; lon: number; simulated: boolean };
+
+/**
+ * Locations of nights from `since` (a London night date) on, real and simulated. Only nights
+ * stored with location consent have one; the consent check here is a second guard.
+ */
+export function readNightLocations(since: string): Promise<NightLocation[]> {
+  return guard("read", async () => {
+    const rows = await nights()
+      .find(
+        { night: { $gte: since }, location: { $ne: null }, "consent.location": true },
+        { projection: { userId: 1, location: 1, simulated: 1 } },
+      )
+      .toArray();
+    return rows.flatMap((row): NightLocation[] => {
+      const flagged = row as typeof row & Partial<SimulatedFlag>;
+      if (!row.location) return [];
+      return [
+        {
+          userId: row.userId,
+          lat: row.location.lat,
+          lon: row.location.lon,
+          simulated: flagged.simulated === true,
+        },
+      ];
+    });
+  });
+}
+
 export function createNightRepo(): NightRepo {
   return {
     save: (write) => guard("write", () => save(write)),
